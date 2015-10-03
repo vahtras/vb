@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import os,math
-from dalton import one,two
-from util import full
+from daltools import one
+from two_electron import two
+from daltools.util import full
 #
 # Class of non-orthogonal determinants
 #
@@ -155,7 +156,7 @@ def Fao(DKL,filename='AOTWOINT'):
       Fb = FT - FS
       return (Fa,Fb)
    else:
-      return two.fockab(DKL,file=filename)
+      return two.fockab(DKL,filename=filename)
    #return(full.matrix(Fa.shape),full.matrix(Fb.shape))
 
 def HKL(F,D):

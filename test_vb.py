@@ -1,8 +1,10 @@
 """Test module of VB derivatives with numerical differentiation"""
+import os
 import random, unittest
-from util import full,timing
-from dalton import one
+from daltools import one
+from daltools.util import full, timing
 import vb
+
 class test_vb(unittest.TestCase):
    def setUp(self):
       """
@@ -21,11 +23,10 @@ class test_vb(unittest.TestCase):
       #
       # Dalton setup
       #
-      self.dalexe="/opt/dalton/bin/dalton.x"
-      self.basdir="/opt/dalton/basis/"
+      self.dalexe="dalton.x"
       self.tmp="/tmp/"
       def tmp(fil):
-	 return self.tmp+fil
+	 return os.path.join(self.tmp, fil)
       self.molinp=tmp("MOLECULE.INP")
       self.dalinp=tmp("DALTON.INP")
       self.one=tmp("AOONEINT")
@@ -57,8 +58,10 @@ B   0.0  0.0  0.7428
 # Run dalton
 #
       from subprocess import call
-      cmd="cd %s; BASDIR=%s %s"%(self.tmp,self.basdir,self.dalexe)
+      cmd="cd %s; BASDIR=$(dirname $(which %s))/basis %s" % (self.tmp, self.dalexe, self.dalexe)
+      print "COMMAND", cmd
       returncode = call(cmd,shell=True)
+      assert returncode == 0, "returncode=%d" % returncode
 #
 # Setup VB wave function
 #
