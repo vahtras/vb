@@ -1000,7 +1000,7 @@ class wavefunction:
                         # 
                         # <Kmn/pq|g|L>
                         #
-                        Htmp=two.semitransform(Dma[s],Dma[t],same=False,file=self.tmp('AOTWOINT')) # returns (m,m,a,a)
+                        Htmp=two.semitransform(Dma[s],Dma[t],same=False,file=self.tmp('AOTWOINT')).view(full.matrix) # returns (m,m,a,a)
                         # transpose due to numpy feature
                         left=(1,2,0,3)
                         Htmp=(Delta1[s].T*Htmp).transpose(left)*Delta1[t]
@@ -1014,12 +1014,12 @@ class wavefunction:
                         # 
                         # <Km/p|g|Lm/n>
                         #
-                        Htmp+=(Delta1[s].T*two.semitransform(Dma[s],Dam[t].T,same=False,file=self.tmp('AOTWOINT'))).transpose(left)*Delta2[t].T
+                        Htmp+=(Delta1[s].T*two.semitransform(Dma[s],Dam[t].T,same=False,file=self.tmp('AOTWOINT')).view(full.matrix)).transpose(left)*Delta2[t].T
                         #print "Htmp(%d,%d)-3"%(s,t),Htmp
                         if s == t:
                            Htmp=Htmp - (Delta1[s].T*two.semitransform(
                                  Dma[s],Dam[s].T,same=True,file=self.tmp('AOTWOINT')
-                                 )).transpose(left)*Delta2[s].T
+                                 ).view(full.matrix)).transpose(left)*Delta2[s].T
                            #print "Htmp(%d,%d)-3"%(s,t),Htmp
                         #
                         # semitransformed in form (m,m,a,a) 
