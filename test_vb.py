@@ -86,7 +86,6 @@ B   0.0  0.0  0.7428
       self.delta=1e-4
       self.t_setup.stop()
 
-   @unittest.skip('oo failing')
    def test_energy_orb_hessian(self):
       """Energy orbital Hessian"""
       _, _, numorbhess = self.WF.numenergyhess()

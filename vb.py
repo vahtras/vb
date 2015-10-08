@@ -13,7 +13,7 @@ class nod(list):
    #
    S=None   #Overlap ao basis
    C=None   #VB orbital coefficients 
-   occ=0
+   #occ=0
 
    def __init__(self,astring,bstring,C=None,tmpdir='/tmp'):
       #
@@ -21,10 +21,7 @@ class nod(list):
       #
       self.a=astring
       self.b=bstring
-      occ=max(astring+bstring)
-      nod.occ=max(occ,nod.occ)
-      #print astring+bstring
-      #print "occ",nod.occ
+
       if C is None:
          self.C=nod.C
       else:
@@ -38,6 +35,10 @@ class nod(list):
          #
          # init unit for H2 test
          #
+
+   def electrons(self):
+	return len(self.a + self.b)
+
    def __call__(self,s):
       #
       # Returns alpha (s=0) or beta (s=1) string 
