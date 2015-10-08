@@ -125,23 +125,20 @@ B   0.0  0.0  0.7428
       print self.t_numenergygrad
       print self.t_energygrad
 
-   def test_normhess(self):
-      print "Norm hessian...",
-      self.t_numnormhess=timing.timing("numnormhess")
-      (NumStrHess,NumMixHess,NumOrbHess)=self.WF.numnormhess()
-      self.t_numnormhess.stop()
-      self.t_normhess=timing.timing("normhess")
-      (AnaStrHess,AnaMixHess,AnaOrbHess)=self.WF.normhess()
-      self.t_normhess.stop()
-      ResStrHess=(NumStrHess-AnaStrHess).norm2()
-      ResMixHess=(NumMixHess-AnaMixHess).norm2()
-      ResOrbHess=(NumOrbHess-AnaOrbHess).norm2()
-      self.failUnless(ResStrHess<self.delta,'Norm structure hessian numeric test failed %g > %g'%(ResStrHess,self.delta))
-      self.failUnless(ResMixHess<self.delta,'Norm mixed hessian numeric test failed %g > %g'%(ResMixHess,self.delta))
-      self.failUnless(ResOrbHess<self.delta,'Norm orbital hessian numeric test failed %g > %g'%(ResOrbHess,self.delta))
-      print "OK"
-      print self.t_numnormhess
-      print self.t_normhess
+   def test_norm_orb_hessian(self):
+      _, _, numorbhess = self.WF.numnormhess()
+      _, _, anaorbhess = self.WF.normhess()
+      _, _, np.testing.assert_allclose(numorbhess, anaorbhess, self.delta)
+
+   def test_norm_mixed_hessian(self):
+      _, nummixhess, _ = self.WF.numnormhess()
+      _, anamixhess, _ = self.WF.normhess()
+      np.testing.assert_allclose(nummixhess, anamixhess, self.delta)
+
+   def test_norm_struct_hessian(self):
+      numstrhess, _, _ = self.WF.numnormhess()
+      anastrhess, _, _ = self.WF.normhess()
+      np.testing.assert_allclose(numstrhess, anastrhess, self.delta)
 
    def test_norm_orb_gradient(self):
       """Norm orbital gradient"""
@@ -159,12 +156,6 @@ B   0.0  0.0  0.7428
       """Number of electrons"""
       nel=self.WF.nel()
       self.failUnlessAlmostEqual(nel,2.0,6,'Wrong electron number %g != %g'%(nel,2))
-
-#  def test_print(self):
-#     print "Printing"
-#     print self.WF
-#     print self.WF.structs
-#     print "Norm:     ",self.WF.norm()
 
 if __name__ == "__main__":
    unittest.main()
