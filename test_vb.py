@@ -157,13 +157,8 @@ B   0.0  0.0  0.7428
 
    def test_nel(self):
       """Number of electrons"""
-      self.t_nel=timing.timing("nel")
       nel=self.WF.nel()
-      self.t_nel.stop()
-      #print "Electrons:     ",nel
       self.failUnlessAlmostEqual(nel,2.0,6,'Wrong electron number %g != %g'%(nel,2))
-      print "OK"
-      print self.t_nel
 
 #  def test_print(self):
 #     print "Printing"
