@@ -80,62 +80,57 @@ B   0.0  0.0  0.7428
       cion=cg*Ng2+cu*Nu2
       ccov=cg*Ng2-cu*Nu2
       self.WF=vb.wavefunction([ion,cov],[cion,ccov],tmpdir='/tmp')
-      #print self.WF
-      #print self.WF.structs
-      #print "Norm:     ",self.WF.norm()
       #
       # Threshold for numerical differentiation
       #
       self.delta=1e-4
       self.t_setup.stop()
-      #print self.t_setup
 
    @unittest.skip('oo failing')
-   def test_energyhess(self):
-      print "Energy hessian...",
-      self.t_numenergyhess=timing.timing("numenergyhess")
-      (NumStrHess,NumMixHess,NumOrbHess)=self.WF.numenergyhess()
-      self.t_numenergyhess.stop()
-      self.t_energyhess=timing.timing("energyhess")
-      (AnaStrHess,AnaMixHess,AnaOrbHess)=self.WF.energyhess()
-      self.t_energyhess.stop()
-      ResStrHess=(NumStrHess-AnaStrHess).norm2()
-      ResMixHess=(NumMixHess-AnaMixHess).norm2()
-      ResOrbHess=(NumOrbHess-AnaOrbHess).norm2()
-      self.failUnless(ResStrHess<self.delta,'Energy structure hessian numeric test failed %g > %g'%(ResStrHess,self.delta))
-      self.failUnless(ResMixHess<self.delta,'Energy mixed hessian numeric test failed %g > %g'%(ResMixHess,self.delta))
-      self.failUnless(ResOrbHess<self.delta,'Energy orbital hessian numeric test failed %g > %g'%(ResOrbHess,self.delta))
-      print "OK"
-      print self.t_numenergyhess
-      print self.t_energyhess
+   def test_energy_orb_hessian(self):
+      """Energy orbital Hessian"""
+      _, _, numorbhess = self.WF.numenergyhess()
+      _, _, anaorbhess = self.WF.energyhess()
+      _, _, np.testing.assert_allclose(numorbhess, anaorbhess, self.delta)
 
-   def test_energygrad(self):
-      print "Energy gradient...",
-      self.t_numenergygrad=timing.timing("numenergygrad")
-      (NumStrGrad,NumOrbGrad)=self.WF.numenergygrad()
-      self.t_numenergygrad.stop()
-      self.t_energygrad=timing.timing("energygrad")
-      (AnaStrGrad,AnaOrbGrad)=self.WF.energygrad()
-      self.t_energygrad.stop()
-      ResStrGrad=(NumStrGrad-AnaStrGrad).norm2()
-      ResOrbGrad=(NumOrbGrad-AnaOrbGrad).norm2()
-      self.failUnless(ResStrGrad<self.delta,'Energy structure gradient numeric test failed %g > %g'%(ResStrGrad,self.delta))
-      self.failUnless(ResOrbGrad<self.delta,'Energy orbital gradient numeric test failed %g > %g'%(ResOrbGrad,self.delta))
-      print "OK"
-      print self.t_numenergygrad
-      print self.t_energygrad
+   def test_energy_mixed_hessian(self):
+      """Energy mixed Hessian"""
+      _, nummixhess, _ = self.WF.numenergyhess()
+      _, anamixhess, _ = self.WF.energyhess()
+      np.testing.assert_allclose(nummixhess, anamixhess, self.delta)
+
+   def test_energy_struct_hessian(self):
+      """Energy structure Hessian"""
+      numstrhess, _, _ = self.WF.numenergyhess()
+      anastrhess, _, _ = self.WF.energyhess()
+      np.testing.assert_allclose(numstrhess, anastrhess, self.delta)
+
+   def test_energy_orb_gradient(self):
+      """Energy orbital gradient"""
+      _, numorbgr = self.WF.numenergygrad()
+      _, anaorbgr = self.WF.energygrad()
+      np.testing.assert_allclose(numorbgr, anaorbgr, rtol=self.delta)
+
+   def test_energy_struct_gradient(self):
+      """Energy structure gradient"""
+      numstrgr, _ = self.WF.numenergygrad()
+      anastrgr, _ = self.WF.energygrad()
+      np.testing.assert_allclose(numstrgr, anastrgr, rtol=self.delta)
 
    def test_norm_orb_hessian(self):
+      """Norm orbital hessian"""
       _, _, numorbhess = self.WF.numnormhess()
       _, _, anaorbhess = self.WF.normhess()
       _, _, np.testing.assert_allclose(numorbhess, anaorbhess, self.delta)
 
    def test_norm_mixed_hessian(self):
+      """Norm mixed hessian"""
       _, nummixhess, _ = self.WF.numnormhess()
       _, anamixhess, _ = self.WF.normhess()
       np.testing.assert_allclose(nummixhess, anamixhess, self.delta)
 
    def test_norm_struct_hessian(self):
+      """Norm structure hessian"""
       numstrhess, _, _ = self.WF.numnormhess()
       anastrhess, _, _ = self.WF.normhess()
       np.testing.assert_allclose(numstrhess, anastrhess, self.delta)
@@ -150,7 +145,7 @@ B   0.0  0.0  0.7428
       """Norm structure gradient"""
       numstrgr, _ = self.WF.numnormgrad()
       anastrgr, _ = self.WF.normgrad()
-      np.testing.assert_allclose(numstrgr, anastrgr)
+      np.testing.assert_allclose(numstrgr, anastrgr, rtol=self.delta)
 
    def test_nel(self):
       """Number of electrons"""
