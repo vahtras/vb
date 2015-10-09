@@ -122,11 +122,14 @@ def DKL(K, L, mo=0):
     D=[]
 
     for s in range(2):
-	if CK[s] is None:
+	if CK[s] is None or CL[s] is None:
 	    #
 	    # if None orbitals set atomic density to zero matrix
 	    #
-	    D.append(full.matrix(nod.S.shape))
+	    if mo:
+		D.append(None)
+            else:
+		D.append(full.matrix(nod.S.shape))
 	else:
 	    SLK=CL[s].T*nod.S*CK[s]
 	    #

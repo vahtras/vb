@@ -68,9 +68,13 @@ class NodTest(unittest.TestCase):
 	sigmagu = nod([0, 1], [])
 	self.assertAlmostEqual(sigmagu*sigmagu, 2*.7*(1+.1)*.7*2*.7*(1-.1)*.7)
 
-    def test_vac_density(self):
+    def test_vac_ao_density(self):
 	vac = nod([], [])
 	np.testing.assert_allclose(DKL(vac, vac), [[[0, 0], [0, 0]],  [[0, 0], [0, 0]]])
+
+    def test_vac_mo_density(self):
+	vac = nod([], [])
+	self.assertEqual(DKL(vac, vac, mo=1), [None, None])
 
     def test_alpha_mo_density(self):
 	alpha = nod([0], [])
