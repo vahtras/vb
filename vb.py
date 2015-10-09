@@ -51,13 +51,9 @@ class nod(list):
             return None
 
     def __repr__(self):
-        retstr="("
-        for i in range(len(self.a)):
-            retstr+="%2d "%self.a[i]
-        retstr+="|"
-        for i in range(len(self.b)):
-            retstr+=" %2d"%self.b[i]
-        retstr+=")"
+        stra = " ".join(["%g" % alpha for alpha in self.a])
+        strb = " ".join(["%g" % beta for beta in self.b])
+	retstr = "(%s|%s)" % (stra, strb)
         return retstr
 
     def orbitals(self):
@@ -75,6 +71,9 @@ class nod(list):
         # det(S) = det S(alpha)*det S(beta)
         #
         #
+	if len(self.a) != len(other.a) or len(self.b) != len(other.b):
+	    return 0
+
         (CKa,CKb)=self.orbitals()
         (CLa,CLb)=other.orbitals()
         #
