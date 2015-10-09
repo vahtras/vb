@@ -129,7 +129,6 @@ def DKL(K, L, mo=0):
 	    D.append(full.matrix(nod.S.shape))
 	else:
 	    SLK=CL[s].T*nod.S*CK[s]
-	    print 'SLK',  SLK
 	    #
 	    # Density is inverse transpose
 	    #
