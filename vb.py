@@ -105,7 +105,7 @@ def Dao(K,L):
 def Dmo(K,L):
     return DKL(K,L,mo=1)
 
-def DKL(K,L,mo=0,normalized=1):
+def DKL(K, L, mo=0):
     #
     # Return intermediate normalized transition density matrix given 
     # determinants K and L
@@ -120,34 +120,23 @@ def DKL(K,L,mo=0,normalized=1):
     CL=L.orbitals()
     #
     D=[]
-    if normalized:
-        for s in range(2):
-            if CK[s] is None:
-                #
-                # if None orbitals set atomic density to zero matrix
-                #
-                D.append(full.matrix((nod.S.rdim,nod.S.rdim)))
-            else:
-                SLK=CL[s].T*nod.S*CK[s]
-                #
-                # Density is inverse transpose
-                #
-                if mo:
-                    D.append(SLK.inv())
-                else:
-                    D.append(CK[s]*(CL[s].T/SLK))
-    else:
-        #
-        # Density is cofactor
-        #
-        SKL=[]
-        for i in range(2): 
-            SKL.append(CK[i].T*nod.S*CL[i])
-            D.append(SKL[i].cofactor())
-        D[0]=SKL[1].det()*D[0]
-        D[1]=SKL[0].det()*D[1]
-        if not mo:
-            for i in range(2): D[i]=CK[i]*D[i]*CL[i].T
+
+    for s in range(2):
+	if CK[s] is None:
+	    #
+	    # if None orbitals set atomic density to zero matrix
+	    #
+	    D.append(full.matrix(nod.S.shape))
+	else:
+	    SLK=CL[s].T*nod.S*CK[s]
+	    print 'SLK',  SLK
+	    #
+	    # Density is inverse transpose
+	    #
+	    if mo:
+		D.append(SLK.inv())
+	    else:
+		D.append(CK[s]*(CL[s].T/SLK))
  
     return D
 
