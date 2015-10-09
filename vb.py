@@ -2,6 +2,7 @@
 import os,math
 from daltools import one
 from two_electron import two
+from two_electron.two import fockab as Fao
 from daltools.util import full
 #
 # Class of non-orthogonal determinants
@@ -150,21 +151,6 @@ def DKL(K,L,mo=0,normalized=1):
  
     return D
 
-def Fao(DKL,filename='AOTWOINT'):
-    #
-    # AO Fock matrices from AO transition density matrix
-    #
-    if 0:
-        D=DKL[0]+DKL[1]
-        FT=two.fock(D.T,file=filename) #transpose because of convention in two.fock
-        D=DKL[0]-DKL[1]
-        FS=two.fock(D.T,hfc=0,file=filename)
-        Fa = FT + FS
-        Fb = FT - FS
-        return (Fa,Fb)
-    else:
-        return two.fockab(DKL,filename=filename)
-    #return(full.matrix(Fa.shape),full.matrix(Fb.shape))
 
 def HKL(F,D):
     E=0.5*( (F[0]&D[0]) + (F[1]&D[1]) )
