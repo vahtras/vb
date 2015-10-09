@@ -151,7 +151,10 @@ class structure:
     def __init__(self, nods, coef):
 	if len(nods) != len(coef):
 	    raise StructError
+
         self.nods = nods
+	self.assert_nab()
+
         self.coef = full.matrix(len(coef))
         self.coef[:] = coef[:]
         #
@@ -160,6 +163,12 @@ class structure:
         # reference the first determinant MO
         #
         self.C = nods[0].C
+
+    def assert_nab(self):
+	n0 = self.nods[0]
+	for n in self.nods[1:]:
+	    if n.a != n0.a or n.b != n0.b:
+		raise StructError
 
     def __str__(self):
 	output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]

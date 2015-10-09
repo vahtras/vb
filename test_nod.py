@@ -103,9 +103,15 @@ class StructTest(unittest.TestCase):
 	    struct = structure([nod([0], [0])], [])
 
     def test_structure_output(self):
-	alpha=nod([0], [])
+	alpha = nod([0], [])
 	struct_a = structure([alpha], [1])
 	self.assertEqual(str(struct_a), "1.000000    (0|)")
+
+    def test_structure_ms(self):
+	alpha = nod([0], [])
+	beta = nod([], [0])
+	with self.assertRaises(StructError):
+	    struct = structure([alpha, beta], [1, 1])
 
 if __name__ == "__main__":
     unittest.main()
