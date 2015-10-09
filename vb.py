@@ -148,15 +148,15 @@ def HKL(F, D):
     return E
 
 class structure:
+
     def __init__(self, nods, coef):
 	if len(nods) != len(coef):
 	    raise StructError
 
         self.nods = nods
-	self.assert_nab()
+	self.assert_consistent_electron_number()
 
-        self.coef = full.matrix(len(coef))
-        self.coef[:] = coef[:]
+        self.coef = full.init(coef)
         #
         # Also have MOs as a structure member
         # In BOVB these are unique to a structure
@@ -164,10 +164,10 @@ class structure:
         #
         self.C = nods[0].C
 
-    def assert_nab(self):
+    def assert_consistent_electron_number(self):
 	n0 = self.nods[0]
 	for n in self.nods[1:]:
-	    if n.a != n0.a or n.b != n0.b:
+	    if len(n.a) != len(n0.a) or len(n.b) != len(n0.b):
 		raise StructError
 
     def __str__(self):
@@ -179,10 +179,10 @@ class StructError(Exception):
 
 
 class wavefunction:
+
     def __init__(self, structs, coef, VBSCF=True, tmpdir='/tmp', frozen=[]):
         self.structs = structs
-        self.coef = full.matrix(len(coef))
-        self.coef[:] = coef[:]
+        self.coef = full.init(coef)
         self.tmpdir = tmpdir
         self.Z = one.readhead(tmpdir+"/AOONEINT")["potnuc"]
         self.h = one.read("ONEHAMIL", tmpdir+"/AOONEINT").unpack().unblock()
