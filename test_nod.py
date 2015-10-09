@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from vb import nod, DKL
+from vb import structure, StructError
 from daltools.util.full import init
 
 
@@ -87,6 +88,24 @@ class NodTest(unittest.TestCase):
 	d_a = 0.49/1.078
 	np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
 
+
+class StructTest(unittest.TestCase):
+
+    def setUp(self):
+        nod.S = init([[1.0, 0.1], [0.1, 1.0]])
+	nod.C = init([[0.7, 0.7], [0.7, -0.7]])
+
+    def tearDown(self):
+        pass
+
+    def test_structure_coefficients_consistent(self):
+	with self.assertRaises(StructError):
+	    struct = structure([nod([0], [0])], [])
+
+    def test_structure_output(self):
+	alpha=nod([0], [])
+	struct_a = structure([alpha], [1])
+	self.assertEqual(str(struct_a), "1.000000    (0|)")
 
 if __name__ == "__main__":
     unittest.main()

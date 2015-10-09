@@ -149,6 +149,8 @@ def HKL(F, D):
 
 class structure:
     def __init__(self, nods, coef):
+	if len(nods) != len(coef):
+	    raise StructError
         self.nods = nods
         self.coef = full.matrix(len(coef))
         self.coef[:] = coef[:]
@@ -159,13 +161,12 @@ class structure:
         #
         self.C = nods[0].C
 
-    def __repr__(self):
-        retstr = "\n"
-        for i in range(len(self.nods)):
-            retstr += self.coef.fmt%self.coef[i] + "   "
-            retstr += `self.nods[i]`
-            retstr += "\n"
-        return retstr
+    def __str__(self):
+	output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]
+        return "\n".join(output)
+
+class StructError(Exception):
+    pass
 
 
 class wavefunction:
