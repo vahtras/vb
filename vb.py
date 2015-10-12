@@ -7,6 +7,16 @@ from daltools import one
 from two_electron import two
 from two_electron.two import fockab as Fao
 from daltools.util import full
+
+class NodPair(object):
+    """Non-orthogonal determinant pairs"""
+
+    def __init__(self, K, L):
+        self.K = K
+        self.L = L
+
+    def overlap(self):
+        return self.K*self.L
 #
 # Class of non-orthogonal determinants
 #

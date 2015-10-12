@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from vb import nod, DKL
+from vb import nod, DKL, NodPair
 from vb import structure, StructError
 from daltools.util.full import init
 
@@ -87,6 +87,36 @@ class NodTest(unittest.TestCase):
         DKL_a, _ = DKL(alpha, alpha, mo=0)
         d_a = 0.49/1.078
         np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
+
+    def test_num_diff_right(self):
+        K = nod([0], [])
+        L = nod([0], [])
+        L.C = nod.C.copy()
+        self.assertIsNot(K.C, L.C)
+        delta = 1e-3
+        L.C[0, 0] += delta/2
+        KLp = K*L
+        L.C[0, 0] -= delta
+        KLm = K*L
+        L.C[0, 0] += delta/2
+        KL00 = (KLp - KLm)/ delta
+        self.assertAlmostEqual(KL00, 0.77)
+        
+class NodPairTest(unittest.TestCase):
+
+    def setUp(self):
+        nod.S = init([[1.0, 0.1], [0.1, 1.0]])
+        nod.C = init([[0.7, 0.7], [0.7, -0.7]])
+
+    def tearDown(self):
+        pass
+
+    def test_not_pair_setup(self):
+        K = nod([0], [])
+        L = nod([0], [])
+        KL = NodPair(K, L)
+        self.assertAlmostEqual(K*L, KL.overlap())
+
 
 
 class StructTest(unittest.TestCase):
