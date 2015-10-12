@@ -8,6 +8,8 @@ from two_electron import two
 from two_electron.two import fockab as Fao
 from daltools.util import full
 
+DELTA = 1e-4
+
 class NodPair(object):
     """Non-orthogonal determinant pairs"""
 
@@ -17,6 +19,38 @@ class NodPair(object):
 
     def overlap(self):
         return self.K*self.L
+
+    def right_numerical_differential(self, mu, m):
+        """Rhs numerical derivative <K|dL/dC(mu, m)>"""
+        self.L.C = self.L.C.copy()
+        self.L.C[mu, m] += DELTA/2
+        KLp = self.K*self.L
+        self.L.C[mu, m] -= DELTA
+        KLm = self.K*self.L
+        self.L.C[mu, m] += DELTA/2
+        return (KLp - KLm)/DELTA
+
+    def left_numerical_differential(self, mu, m):
+        """Lhs numerical derivative <dK/dC(mu, m)|L>"""
+        self.K.C = self.K.C.copy()
+        self.K.C[mu, m] += DELTA/2
+        KLp = self.K*self.L
+        self.K.C[mu, m] -= DELTA
+        KLm = self.K*self.L
+        self.K.C[mu, m] += DELTA/2
+        return (KLp - KLm)/DELTA
+
+    def right_orbital_gradient(self):
+        """Rhs derivative <K|dL/dC(mu, m)>"""
+        DmoKL = Dmo(self.K, self.L)
+        CK = self.K.orbitals()
+        KdL = nod.S*CK[0]*DmoKL[0]*self.overlap()
+        
+        ao, mo = nod.C.shape
+        rog = full.matrix((mo, ao))
+        KdL.scatteradd(rog, columns=self.L(0))
+        
+        return rog
 #
 # Class of non-orthogonal determinants
 #
