@@ -51,6 +51,18 @@ class NodPair(object):
         KdL.scatteradd(rog, columns=self.L(0))
         
         return rog
+
+    def left_orbital_gradient(self):
+        """Rhs derivative <K|dL/dC(mu, m)>"""
+        DmoKL = Dmo(self.K, self.L)
+        CL = self.L.orbitals()
+        dKL = DmoKL[0]*CL[0].T*nod.S*self.overlap()
+        
+        ao, mo = nod.C.shape
+        rog = full.matrix((mo, ao))
+        dKL.scatteradd(rog, rows=self.K(0))
+        
+        return rog
 #
 # Class of non-orthogonal determinants
 #
