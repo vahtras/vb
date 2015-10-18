@@ -139,7 +139,7 @@ class NodPairTest(unittest.TestCase):
 
     def test_00_right_analytical_differential_overlap(self):
         KL00 = self.a0a0.right_orbital_gradient()
-        np.testing.assert_allclose(KL00, [[0.76, 0], [0.67, 0]])
+        np.testing.assert_allclose(KL00, [[0.76, 0.67], [0., 0]])
 
 ###
 
@@ -163,13 +163,12 @@ class NodPairTest(unittest.TestCase):
 
     def test_01_right_analytical_differential_overlap(self):
         KL01 = self.a0a1.right_orbital_gradient()
-        np.testing.assert_allclose(KL01, [[0, .76], [0, 0.67]])
+        np.testing.assert_allclose(KL01, [[0, .0], [0.76, 0.67]])
 
 ###
 
     def test_10_right_numerical_differential_overlap_00(self):
         K1L0_00 = self.a1a0.right_numerical_differential(0, 0)
-        # (1 .1)(.6 -.7) = .53
         self.assertAlmostEqual(K1L0_00, 0.53)
 
     def test_10_right_numerical_differential_overlap_01(self):
@@ -178,7 +177,6 @@ class NodPairTest(unittest.TestCase):
 
     def test_10_right_numerical_differential_overlap_10(self):
         K1L0_10 = self.a1a0.right_numerical_differential(1, 0)
-        # (.1 1) (.6 -.7) = -.64
         self.assertAlmostEqual(K1L0_10, -0.64)
 
     def test_10_right_numerical_differential_overlap_11(self):
@@ -187,7 +185,7 @@ class NodPairTest(unittest.TestCase):
 
     def test_10_right_analytical_differential_overlap(self):
         KL10 = self.a1a0.right_orbital_gradient()
-        np.testing.assert_allclose(KL10, [[0.53, 0], [-.64, 0]])
+        np.testing.assert_allclose(KL10, [[0.53, -.64], [0, 0]])
 
 ###
 
@@ -212,7 +210,7 @@ class NodPairTest(unittest.TestCase):
 
     def test_11_right_analytical_differential_overlap(self):
         KL11 = self.a1a1.right_orbital_gradient()
-        np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
+        np.testing.assert_allclose(KL11, [[0., 0.], [0.53, -.64]])
 
 ###
 
