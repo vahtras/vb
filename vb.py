@@ -152,6 +152,12 @@ class Nod(list):
         #
         return Det
 
+    def ao_density(self):
+        return DKL(self, self, mo=0)
+
+    def mo_density(self):
+        return DKL(self, self, mo=1)
+
 
 #
 # Calculate transition density from unnormalized molecular orbitals

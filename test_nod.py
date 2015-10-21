@@ -71,11 +71,11 @@ class NodTest(unittest.TestCase):
 
     def test_vac_ao_density(self):
         vac = Nod([], [])
-        np.testing.assert_allclose(DKL(vac, vac), [[[0, 0], [0, 0]],  [[0, 0], [0, 0]]])
+        np.testing.assert_allclose(vac.ao_density(), [[[0, 0], [0, 0]],  [[0, 0], [0, 0]]])
 
     def test_vac_mo_density(self):
         vac = Nod([], [])
-        self.assertEqual(DKL(vac, vac, mo=1), [None, None])
+        self.assertEqual(vac.mo_density(), [None, None])
 
     def test_alpha_mo_density(self):
         alpha = Nod([0], [])
