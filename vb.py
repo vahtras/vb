@@ -44,9 +44,9 @@ class NodPair(object):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
         CK = self.K.orbitals()
-        KdL = nod.S*CK[0]*DmoKL[0]*self.overlap()
+        KdL = Nod.S*CK[0]*DmoKL[0]*self.overlap()
         
-        right_ = full.matrix(nod.C.shape)
+        right_ = full.matrix(Nod.C.shape)
         KdL.scatteradd(right_, columns=self.L(0))
         
         return right_.T
@@ -55,16 +55,16 @@ class NodPair(object):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
         CL = self.L.orbitals()
-        dKL = DmoKL[0]*CL[0].T*nod.S*self.overlap()
+        dKL = DmoKL[0]*CL[0].T*Nod.S*self.overlap()
         
-        left_ = full.matrix(nod.C.shape)
+        left_ = full.matrix(Nod.C.shape)
         dKL.scatteradd(left_, rows=self.K(0))
         
         return left_
 #
 # Class of non-orthogonal determinants
 #
-class nod(list):
+class Nod(list):
     #
     #
     # Class global variables
@@ -73,7 +73,7 @@ class nod(list):
     C = None   #VB orbital coefficients
 
     def __init__(self, astring, bstring, C=None, tmpdir='/tmp'):
-        super(nod, self).__init__()
+        super(Nod, self).__init__()
         #
         # Input: list of orbital indices for alpha and beta strings
         #
@@ -81,15 +81,15 @@ class nod(list):
         self.b = bstring
 
         if C is None:
-            self.C = nod.C
+            self.C = Nod.C
         else:
             self.C = C
         #
         # Read overlap at first invocation of constructor
         #
         aooneint = os.path.join(tmpdir, 'AOONEINT')
-        if nod.S is None:
-            nod.S = one.read('OVERLAP', aooneint).unpack().unblock()
+        if Nod.S is None:
+            Nod.S = one.read('OVERLAP', aooneint).unpack().unblock()
             #
             # init unit for H2 test
             #
@@ -139,14 +139,14 @@ class nod(list):
         #
         Det = 1
         if CKa is not None:
-            SKLa = CKa.T*nod.S*CLa
+            SKLa = CKa.T*Nod.S*CLa
             Deta = SKLa.det()
             Det *= Deta
         #
         # beta
         #
         if CKb is not None:
-            SKLb = CKb.T*nod.S*CLb
+            SKLb = CKb.T*Nod.S*CLb
             Detb = SKLb.det()
             Det *= Detb
         #
@@ -186,9 +186,9 @@ def DKL(K, L, mo=0):
             if mo:
                 D.append(None)
             else:
-                D.append(full.matrix(nod.S.shape))
+                D.append(full.matrix(Nod.S.shape))
         else:
-            SLK = CL[s].T*nod.S*CK[s]
+            SLK = CL[s].T*Nod.S*CK[s]
             #
             # Density is inverse transpose
             #
@@ -281,8 +281,8 @@ class wavefunction:
                         S12 = K*L
                         C1 = CS*CKS
                         C2 = CT*CLT
-                        Na = (D12[0]&nod.S)
-                        Nb = (D12[1]&nod.S)
+                        Na = (D12[0]&Nod.S)
+                        Nb = (D12[1]&Nod.S)
                         Nel += (Na+Nb)*C1*C2*S12
                         N += S12*C1*C2
         return Nel/N
@@ -341,7 +341,7 @@ class wavefunction:
         ao, mo = self.C.shape
         for i in range(mo):
             cmo = self.C[:, i]
-            nmo = 1/math.sqrt(cmo.T*nod.S*cmo)
+            nmo = 1/math.sqrt(cmo.T*Nod.S*cmo)
             cmo *= nmo
         #
         # Structures
@@ -372,7 +372,7 @@ class wavefunction:
         # dN = 2<d0|0>
         #
         NGS = []
-        r, c = nod.C.shape
+        r, c = Nod.C.shape
         Norbgrad = full.matrix((c, r))
         #d12=full.matrix((c,c))
         #
@@ -411,7 +411,7 @@ class wavefunction:
                         Sog21 = [None, None]
                         for s in range(2):
                             # D^m_\mu
-                            Sog12[s] = Dmo12[s]*CL[s].T*nod.S
+                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
                         #
                         # Scatter to orbitals
                         #
@@ -446,16 +446,16 @@ class wavefunction:
         #
         # orbital gradient
         #
-        r, c = nod.C.shape
+        r, c = Nod.C.shape
         orbgrad = full.matrix((c, r))
         for m in range(c):
             for t in range(r):
-                nod.C[t, m] += deltah
+                Nod.C[t, m] += deltah
                 ep = func()
-                nod.C[t, m] -= delta
+                Nod.C[t, m] -= delta
                 em = func()
                 orbgrad[m, t] = (ep - em)/delta
-                nod.C[t, m] += deltah
+                Nod.C[t, m] += deltah
         return (structgrad, orbgrad[self.opt])
 
     def numnormgrad(self, delta=1e-3):
@@ -467,7 +467,7 @@ class wavefunction:
         # dN = 2<d0|0>
         #
         ls = len(self.structs)
-        ao, mo = nod.C.shape
+        ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
         #Nstructorbhess=full.matrix((ls, mo, ao))
         Norbstructhess = full.matrix((mo, ao, ls))
@@ -524,15 +524,15 @@ class wavefunction:
                         Delta = [full.matrix((ao, ao)), full.matrix((ao, ao))]
                         for s in range(2):
                             #D^m_\mu
-                            Sog12[s] = Dmo12[s]*CL[s].T*nod.S
-                            Sog21[s] = Dmo21[s]*CK[s].T*nod.S
+                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
+                            Sog21[s] = Dmo21[s]*CK[s].T*Nod.S
                             Dog12[s][det1(s), :] = Sog12[s]
                             Dog21[s][det2(s), :] = Sog21[s]
                             #Dmm[s][det1(s), det2(s)]=Dmo12[s] numpy bug
                             Dmo12[s].scatter(
                                 Dmm[s], rows=det1(s), columns=det2(s)
                                 )
-                            Delta[s] = nod.S-nod.S*CK[s]*Dmo12[s]*CL[s].T*nod.S
+                            Delta[s] = Nod.S-Nod.S*CK[s]*Dmo12[s]*CL[s].T*Nod.S
                         #
                         # Scatter to orbitals
                         #
@@ -572,7 +572,7 @@ class wavefunction:
         # Based on part of norm hessian <dF|dF>
         #
         ls = len(self.structs)
-        ao, mo = nod.C.shape
+        ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
         Nstructorbhess = full.matrix((ls, mo, ao))
         Norbstructhess = full.matrix((mo, ao, ls))
@@ -623,9 +623,9 @@ class wavefunction:
                             # Dm_\mu = Dml C.l S.mu
                             #
                             Dm_mu[s][:, :] = 0
-                            Dm_mu[s][K(s), :] = DmoKL[s]*CL[s].T*nod.S
+                            Dm_mu[s][K(s), :] = DmoKL[s]*CL[s].T*Nod.S
                             Dmu_m[s][:, :] = 0
-                            Dmu_m[s][:, L(s)] = nod.S*CK[s]*DmoKL[s]
+                            Dmu_m[s][:, L(s)] = Nod.S*CK[s]*DmoKL[s]
 
                             Dmn[s][:, :] = 0
                             #
@@ -639,7 +639,7 @@ class wavefunction:
                             tmp[K(s), :] = DmoKL[s]
                             Dmn[s][:, L(s)] = tmp
 
-                            Delta[s] = nod.S-nod.S*CK[s]*DmoKL[s]*CL[s].T*nod.S
+                            Delta[s] = Nod.S-Nod.S*CK[s]*DmoKL[s]*CL[s].T*Nod.S
                             #
                             # Add to mixed hessian
                             #
@@ -679,7 +679,7 @@ class wavefunction:
         # structure coefficients
         #
         ls = len(self.structs)
-        ao, mo = nod.C.shape
+        ao, mo = Nod.C.shape
         strstrhess = full.matrix((ls, ls))
         strorbhess = full.matrix((ls, mo, ao))
         orbstrhess = full.matrix((mo, ao, ls))
@@ -711,20 +711,20 @@ class wavefunction:
             for mu in range(ao):
                 for m in range(mo):
                     self.coef[p] += deltah
-                    nod.C[mu, m] += deltah
+                    Nod.C[mu, m] += deltah
                     epp = func()
-                    nod.C[mu, m] -= delta
+                    Nod.C[mu, m] -= delta
                     epm = func()
                     self.coef[p] -= delta
                     emm = func()
-                    nod.C[mu, m] += delta
+                    Nod.C[mu, m] += delta
                     emp = func()
                     orbstrhess[m, mu, p] = (epp + emm - epm - emp)/delta2
                     #
                     # Reset
                     #
                     self.coef[p] += deltah
-                    nod.C[mu, m] -= deltah
+                    Nod.C[mu, m] -= deltah
 
         #
         # Orbital-orbital
@@ -733,22 +733,22 @@ class wavefunction:
             for m in range(mo):
                 for nu in range(ao):
                     for n in range(mo):
-                        nod.C[mu, m] += deltah
-                        nod.C[nu, n] += deltah
+                        Nod.C[mu, m] += deltah
+                        Nod.C[nu, n] += deltah
                         epp = func()
-                        nod.C[nu, n] -= delta
+                        Nod.C[nu, n] -= delta
                         epm = func()
-                        nod.C[mu, m] -= delta
+                        Nod.C[mu, m] -= delta
                         emm = func()
-                        nod.C[nu, n] += delta
+                        Nod.C[nu, n] += delta
                         emp = func()
                         orborbhess[m, mu, n, nu] = \
                             (epp + emm - epm - emp)/delta2
                         #
                         # Reset
                         #
-                        nod.C[mu, m] += deltah
-                        nod.C[nu, n] -= deltah
+                        Nod.C[mu, m] += deltah
+                        Nod.C[nu, n] -= deltah
 
         return (
             strstrhess,
@@ -796,7 +796,7 @@ class wavefunction:
         # dE = 2<d0|H-E|0>/<0|0>
         #
         Nstructgrad = full.matrix(len(self.structs))
-        c, r = nod.C.shape
+        c, r = Nod.C.shape
         Norbgrad = full.matrix((r, c))
         N = 0
         Hstructgrad = full.matrix(len(self.structs))
@@ -861,9 +861,9 @@ class wavefunction:
                         Hog12 = [None, None]
                         Hog21 = [None, None]
                         for s in range(2):
-                            Sog12[s] = Dmo12[s]*CL[s].T*nod.S
+                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
                             Hog12[s] = Dmo12[s]*CL[s].T*(
-                                (self.h+F12[s]).T*(I-D12[s]*nod.S)
+                                (self.h+F12[s]).T*(I-D12[s]*Nod.S)
                                 ) + Sog12[s]*H12
                         #
                         # Scatter to orbitals
@@ -888,7 +888,7 @@ class wavefunction:
         # dN = 2<d0|0>
         #
         ls = len(self.structs)
-        ao, mo = nod.C.shape
+        ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(ls)
         Norbgrad = full.matrix((mo, ao))
         Nstructhess = full.matrix((ls, ls))
@@ -915,7 +915,7 @@ class wavefunction:
         Dog21 = [full.matrix((mo, ao)), full.matrix((mo, ao))]
         I = full.unit(ao)
         h = self.h
-        S = nod.S
+        S = Nod.S
         #
         # Structures left
         #

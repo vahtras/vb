@@ -66,12 +66,12 @@ B   0.0  0.0  0.7428
 #
 # Setup VB wave function
 #
-      vb.nod.C=full.matrix((2,2)).random()
-      vb.nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-      vb.nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-      vb.nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
-      ion=vb.structure( [vb.nod([0],[0]),vb.nod([1],[1])], [1,1] )
-      cov=vb.structure( [vb.nod([0],[1]),vb.nod([1],[0])], [1,1] )
+      vb.Nod.C=full.matrix((2,2)).random()
+      vb.Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
+      vb.Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
+      vb.Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+      ion=vb.structure( [vb.Nod([0],[0]),vb.Nod([1],[1])], [1,1] )
+      cov=vb.structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
       cg=random.random()
       cu=random.random()
       Sab=0.13533528
