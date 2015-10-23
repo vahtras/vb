@@ -20,7 +20,7 @@ class NodPair(object):
     def overlap(self):
         return self.K*self.L
 
-    def right_numerical_differential(self, mu, m):
+    def right_numerical_gradient(self, mu, m):
         """Rhs numerical derivative <K|dL/dC(mu, m)>"""
         self.L.C = self.L.C.copy()
         self.L.C[mu, m] += DELTA/2
@@ -30,7 +30,7 @@ class NodPair(object):
         self.L.C[mu, m] += DELTA/2
         return (KLp - KLm)/DELTA
 
-    def left_numerical_differential(self, mu, m):
+    def left_numerical_gradient(self, mu, m):
         """Lhs numerical derivative <dK/dC(mu, m)|L>"""
         self.K.C = self.K.C.copy()
         self.K.C[mu, m] += DELTA/2
