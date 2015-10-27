@@ -24,23 +24,67 @@ class NodPair(object):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
         CK = self.K.orbitals()
-        KdL = Nod.S*CK[0]*DmoKL[0]*self.overlap()
+
+        KdL = full.matrix(Nod.C.shape)
+        if self.K(0):
+            KdLa = Nod.S*CK[0]*DmoKL[0]*self.overlap()
+            KdLa.scatteradd(KdL, columns=self.L(0))
+        if self.K(1):
+            KdLb = Nod.S*CK[1]*DmoKL[1]*self.overlap()
+            KdLb.scatteradd(KdL, columns=self.L(1))
         
-        right_ = full.matrix(Nod.C.shape)
-        KdL.scatteradd(right_, columns=self.L(0))
-        
-        return right_
+        return KdL
 
     def left_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
         CL = self.L.orbitals()
-        dKL = DmoKL[0]*CL[0].T*Nod.S*self.overlap()
+
+        dKL = full.matrix(Nod.C.shape)
+        if self.L(0):
+            dKLa = DmoKL[0]*CL[0].T*Nod.S*self.overlap()
+            dKLa.scatteradd(dKL, rows=self.K(0))
+        if self.L(1):
+            dKLa = DmoKL[1]*CL[1].T*Nod.S*self.overlap()
+            dKLa.scatteradd(dKL, rows=self.K(1))
         
-        left_ = full.matrix(Nod.C.shape)
-        dKL.scatteradd(left_, rows=self.K(0))
+        return dKL
+
+    def right_orbital_hessian(self):
+        """Rhs derivative <K|d2L/dC(mu, m)|L>"""
+        #
+        # Orbital-orbital hessian
+        #
+        CK = self.K.orbitals()
+        DmoKL = Dmo(self.K, self.L)
+
+        D_am = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
+
+        (CK[0]*DmoKL[0]).scatteradd(D_am[0], columns=self.L(0))
+        (CK[1]*DmoKL[1]).scatteradd(D_am[1], columns=self.L(1))
+
+
+        Kd2L = Nod.S*(
+            (D_am[0] + D_am[1]).x(D_am[0] + D_am[1])
+          - D_am[0].x(D_am[0]).transpose((0, 3, 2, 1))
+          - D_am[1].x(D_am[1]).transpose((0, 3, 2, 1))
+            )*self.overlap()
+
+        return Kd2L
+
+#       for s in range(2):
+#           #print "Dog12[%d]"%s,Dog12[s]
+#           for t in range(2):
+#               #print "Dog21[%d]"%t,Dog21[t]
+#               Norbhess += C12*Dog12[s].x(Dog12[t])
+#               Norbhess += C12*Dog12[s].x(Dog21[t])
+#           Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
+#               (0, 3, 2, 1)
+#               )
+#           Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
+#               (0, 3, 1, 2)
+#               )
         
-        return left_
 #
 # Class of non-orthogonal determinants
 #
