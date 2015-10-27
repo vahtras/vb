@@ -20,26 +20,6 @@ class NodPair(object):
     def overlap(self):
         return self.K*self.L
 
-    def right_numerical_gradient(self, mu, m):
-        """Rhs numerical derivative <K|dL/dC(mu, m)>"""
-        self.L.C = self.L.C.copy()
-        self.L.C[mu, m] += DELTA/2
-        KLp = self.K*self.L
-        self.L.C[mu, m] -= DELTA
-        KLm = self.K*self.L
-        self.L.C[mu, m] += DELTA/2
-        return (KLp - KLm)/DELTA
-
-    def left_numerical_gradient(self, mu, m):
-        """Lhs numerical derivative <dK/dC(mu, m)|L>"""
-        self.K.C = self.K.C.copy()
-        self.K.C[mu, m] += DELTA/2
-        KLp = self.K*self.L
-        self.K.C[mu, m] -= DELTA
-        KLm = self.K*self.L
-        self.K.C[mu, m] += DELTA/2
-        return (KLp - KLm)/DELTA
-
     def right_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
@@ -49,7 +29,7 @@ class NodPair(object):
         right_ = full.matrix(Nod.C.shape)
         KdL.scatteradd(right_, columns=self.L(0))
         
-        return right_.T
+        return right_
 
     def left_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""

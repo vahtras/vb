@@ -3,6 +3,7 @@ import numpy as np
 from vb import Nod, DKL, NodPair
 from vb import structure, StructError
 from daltools.util.full import init
+from num_diff.findif import clgrad
 
 
 class NodTest(unittest.TestCase):
@@ -88,20 +89,6 @@ class NodTest(unittest.TestCase):
         d_a = 0.49/1.078
         np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
 
-    def test_num_diff_right(self):
-        K = Nod([0], [])
-        L = Nod([0], [])
-        L.C = Nod.C.copy()
-        self.assertIsNot(K.C, L.C)
-        delta = 1e-3
-        L.C[0, 0] += delta/2
-        KLp = K*L
-        L.C[0, 0] -= delta
-        KLm = K*L
-        L.C[0, 0] += delta/2
-        KL00 = (KLp - KLm)/ delta
-        self.assertAlmostEqual(KL00, 0.77)
-        
 class NodPairTest(unittest.TestCase):
 
     def setUp(self):
@@ -120,117 +107,48 @@ class NodPairTest(unittest.TestCase):
         self.assertAlmostEqual(self.a0a0.K*self.a0a0.L, self.a0a0.overlap())
 
     def test_00_right_numerical_differential_overlap_00(self):
-        K0L0_00 = self.a0a0.right_numerical_gradient(0, 0)
-        #( 1 .1)(.7 .6)
-        self.assertAlmostEqual(K0L0_00, 0.76)
-
-    def test_00_right_numerical_differential_overlap_01(self):
-        K0L0_01 = self.a0a0.right_numerical_gradient(0, 1)
-        self.assertAlmostEqual(K0L0_01, 0.0)
-
-    def test_00_right_numerical_differential_overlap_10(self):
-        K0L0_10 = self.a0a0.right_numerical_gradient(1, 0)
-        # (.1 1)(.7 .6) = .67
-        self.assertAlmostEqual(K0L0_10, 0.67)
-
-    def test_00_right_numerical_differential_overlap_11(self):
-        K0L0_11 = self.a0a0.right_numerical_gradient(1, 1)
-        self.assertAlmostEqual(K0L0_11, 0.0)
+        KdL = clgrad(self.a0a0, 'overlap', 'L.C')()
+        np.testing.assert_allclose(KdL, [[0.76, 0.0], [0.67, 0.0]])
 
     def test_00_right_analytical_differential_overlap(self):
         KL00 = self.a0a0.right_orbital_gradient()
-        np.testing.assert_allclose(KL00, [[0.76, 0.67], [0., 0]])
+        np.testing.assert_allclose(KL00, [[0.76, 0.0], [0.67, 0]])
 
 ###
 
     def test_01_right_numerical_differential_overlap_00(self):
-        K0L1_00 = self.a0a1.right_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K0L1_00, 0.0)
-
-    def test_01_right_numerical_differential_overlap_01(self):
-        K0L1_01 = self.a0a1.right_numerical_gradient(0, 1)
-        # (1 .1)(.7 .6) = .76
-        self.assertAlmostEqual(K0L1_01, 0.76)
-
-    def test_01_right_numerical_differential_overlap_10(self):
-        K0L1_10 = self.a0a1.right_numerical_gradient(1, 0)
-        self.assertAlmostEqual(K0L1_10, 0.0)
-
-    def test_01_right_numerical_differential_overlap_11(self):
-        K0L1_11 = self.a0a1.right_numerical_gradient(1, 1)
-        # (.1 1)(.7 .6) = 0.67
-        self.assertAlmostEqual(K0L1_11, 0.67)
+        KdL = clgrad(self.a0a1, 'overlap', 'L.C')()
+        np.testing.assert_allclose(KdL, [[0.0, 0.76], [0.0, 0.67]])
 
     def test_01_right_analytical_differential_overlap(self):
         KL01 = self.a0a1.right_orbital_gradient()
-        np.testing.assert_allclose(KL01, [[0, .0], [0.76, 0.67]])
+        np.testing.assert_allclose(KL01, [[0, 0.76], [0.0, 0.67]])
 
 ###
 
     def test_10_right_numerical_differential_overlap_00(self):
-        K1L0_00 = self.a1a0.right_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K1L0_00, 0.53)
-
-    def test_10_right_numerical_differential_overlap_01(self):
-        K1L0_01 = self.a1a0.right_numerical_gradient(0, 1)
-        self.assertAlmostEqual(K1L0_01, 0.0)
-
-    def test_10_right_numerical_differential_overlap_10(self):
-        K1L0_10 = self.a1a0.right_numerical_gradient(1, 0)
-        self.assertAlmostEqual(K1L0_10, -0.64)
-
-    def test_10_right_numerical_differential_overlap_11(self):
-        K1L0_11 = self.a1a0.right_numerical_gradient(1, 1)
-        self.assertAlmostEqual(K1L0_11, 0.0)
+        KdL = clgrad(self.a1a0, 'overlap', 'L.C')()
+        np.testing.assert_allclose(KdL, [[0.53, 0.0], [-0.64, 0.0]])
 
     def test_10_right_analytical_differential_overlap(self):
         KL10 = self.a1a0.right_orbital_gradient()
-        np.testing.assert_allclose(KL10, [[0.53, -.64], [0, 0]])
+        np.testing.assert_allclose(KL10, [[0.53, 0.0], [-0.64, 0]])
 
 ###
 
     def test_11_right_numerical_differential_overlap_00(self):
-        K1L1_00 = self.a1a1.right_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K1L1_00, 0.0)
-
-    def test_11_right_numerical_differential_overlap_01(self):
-        K1L1_01 = self.a1a1.right_numerical_gradient(0, 1)
-        #(1 .1) (.6 -.7) = .53
-        self.assertAlmostEqual(K1L1_01, 0.53)
-
-    def test_11_right_numerical_differential_overlap_10(self):
-        K1L1_10 = self.a1a1.right_numerical_gradient(1, 0)
-        # (.1 1) (.6 -.7) = -.64
-        self.assertAlmostEqual(K1L1_10, 0.0)
-
-    def test_11_right_numerical_differential_overlap_11(self):
-        K1L1_11 = self.a1a1.right_numerical_gradient(1, 1)
-        # (.1 1) (.6 -.7) = -.64
-        self.assertAlmostEqual(K1L1_11, -0.64)
+        KdL = clgrad(self.a1a1, 'overlap', 'L.C')()
+        np.testing.assert_allclose(KdL, [[0.0, 0.53], [0.0, -0.64]])
 
     def test_11_right_analytical_differential_overlap(self):
         KL11 = self.a1a1.right_orbital_gradient()
-        np.testing.assert_allclose(KL11, [[0., 0.], [0.53, -.64]])
+        np.testing.assert_allclose(KL11, [[0., 0.53], [0.0, -0.64]])
 
 ###
 
     def test_00_left_numerical_differential_overlap_00(self):
-        K0L0_00 = self.a0a0.left_numerical_gradient(0, 0)
-        #( 1 .1)(.7 .6)
-        self.assertAlmostEqual(K0L0_00, 0.76)
-
-    def test_00_left_numerical_differential_overlap_01(self):
-        K0L0_01 = self.a0a0.left_numerical_gradient(0, 1)
-        self.assertAlmostEqual(K0L0_01, 0.0)
-
-    def test_00_left_numerical_differential_overlap_10(self):
-        K0L0_10 = self.a0a0.left_numerical_gradient(1, 0)
-        # (.1 1)(.7 .6) = .67
-        self.assertAlmostEqual(K0L0_10, 0.67)
-
-    def test_00_left_numerical_differential_overlap_11(self):
-        K0L0_11 = self.a0a0.left_numerical_gradient(1, 1)
-        self.assertAlmostEqual(K0L0_11, 0.0)
+        dKL = clgrad(self.a0a0, 'overlap', 'K.C')().T
+        np.testing.assert_allclose(dKL, [[0.76, 0.67], [0.0, 0.0]])
 
     def test_00_left_analytical_differential_overlap(self):
         KL00 = self.a0a0.left_orbital_gradient()
@@ -239,22 +157,8 @@ class NodPairTest(unittest.TestCase):
 ###
 
     def test_01_left_numerical_differential_overlap_00(self):
-        K0L1_00 = self.a0a1.left_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K0L1_00, 0.53)
-
-    def test_01_left_numerical_differential_overlap_01(self):
-        K0L1_01 = self.a0a1.left_numerical_gradient(0, 1)
-        # (1 .1)(.7 .6) = .76
-        self.assertAlmostEqual(K0L1_01, 0.0)
-
-    def test_01_left_numerical_differential_overlap_10(self):
-        K0L1_10 = self.a0a1.left_numerical_gradient(1, 0)
-        self.assertAlmostEqual(K0L1_10, -0.64)
-
-    def test_01_left_numerical_differential_overlap_11(self):
-        K0L1_11 = self.a0a1.left_numerical_gradient(1, 1)
-        # (.1 1)(.7 .6) = 0.67
-        self.assertAlmostEqual(K0L1_11, 0.)
+        dKL = clgrad(self.a0a1, 'overlap', 'K.C')().T
+        np.testing.assert_allclose(dKL, [[0.53, -0.64], [0.0, 0.0]])
 
     def test_01_left_analytical_differential_overlap(self):
         KL01 = self.a0a1.left_orbital_gradient()
@@ -263,20 +167,8 @@ class NodPairTest(unittest.TestCase):
 ###
 
     def test_10_left_numerical_differential_overlap_00(self):
-        K1L0_00 = self.a1a0.left_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K1L0_00, 0.)
-
-    def test_10_left_numerical_differential_overlap_01(self):
-        K1L0_01 = self.a1a0.left_numerical_gradient(0, 1)
-        self.assertAlmostEqual(K1L0_01, 0.76)
-
-    def test_10_left_numerical_differential_overlap_10(self):
-        K1L0_10 = self.a1a0.left_numerical_gradient(1, 0)
-        self.assertAlmostEqual(K1L0_10, 0.)
-
-    def test_10_left_numerical_differential_overlap_11(self):
-        K1L0_11 = self.a1a0.left_numerical_gradient(1, 1)
-        self.assertAlmostEqual(K1L0_11, 0.67)
+        dKL = clgrad(self.a1a0, 'overlap', 'K.C')().T
+        np.testing.assert_allclose(dKL, [[0, .0], [0.76, 0.67]])
 
     def test_10_left_analytical_differential_overlap(self):
         KL10 = self.a1a0.left_orbital_gradient()
@@ -285,23 +177,8 @@ class NodPairTest(unittest.TestCase):
 ###
 
     def test_11_left_numerical_differential_overlap_00(self):
-        K1L1_00 = self.a1a1.left_numerical_gradient(0, 0)
-        self.assertAlmostEqual(K1L1_00, 0.0)
-
-    def test_11_left_numerical_differential_overlap_01(self):
-        K1L1_01 = self.a1a1.left_numerical_gradient(0, 1)
-        #(1 .1) (.6 -.7) = .53
-        self.assertAlmostEqual(K1L1_01, 0.53)
-
-    def test_11_left_numerical_differential_overlap_10(self):
-        K1L1_10 = self.a1a1.left_numerical_gradient(1, 0)
-        # (.1 1) (.6 -.7) = -.64
-        self.assertAlmostEqual(K1L1_10, 0.0)
-
-    def test_11_left_numerical_differential_overlap_11(self):
-        K1L1_11 = self.a1a1.left_numerical_gradient(1, 1)
-        # (.1 1) (.6 -.7) = -.64
-        self.assertAlmostEqual(K1L1_11, -0.64)
+        dKL = clgrad(self.a1a1, 'overlap', 'K.C')().T
+        np.testing.assert_allclose(dKL, [[0, 0], [0.53, -.64]])
 
     def test_11_left_analytical_differential_overlap(self):
         KL11 = self.a1a1.left_orbital_gradient()
