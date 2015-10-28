@@ -17,6 +17,9 @@ class NodPair(object):
         self.K = K
         self.L = L
 
+    def __str__(self):
+        return "<%s|...|%s>" % (self.K, self.L)
+
     def overlap(self):
         return self.K*self.L
 
@@ -60,14 +63,18 @@ class NodPair(object):
 
         D_am = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
 
-        (CK[0]*DmoKL[0]).scatteradd(D_am[0], columns=self.L(0))
-        (CK[1]*DmoKL[1]).scatteradd(D_am[1], columns=self.L(1))
+        #(CK[0]*DmoKL[0]).scatteradd(D_am[0], columns=self.L(0))
+        #(CK[1]*DmoKL[1]).scatteradd(D_am[1], columns=self.L(1))
+        D_am[0][:, self.L(0)] = Nod.S*CK[0]*DmoKL[0]
+        D_am[1][:, self.L(1)] = Nod.S*CK[1]*DmoKL[1]
+        print D_am[0]
+        print D_am[1]
 
 
-        Kd2L = Nod.S*(
+        Kd2L = (
             (D_am[0] + D_am[1]).x(D_am[0] + D_am[1])
-          - D_am[0].x(D_am[0]).transpose((0, 3, 2, 1))
-          - D_am[1].x(D_am[1]).transpose((0, 3, 2, 1))
+          - D_am[0].x(D_am[0]).transpose((2, 1, 0, 3))
+          - D_am[1].x(D_am[1]).transpose((2, 1, 0, 3))
             )*self.overlap()
 
         return Kd2L
@@ -315,6 +322,7 @@ class wavefunction:
                         Nb = (D12[1]&Nod.S)
                         Nel += (Na+Nb)*C1*C2*S12
                         N += S12*C1*C2
+        print "N", N
         return Nel/N
 
     def StructureHamiltonian(self):
