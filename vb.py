@@ -67,8 +67,6 @@ class NodPair(object):
         #(CK[1]*DmoKL[1]).scatteradd(D_am[1], columns=self.L(1))
         D_am[0][:, self.L(0)] = Nod.S*CK[0]*DmoKL[0]
         D_am[1][:, self.L(1)] = Nod.S*CK[1]*DmoKL[1]
-        print D_am[0]
-        print D_am[1]
 
 
         Kd2L = (
