@@ -445,7 +445,7 @@ class wavefunction:
         #
         NGS = []
         r, c = Nod.C.shape
-        Norbgrad = full.matrix((c, r))
+        Norbgrad = full.matrix((r, c))
         #d12=full.matrix((c,c))
         #
         # Structures left
@@ -487,15 +487,15 @@ class wavefunction:
                         #
                         # Scatter to orbitals
                         #
-                            ((CS*CT*CKS*CLT*KL)*Sog12[s]).scatteradd(
-                                Norbgrad, K(s)
+                            ((CS*CT*CKS*CLT*KL)*Sog12[s]).T.scatteradd(
+                                Norbgrad, columns=K(s)
                                 )
             NGS.append(GS)
 
         Nstructgrad = full.init(NGS)
         Nstructgrad *= 2
         Norbgrad *= 2
-        return (Nstructgrad, Norbgrad[self.opt, :])
+        return (Nstructgrad, Norbgrad[:, self.opt])
 
     def numgrad(self, func, delta=1e-3):
         #
@@ -519,16 +519,16 @@ class wavefunction:
         # orbital gradient
         #
         r, c = Nod.C.shape
-        orbgrad = full.matrix((c, r))
+        orbgrad = full.matrix((r, c))
         for m in range(c):
             for t in range(r):
                 Nod.C[t, m] += deltah
                 ep = func()
                 Nod.C[t, m] -= delta
                 em = func()
-                orbgrad[m, t] = (ep - em)/delta
+                orbgrad[t, m] = (ep - em)/delta
                 Nod.C[t, m] += deltah
-        return (structgrad, orbgrad[self.opt])
+        return (structgrad, orbgrad[:, self.opt])
 
     def numnormgrad(self, delta=1e-3):
         return self.numgrad(self.norm, delta)
@@ -542,8 +542,8 @@ class wavefunction:
         ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
         #Nstructorbhess=full.matrix((ls, mo, ao))
-        Norbstructhess = full.matrix((mo, ao, ls))
-        Norbhess = full.matrix((mo, ao, mo, ao))
+        Norbstructhess = full.matrix((ao, mo, ls))
+        Norbhess = full.matrix((ao, mo, ao, mo))
         d12 = full.matrix((mo, mo))
         #
         # Structures left
@@ -608,11 +608,11 @@ class wavefunction:
                         #
                         # Scatter to orbitals
                         #
-                            ((Cd1*C2*S12)*Sog12[s]).scatteradd(
-                                Norbstructhess[:, :, s1], det1(s)
+                            ((Cd1*C2*S12)*Sog12[s]).T.scatteradd(
+                                Norbstructhess[:, :, s1], columns=det1(s)
                                 )
-                            ((Cd1*C2*S12)*Sog21[s]).scatteradd(
-                                Norbstructhess[:, :, s1], det2(s)
+                            ((Cd1*C2*S12)*Sog21[s]).T.scatteradd(
+                                Norbstructhess[:, :, s1], columns=det2(s)
                                 )
                         #
                         # Orbital-orbital hessian
@@ -753,9 +753,9 @@ class wavefunction:
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         strstrhess = full.matrix((ls, ls))
-        strorbhess = full.matrix((ls, mo, ao))
-        orbstrhess = full.matrix((mo, ao, ls))
-        orborbhess = full.matrix((mo, ao, mo, ao))
+        strorbhess = full.matrix((ls, ao, mo))
+        orbstrhess = full.matrix((ao, mo, ls))
+        orborbhess = full.matrix((ao, mo, ao, mo))
         #
         # Structure-structure
         #
@@ -791,7 +791,7 @@ class wavefunction:
                     emm = func()
                     Nod.C[mu, m] += delta
                     emp = func()
-                    orbstrhess[m, mu, p] = (epp + emm - epm - emp)/delta2
+                    orbstrhess[mu, m, p] = (epp + emm - epm - emp)/delta2
                     #
                     # Reset
                     #
@@ -814,7 +814,7 @@ class wavefunction:
                         emm = func()
                         Nod.C[nu, n] += delta
                         emp = func()
-                        orborbhess[m, mu, n, nu] = \
+                        orborbhess[mu, m, nu, n] = \
                             (epp + emm - epm - emp)/delta2
                         #
                         # Reset
@@ -824,8 +824,8 @@ class wavefunction:
 
         return (
             strstrhess,
-            orbstrhess[self.opt, :, :],
-            orborbhess[self.opt, :, self.opt, :]
+            orbstrhess[:, self.opt, :],
+            orborbhess[:, self.opt, :, self.opt]
             )
 
     def energy(self):
@@ -867,15 +867,15 @@ class wavefunction:
         #  E = <0|H|0>/<0|0>
         # dE = 2<d0|H-E|0>/<0|0>
         #
+        ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(len(self.structs))
-        c, r = Nod.C.shape
-        Norbgrad = full.matrix((r, c))
+        Norbgrad = full.matrix((ao, mo))
         N = 0
         Hstructgrad = full.matrix(len(self.structs))
-        Horbgrad = full.matrix((r, c))
+        Horbgrad = full.matrix((ao, mo))
         H = 0
-        I = full.unit(c)
-        d12 = full.matrix((r, r))
+        I = full.unit(ao)
+        #d12 = full.matrix((mo, mo))
         #
         # Structures left
         #
@@ -940,8 +940,8 @@ class wavefunction:
                         #
                         # Scatter to orbitals
                         #
-                            ((C1*C2*S12)*Sog12[s]).scatteradd(Norbgrad, det1(s))
-                            ((C1*C2*S12)*Hog12[s]).scatteradd(Horbgrad, det1(s))
+                            ((C1*C2*S12)*Sog12[s]).T.scatteradd(Norbgrad, columns=det1(s))
+                            ((C1*C2*S12)*Hog12[s]).T.scatteradd(Horbgrad, columns=det1(s))
                         #
                         #   F12[s].T*(I-D12[s]*S/S12)+H12*S/S12
                         #
@@ -962,18 +962,16 @@ class wavefunction:
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(ls)
-        Norbgrad = full.matrix((mo, ao))
+        Norbgrad = full.matrix((ao, mo))
         Nstructhess = full.matrix((ls, ls))
-        Nstructorbhess = full.matrix((ls, mo, ao))
-        Norbstructhess = full.matrix((mo, ao, ls))
-        Norbhess = full.matrix((mo, ao, mo, ao))
+        Nstructorbhess = full.matrix((ls, ao, mo))
+        Norbstructhess = full.matrix((ao, mo, ls))
+        Norbhess = full.matrix((ao, mo, ao, mo))
         Hstructgrad = full.matrix(ls)
-        Horbgrad = full.matrix((mo, ao))
+        Horbgrad = full.matrix((ao, mo))
         Hstructhess = full.matrix((ls, ls))
-        Horbstructhess = full.matrix((mo, ao, ls))
-        Horbhess = full.matrix((mo, ao, mo, ao))
-        tmpdim = (mo, mo, ao, ao)
-        d12 = full.matrix((mo, mo))
+        Horbstructhess = full.matrix((ao, mo, ls))
+        Horbhess = full.matrix((ao, mo, ao, mo))
         N = 0
         H = 0
         dm_a = [None, None]
@@ -1055,8 +1053,8 @@ class wavefunction:
                             Hog21[s] = dmm[s].T*CK[s].T*(
                                 (h+F12[s])*(I-D12[s].T*S)
                                 ) + d_am[s].T*H12
-                            Norbgrad[det1(s), :] += (C1*C2*S12)*dm_a[s]
-                            Horbgrad[det1(s), :] += (C1*C2*S12)*Hog12[s]
+                            Norbgrad[:, det1(s)] += (C1*C2*S12)*dm_a[s].T
+                            Horbgrad[:, det1(s)] += (C1*C2*S12)*Hog12[s].T
                         #
                         # Structure hessian terms
                         #
@@ -1064,7 +1062,7 @@ class wavefunction:
                         Nstructhess[s1, s2] += N12
                         Hstructhess[s1, s2] += N12*H12
                         #
-                        # Orbital-structrue hessian terms
+                        # Orbital-structure hessian terms
                         #
                         Dmm = [full.matrix((mo, mo)), full.matrix((mo, mo))]
                         Dma = [full.matrix((mo, ao)), full.matrix((mo, ao))]
@@ -1093,10 +1091,10 @@ class wavefunction:
                         # Scatter
                         #
                             Nd12 = Cd1*C2*S12
-                            Norbstructhess[det1(s), :, s1] += Nd12*dm_a[s]
-                            Norbstructhess[det2(s), :, s1] += Nd12*d_am[s].T
-                            Horbstructhess[det1(s), :, s1] += Nd12*Hog12[s]
-                            Horbstructhess[det2(s), :, s1] += Nd12*Hog21[s]
+                            Norbstructhess[:, det1(s), s1] += Nd12*dm_a[s].T
+                            Norbstructhess[:, det2(s), s1] += Nd12*d_am[s]
+                            Horbstructhess[:, det1(s), s1] += Nd12*Hog12[s].T
+                            Horbstructhess[:, det2(s), s1] += Nd12*Hog21[s].T
 
                         #print "Dmm", Dmm[0], Dmm[1]
                         #print "Dam", Dam[0], Dam[1]
@@ -1232,8 +1230,8 @@ class wavefunction:
             Horbhess - E*Norbhess - Eorbgrad.x(Norbgrad)-Norbgrad.x(Eorbgrad))/N
         return (
             Estructhess,
-            Eorbstructhess[self.opt, :, :],
-            Eorbhess[self.opt, :, self.opt, :]
+            Eorbstructhess[:, self.opt, :],
+            Eorbhess[:, self.opt, :, self.opt]
             )
 
     def numenergyhess(self, delta=1e-3):
