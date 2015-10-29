@@ -105,11 +105,6 @@ class BraKet(object):
         DmoKL[0].scatter(D_mm[0], rows=self.K(0), columns=self.L(0))
         DmoKL[1].scatter(D_mm[1], rows=self.K(1), columns=self.L(1))
 
-        print "DmoKL", DmoKL[0]
-        print "DeltaKL", DeltaKL[0]
-        print "Dmm", D_mm[0], D_mm[1]
-
-
         dKdL = ((D_ma[0] + D_ma[0]).T.x(D_am[0] + D_am[1])
             + DeltaKL[0].x(D_mm[0]).transpose(0, 2, 1, 3)
             + DeltaKL[1].x(D_mm[1]).transpose(0, 2, 1, 3)
@@ -610,8 +605,6 @@ class wavefunction:
                                 Dmm[s], rows=det1(s), columns=det2(s)
                                 )
                             Delta[s] = Nod.S-Nod.S*CK[s]*Dmo12[s]*CL[s].T*Nod.S
-                            print "Delta[%d]" % s, Delta[s]
-                            print "Dmm[%d]" % s, Dmm[s]
                         #
                         # Scatter to orbitals
                         #
@@ -629,11 +622,11 @@ class wavefunction:
                             #print "Dog12[%d]"%s,Dog12[s]
                             for t in range(2):
                                 #print "Dog21[%d]"%t,Dog21[t]
-                                #Norbhess += C12*Dog12[s].x(Dog12[t])
+                                Norbhess += C12*Dog12[s].x(Dog12[t])
                                 Norbhess += C12*Dog12[s].x(Dog21[t])
-                            #Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
-                            #    (0, 3, 2, 1)
-                            #    )
+                            Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
+                                (0, 3, 2, 1)
+                                )
                             Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
                                 (0, 3, 1, 2)
                                 )
