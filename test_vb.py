@@ -70,8 +70,8 @@ B   0.0  0.0  0.7428
       vb.Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
       vb.Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
       vb.Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
-      ion=vb.structure( [vb.Nod([0],[0]),vb.Nod([1],[1])], [1,1] )
-      cov=vb.structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
+      ion=vb.Structure( [vb.Nod([0],[0]),vb.Nod([1],[1])], [1,1] )
+      cov=vb.Structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
       cg=random.random()
       cu=random.random()
       Sab=0.13533528
@@ -79,7 +79,7 @@ B   0.0  0.0  0.7428
       Nu2=1/(2*(1-Sab))
       cion=cg*Ng2+cu*Nu2
       ccov=cg*Ng2-cu*Nu2
-      self.WF=vb.wavefunction([ion,cov],[cion,ccov],tmpdir='/tmp')
+      self.WF=vb.WaveFunction([ion,cov],[cion,ccov],tmpdir='/tmp')
       #
       # Threshold for numerical differentiation
       #

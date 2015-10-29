@@ -13,18 +13,18 @@ class StructTest(unittest.TestCase):
 
     def test_structure_coefficients_consistent(self):
         with self.assertRaises(StructError):
-            struct = structure([Nod([0], [0])], [])
+            struct = Structure([Nod([0], [0])], [])
 
     def test_structure_output(self):
         alpha = Nod([0], [])
-        struct_a = structure([alpha], [1])
+        struct_a = Structure([alpha], [1])
         self.assertEqual(str(struct_a), "1.000000    (0|)")
 
     def test_structure_ms(self):
         alpha = Nod([0], [])
         beta = Nod([], [0])
         with self.assertRaises(StructError):
-            struct = structure([alpha, beta], [1, 1])
+            struct = Structure([alpha, beta], [1, 1])
 
 if __name__ == "__main__":
     unittest.main()

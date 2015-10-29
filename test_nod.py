@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from vb import Nod, DKL, BraKet
-from vb import structure, StructError
+from vb import Structure, StructError
 from daltools.util.full import init, matrix
 from num_diff.findif import clgrad, clhess, clmixhess, DELTA
 

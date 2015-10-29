@@ -129,7 +129,7 @@ class BraKet(object):
 #
 # Class of non-orthogonal determinants
 #
-class Nod(list):
+class Nod(object):
     #
     #
     # Class global variables
@@ -275,7 +275,7 @@ def HKL(F, D):
     E = 0.5*((F[0]&D[0]) + (F[1]&D[1]))
     return E
 
-class structure:
+class Structure(object):
 
     def __init__(self, nods, coef):
         if len(nods) != len(coef):
@@ -306,7 +306,7 @@ class StructError(Exception):
     pass
 
 
-class wavefunction:
+class WaveFunction(object):
 
     def __init__(self, structs, coef, VBSCF=True, tmpdir='/tmp', frozen=[]):
         self.structs = structs
