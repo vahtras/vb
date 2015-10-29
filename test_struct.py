@@ -1,3 +1,7 @@
+import unittest
+from util.full import init
+from vb import *
+
 class StructTest(unittest.TestCase):
 
     def setUp(self):

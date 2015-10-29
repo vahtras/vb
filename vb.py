@@ -10,7 +10,7 @@ from daltools.util import full
 
 DELTA = 1e-4
 
-class NodPair(object):
+class BraKet(object):
     """Non-orthogonal determinant pairs"""
 
     def __init__(self, K, L):
@@ -54,7 +54,7 @@ class NodPair(object):
         return dKL
 
     def right_orbital_hessian(self):
-        """Rhs derivative <K|d2L/dC(mu, m)|L>"""
+        """Rhs derivative <K|d2/dC(mu, m)2|L>"""
         #
         # Orbital-orbital hessian
         #
@@ -76,6 +76,47 @@ class NodPair(object):
             )*self.overlap()
 
         return Kd2L
+
+    def mixed_orbital_hessian(self):
+        """L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>"""
+
+        S = Nod.S
+
+        CK = self.K.orbitals()
+        CL = self.L.orbitals()
+        DmoKL = Dmo(self.K, self.L)
+
+        ao, mo = Nod.C.shape
+        D_am = (full.matrix((ao, mo)), full.matrix((ao, mo)))
+        D_ma = (full.matrix((mo, ao)), full.matrix((mo, ao)))
+        D_mm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
+
+        D_am[0][:, self.L(0)] = S*CK[0]*DmoKL[0]
+        D_am[1][:, self.L(1)] = S*CK[1]*DmoKL[1]
+
+        D_ma[0][self.K(0), :] = DmoKL[0]*CL[0].T*S
+        D_ma[1][self.K(1), :] = DmoKL[1]*CL[1].T*S
+
+        DeltaKL = (
+            S - S*CK[0]*DmoKL[0]*CL[0].T*S,
+            S - S*CK[1]*DmoKL[1]*CL[1].T*S
+            )
+
+        DmoKL[0].scatter(D_mm[0], rows=self.K(0), columns=self.L(0))
+        DmoKL[1].scatter(D_mm[1], rows=self.K(1), columns=self.L(1))
+
+        print "DmoKL", DmoKL[0]
+        print "DeltaKL", DeltaKL[0]
+        print "Dmm", D_mm[0], D_mm[1]
+
+
+        dKdL = ((D_ma[0] + D_ma[0]).T.x(D_am[0] + D_am[1])
+            + DeltaKL[0].x(D_mm[0]).transpose(0, 2, 1, 3)
+            + DeltaKL[1].x(D_mm[1]).transpose(0, 2, 1, 3)
+            )*self.overlap()
+
+        return dKdL
+        
 
 #       for s in range(2):
 #           #print "Dog12[%d]"%s,Dog12[s]
@@ -569,6 +610,8 @@ class wavefunction:
                                 Dmm[s], rows=det1(s), columns=det2(s)
                                 )
                             Delta[s] = Nod.S-Nod.S*CK[s]*Dmo12[s]*CL[s].T*Nod.S
+                            print "Delta[%d]" % s, Delta[s]
+                            print "Dmm[%d]" % s, Dmm[s]
                         #
                         # Scatter to orbitals
                         #
@@ -586,11 +629,11 @@ class wavefunction:
                             #print "Dog12[%d]"%s,Dog12[s]
                             for t in range(2):
                                 #print "Dog21[%d]"%t,Dog21[t]
-                                Norbhess += C12*Dog12[s].x(Dog12[t])
+                                #Norbhess += C12*Dog12[s].x(Dog12[t])
                                 Norbhess += C12*Dog12[s].x(Dog21[t])
-                            Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
-                                (0, 3, 2, 1)
-                                )
+                            #Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
+                            #    (0, 3, 2, 1)
+                            #    )
                             Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
                                 (0, 3, 1, 2)
                                 )

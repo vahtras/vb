@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from vb import Nod, DKL, NodPair
+from vb import Nod, DKL, BraKet
 from vb import structure, StructError
-from daltools.util.full import init
-from num_diff.findif import clgrad, clhess, DELTA
+from daltools.util.full import init, matrix
+from num_diff.findif import clgrad, clhess, clmixhess, DELTA
 
 class NodTest(unittest.TestCase):
 
@@ -88,20 +88,20 @@ class NodTest(unittest.TestCase):
         d_a = 0.49/1.078
         np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
 
-class NodPairTest(unittest.TestCase):
+class BraKetTest(unittest.TestCase):
 
     def setUp(self):
         Nod.S = init([[1.0, 0.1], [0.1, 1.0]])
         Nod.C = init([[0.7, 0.6], [0.6, -0.7]])
-        self.a0a0 = NodPair(Nod([0], []), Nod([0], []))
-        self.a0a1 = NodPair(Nod([0], []), Nod([1], []))
-        self.a1a0 = NodPair(Nod([1], []), Nod([0], []))
-        self.a1a1 = NodPair(Nod([1], []), Nod([1], []))
-        self.b0b0 = NodPair(Nod([], [0]), Nod([], [0]))
-        self.b0b1 = NodPair(Nod([], [0]), Nod([], [1]))
-        self.b1b0 = NodPair(Nod([], [1]), Nod([], [0]))
-        self.b1b1 = NodPair(Nod([], [1]), Nod([], [1]))
-        self.K00_L00  = NodPair(Nod([0], [0]), Nod([0], [0]))
+        self.a0a0 = BraKet(Nod([0], []), Nod([0], []))
+        self.a0a1 = BraKet(Nod([0], []), Nod([1], []))
+        self.a1a0 = BraKet(Nod([1], []), Nod([0], []))
+        self.a1a1 = BraKet(Nod([1], []), Nod([1], []))
+        self.b0b0 = BraKet(Nod([], [0]), Nod([], [0]))
+        self.b0b1 = BraKet(Nod([], [0]), Nod([], [1]))
+        self.b1b0 = BraKet(Nod([], [1]), Nod([], [0]))
+        self.b1b1 = BraKet(Nod([], [1]), Nod([], [1]))
+        self.K00_L00  = BraKet(Nod([0], [0]), Nod([0], [0]))
 
     def tearDown(self):
         pass
@@ -286,6 +286,17 @@ class NodPairTest(unittest.TestCase):
         Kd2L_num = clhess(self.K00_L00, 'overlap', 'L.C')()
         Kd2L_ana = self.K00_L00.right_orbital_hessian()
         np.testing.assert_allclose(Kd2L_num, Kd2L_ana, rtol=DELTA, atol=DELTA)
+
+    def test_K00_L00_left_right_numerical_overlap_hessian(self):
+        Kd2L = clmixhess(self.K00_L00, 'overlap', 'K.C', 'L.C')()
+        self.assertAlmostEqual(Kd2L[0, 0, 0, 0], 3.0232, delta=DELTA)
+
+    def test_K00_L00_left_right_analytical_vs_numerical_overlap_hessian(self):
+        dKdL_num = clmixhess(self.K00_L00, 'overlap', 'K.C', 'L.C')()
+        dKdL_ana = self.K00_L00.mixed_orbital_hessian()
+        print dKdL_num.view(matrix)
+        print dKdL_ana
+        np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
 
 if __name__ == "__main__":
