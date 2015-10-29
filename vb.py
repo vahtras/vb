@@ -318,27 +318,20 @@ class WaveFunction(object):
         #
         # For VBSCF all structures share orbitals
         #
-        if VBSCF is True:
+        if VBSCF:
             self.C = structs[0].C
-            self.opt = []
             nao, nmo = self.C.shape
-            for i in range(nmo):
-                try:
-                    self.frozen.index(i)
-                except ValueError:
-                    self.opt.append(i)
+            self.opt = [i for i in range(nmo) if not i in frozen]
         else:
             raise Exception("not implemented")
 
     def tmp(self, filename):
-        return '/'.join([self.tmpdir, filename])
+        return os.path.join(self.tmpdir, filename)
 
     def __str__(self):
         retstr = "\n"
-        for i in range(len(self.structs)):
-            retstr += self.coef.fmt%self.coef[i] + "   "
-            retstr += "(%d)"%i
-            retstr += "\n"
+        for i, coef in enumerate(self.structs):
+            retstr += self.coef.fmt%coef + "   " + "(%d)\n"%i
         return retstr
 
     def nel(self):
@@ -464,10 +457,11 @@ class WaveFunction(object):
                     #Determinants in right structure
                     #
                     for L, CLT in zip(T.nods, T.coef):
+                        K_L = BraKet(K, L)
                         #
                         # Structure gradient terms
                         #
-                        KL = K*L
+                        KL = K_L.overlap()
                         #
                         # Structure gradient terms
                         #
@@ -475,21 +469,7 @@ class WaveFunction(object):
                         #
                         # Orbital gradient terms
                         #
-                        CK = K.orbitals()
-                        CL = L.orbitals()
-                        Dmo12 = Dmo(K, L)
-                        #
-                        Sog12 = [None, None]
-                        Sog21 = [None, None]
-                        for s in range(2):
-                            # D^m_\mu
-                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
-                        #
-                        # Scatter to orbitals
-                        #
-                            ((CS*CT*CKS*CLT*KL)*Sog12[s]).T.scatteradd(
-                                Norbgrad, columns=K(s)
-                                )
+                        Norbgrad += CS*CT*CKS*CLT*K_L.right_orbital_gradient()
             NGS.append(GS)
 
         Nstructgrad = full.init(NGS)
