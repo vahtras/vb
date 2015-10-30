@@ -43,7 +43,7 @@ class BraKet(object):
         DmoKL = Dmo(self.K, self.L)
         CL = self.L.orbitals()
 
-        dKL = full.matrix(Nod.C.shape)
+        dKL = full.matrix(Nod.C.shape[::-1])
         if self.L(0):
             dKLa = DmoKL[0]*CL[0].T*Nod.S*self.overlap()
             dKLa.scatteradd(dKL, rows=self.K(0))
@@ -51,7 +51,10 @@ class BraKet(object):
             dKLa = DmoKL[1]*CL[1].T*Nod.S*self.overlap()
             dKLa.scatteradd(dKL, rows=self.K(1))
         
-        return dKL
+        return dKL.T
+    
+    def norm_orbital_hessian(self):
+        return self.right_orbital_hessian() + self.mixed_orbital_hessian()
 
     def right_orbital_hessian(self):
         """Rhs derivative <K|d2/dC(mu, m)2|L>"""
@@ -321,7 +324,6 @@ class WaveFunction(object):
         if VBSCF:
             self.C = structs[0].C
             nao, nmo = self.C.shape
-            self.opt = [i for i in range(nmo) if not i in frozen]
         else:
             raise Exception("not implemented")
 
@@ -475,7 +477,7 @@ class WaveFunction(object):
         Nstructgrad = full.init(NGS)
         Nstructgrad *= 2
         Norbgrad *= 2
-        return (Nstructgrad, Norbgrad[:, self.opt])
+        return (Nstructgrad, Norbgrad[:, :])
 
     def numgrad(self, func, delta=1e-3):
         #
@@ -508,7 +510,7 @@ class WaveFunction(object):
                 em = func()
                 orbgrad[t, m] = (ep - em)/delta
                 Nod.C[t, m] += deltah
-        return (structgrad, orbgrad[:, self.opt])
+        return (structgrad, orbgrad[:, :])
 
     def numnormgrad(self, delta=1e-3):
         return self.numgrad(self.norm, delta)
@@ -598,7 +600,7 @@ class WaveFunction(object):
                         # Orbital-orbital hessian
                         #
                         C12 = C1*C2*S12
-                        for s in range(2):
+                        for s in range(0):
                             #print "Dog12[%d]"%s,Dog12[s]
                             for t in range(2):
                                 #print "Dog21[%d]"%t,Dog21[t]
@@ -610,13 +612,14 @@ class WaveFunction(object):
                             Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
                                 (0, 3, 1, 2)
                                 )
+                        Norbhess += C1*C2*BraKet(det1, det2).norm_orbital_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
         Norbhess *= 2
         return (
             Nstructhess,
-            Norbstructhess[self.opt, :, :],
-            Norbhess[self.opt, :, self.opt, :]
+            Norbstructhess[:, :, :],
+            Norbhess[:, :, :, :]
             )
 
     def vb_metric(self):
@@ -709,12 +712,12 @@ class WaveFunction(object):
                                 (0, 3, 1, 2)
                                 )
                         #
-        tmp = Norbhess[self.opt, :, :, :]
-        Norbhess = tmp[:, :, self.opt, :]
+        tmp = Norbhess[:, :, :, :]
+        Norbhess = tmp[:, :, :, :]
         return (
             Nstructhess,
-            Norbstructhess[self.opt, :, :],
-            Nstructorbhess[:, self.opt, :], Norbhess
+            Norbstructhess[:, :, :],
+            Nstructorbhess[:, :, :], Norbhess
             )
 
     def numnormhess(self, delta=1e-3):
@@ -804,8 +807,8 @@ class WaveFunction(object):
 
         return (
             strstrhess,
-            orbstrhess[:, self.opt, :],
-            orborbhess[:, self.opt, :, self.opt]
+            orbstrhess,
+            orborbhess
             )
 
     def energy(self):
@@ -929,7 +932,7 @@ class WaveFunction(object):
         #print "energygrad:E, H, N", E, H, N
         structgrad = (2/N)*(Hstructgrad-E*Nstructgrad)
         orbgrad = (2/N)*(Horbgrad-E*Norbgrad)
-        return (structgrad, orbgrad[self.opt, :])
+        return (structgrad, orbgrad[:, :])
 
     def numenergygrad(self, delta=1e-3):
         return self.numgrad(self.energy, delta)
@@ -1210,8 +1213,8 @@ class WaveFunction(object):
             Horbhess - E*Norbhess - Eorbgrad.x(Norbgrad)-Norbgrad.x(Eorbgrad))/N
         return (
             Estructhess,
-            Eorbstructhess[:, self.opt, :],
-            Eorbhess[:, self.opt, :, self.opt]
+            Eorbstructhess,
+            Eorbhess,
             )
 
     def numenergyhess(self, delta=1e-3):

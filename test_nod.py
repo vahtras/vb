@@ -199,11 +199,11 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a0_left_analytical_differential_overlap(self):
         KL00 = self.a0a0.left_orbital_gradient()
-        np.testing.assert_allclose(KL00, [[0.76, 0.67], [0, 0]])
+        np.testing.assert_allclose(KL00, [[0.76, 0.], [0.67, 0]])
 
     def test_b0b0_left_analytical_differential_overlap(self):
         KL00 = self.b0b0.left_orbital_gradient()
-        np.testing.assert_allclose(KL00, [[0.76, 0.67], [0, 0]])
+        np.testing.assert_allclose(KL00, [[0.76, 0], [0.67, 0]])
 
 ###
 
@@ -217,11 +217,11 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a1_left_analytical_differential_overlap(self):
         KL01 = self.a0a1.left_orbital_gradient()
-        np.testing.assert_allclose(KL01, [[0.53, -0.64], [0, 0]])
+        np.testing.assert_allclose(KL01, [[0.53, 0.], [-0.64, 0]])
 
     def test_b0b1_left_analytical_differential_overlap(self):
         KL01 = self.b0b1.left_orbital_gradient()
-        np.testing.assert_allclose(KL01, [[0.53, -0.64], [0, 0]])
+        np.testing.assert_allclose(KL01, [[0.53, 0], [-0.64, 0]])
 
 ###
 
@@ -235,11 +235,11 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a0_left_analytical_differential_overlap(self):
         KL10 = self.a1a0.left_orbital_gradient()
-        np.testing.assert_allclose(KL10, [[0, .0], [0.76, 0.67]])
+        np.testing.assert_allclose(KL10, [[0, 0.76], [0, 0.67]])
 
     def test_b1b0_left_analytical_differential_overlap(self):
         KL10 = self.b1b0.left_orbital_gradient()
-        np.testing.assert_allclose(KL10, [[0, .0], [0.76, 0.67]])
+        np.testing.assert_allclose(KL10, [[0, .76], [0., 0.67]])
 
 ###
 
@@ -253,11 +253,11 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a1_left_analytical_differential_overlap(self):
         KL11 = self.a1a1.left_orbital_gradient()
-        np.testing.assert_allclose(KL11, [[0, 0], [0.53, -.64]])
+        np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
 
     def test_b1b1_left_analytical_differential_overlap(self):
         KL11 = self.b1b1.left_orbital_gradient()
-        np.testing.assert_allclose(KL11, [[0, 0], [0.53, -.64]])
+        np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
 
 ### (0|0)
 
@@ -298,6 +298,62 @@ class BraKetTest(unittest.TestCase):
         print dKdL_ana
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
+class BraKetTest2(unittest.TestCase):
+
+    def setUp(self):
+        Nod.S = init([[1.0, 0.2, 0.1], [0.2, 1.0, 0.2], [0.1, 0.2, 1.0]])
+        Nod.C = init([[0.7, 0.6, 0.5], [0.4, 0.3, 0.2]])
+
+        self.B00K00 = BraKet(Nod([0], [0]), Nod([0], [0]))
+        self.B00K01 = BraKet(Nod([0], [0]), Nod([0], [1]))
+
+    def test_00_d00(self):
+        np.testing.assert_allclose(
+            self.B00K00.right_orbital_gradient(),
+            clgrad(self.B00K00, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_00(self):
+        np.testing.assert_allclose(
+            self.B00K00.left_orbital_gradient(),
+            clgrad(self.B00K00, 'overlap', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_d200(self):
+        np.testing.assert_allclose(
+            self.B00K00.right_orbital_hessian(),
+            clhess(self.B00K00, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_d00(self):
+        np.testing.assert_allclose(
+            self.B00K00.mixed_orbital_hessian(),
+            clmixhess(self.B00K00, 'overlap', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_d201(self):
+        np.testing.assert_allclose(
+            self.B00K01.right_orbital_hessian(),
+            clhess(self.B00K01, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    @unittest.skip('hold')
+    def test_d00_d01(self):
+        np.testing.assert_allclose(
+            self.B00K01.mixed_orbital_hessian(),
+            clmixhess(self.B00K01, 'overlap', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+
+
+
+            
 
 if __name__ == "__main__":
     unittest.main()
