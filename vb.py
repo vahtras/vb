@@ -118,20 +118,6 @@ class BraKet(object):
 
         return dKdL
         
-
-#       for s in range(2):
-#           #print "Dog12[%d]"%s,Dog12[s]
-#           for t in range(2):
-#               #print "Dog21[%d]"%t,Dog21[t]
-#               Norbhess += C12*Dog12[s].x(Dog12[t])
-#               Norbhess += C12*Dog12[s].x(Dog21[t])
-#           Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
-#               (0, 3, 2, 1)
-#               )
-#           Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
-#               (0, 3, 1, 2)
-#               )
-        
 #
 # Class of non-orthogonal determinants
 #
@@ -304,6 +290,13 @@ class Structure(object):
             if len(n.a) != len(n0.a) or len(n.b) != len(n0.b):
                 raise StructError
 
+    def __mul__(self, other):
+        N = 0
+        for bra, c_bra in zip(self.nods, self.coef):
+            for ket, c_ket in zip(other.nods, other.coef):
+                N += bra*ket*c_bra*c_ket
+        return N
+        
     def __str__(self):
         output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]
         return "\n".join(output)
@@ -380,16 +373,11 @@ class WaveFunction(object):
         return full.init(SH).reshape((LS, LS))
 
     def StructureOverlap(self):
-        """Calculate norm square of VB wave function"""
+        """Calculate structure overlap matrix"""
         OV = []
         for S in self.structs:
             for T in self.structs:
-                N = 0
-                for K, CKS in zip(S.nods, S.coef):
-                    for L, CLT in zip(T.nods, T.coef):
-                        KL = K*L
-                        N += KL*CKS*CLT
-                OV.append(N)
+                OV.append(S*T)
         LS = len(self.structs)
         return full.init(OV).reshape((LS, LS))
 
@@ -430,10 +418,7 @@ class WaveFunction(object):
         N = 0
         for S, CS in zip(self.structs, self.coef):
             for T, CT in zip(self.structs, self.coef):
-                for K, CKS in zip(S.nods, S.coef):
-                    for L, CLT in zip(T.nods, T.coef):
-                        KL = K*L
-                        N += KL*CKS*CS*CLT*CT
+                N += S*T*CS*CT
         return N
 
     def normgrad(self):
@@ -740,25 +725,19 @@ class WaveFunction(object):
         Etwo = 0
         N = 0
         # Structures left
-        for s1 in range(len(self.structs)):
-            str1 = self.structs[s1]
+        for str1, cs1 in zip(self.structs, self.coef):
             #Structures right
-            for s2 in range(len(self.structs)):
-                str2 = self.structs[s2]
+            for str2, cs2 in zip(self.structs, self.coef):
                 #Determinants in left structure
-                for d1 in range(len(str1.nods)):
-                    det1 = str1.nods[d1]
+                for det1, cd1 in zip(str1.nods, str1.coef):
                     #Determinants in right structure
-                    for d2 in range(len(str2.nods)):
-                        det2 = str2.nods[d2]
+                    for det2, cd2 in zip(str2.nods, str2.coef):
                         D12 = Dao(det1, det2)
                         S12 = det1*det2
                         F12 = Fao(D12, filename=self.tmp('AOTWOINT'))
-                        C1 = self.coef[s1]*str1.coef[d1]
-                        C2 = self.coef[s2]*str2.coef[d2]
                         h12 = self.h&(D12[0]+D12[1])
                         g12 = HKL(F12, D12)
-                        C12 = C1*C2*S12
+                        C12 = cs1*cs2*cd1*cd2*S12
                         Eone += h12*C12
                         Etwo += g12*C12
                         N += C12
