@@ -16,6 +16,7 @@ class BraKet(object):
     def __init__(self, K, L):
         self.K = K
         self.L = L
+        self._td = None
 
     def __str__(self):
         return "<%s|...|%s>" % (self.K, self.L)
@@ -23,12 +24,18 @@ class BraKet(object):
     def overlap(self):
         return self.K*self.L
 
+    @property
+    def transition_density(self):
+        if self._td is None:
+            self._td = Dmo(self.K, self.L)
+        return self._td
+
     def orbital_gradient(self):
         return self.left_orbital_gradient() + self.right_orbital_gradient()
 
     def right_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
-        DmoKL = Dmo(self.K, self.L)
+        DmoKL = self.transition_density
         CK = self.K.orbitals()
 
         KdL = full.matrix(Nod.C.shape)
@@ -43,7 +50,7 @@ class BraKet(object):
 
     def left_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
-        DmoKL = Dmo(self.K, self.L)
+        DmoKL = self.transition_density
         CL = self.L.orbitals()
 
         dKL = full.matrix(Nod.C.shape[::-1])
@@ -65,7 +72,7 @@ class BraKet(object):
         # Orbital-orbital hessian
         #
         CK = self.K.orbitals()
-        DmoKL = Dmo(self.K, self.L)
+        DmoKL = self.transition_density
 
         D_am = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
 
@@ -90,7 +97,7 @@ class BraKet(object):
 
         CK = self.K.orbitals()
         CL = self.L.orbitals()
-        DmoKL = Dmo(self.K, self.L)
+        DmoKL = self.transition_density
 
         ao, mo = Nod.C.shape
         D_am = (full.matrix((ao, mo)), full.matrix((ao, mo)))
