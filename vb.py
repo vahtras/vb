@@ -108,9 +108,9 @@ class BraKet(object):
         DmoKL[0].scatter(D_mm[0], rows=self.K(0), columns=self.L(0))
         DmoKL[1].scatter(D_mm[1], rows=self.K(1), columns=self.L(1))
 
-        dKdL = ((D_ma[0] + D_ma[0]).T.x(D_am[0] + D_am[1])
-            + DeltaKL[0].x(D_mm[0]).transpose(0, 2, 1, 3)
-            + DeltaKL[1].x(D_mm[1]).transpose(0, 2, 1, 3)
+        dKdL = ((D_ma[0] + D_ma[1]).T.x(D_am[0] + D_am[1])
+            + DeltaKL[0].x(D_mm[0]).transpose(1, 2, 0, 3)
+            + DeltaKL[1].x(D_mm[1]).transpose(1, 2, 0, 3)
             )*self.overlap()
 
         return dKdL
