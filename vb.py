@@ -23,6 +23,9 @@ class BraKet(object):
     def overlap(self):
         return self.K*self.L
 
+    def orbital_gradient(self):
+        return self.left_orbital_gradient() + self.right_orbital_gradient()
+
     def right_orbital_gradient(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = Dmo(self.K, self.L)
@@ -441,7 +444,6 @@ class WaveFunction(object):
         NGS = []
         r, c = Nod.C.shape
         Norbgrad = full.matrix((r, c))
-        #d12=full.matrix((c,c))
         #
         # Structures left
         #
@@ -518,109 +520,31 @@ class WaveFunction(object):
     def normhess(self):
         #
         #  N = <0|0>
-        # dN = 2<d0|0>
+        # d2<0|0> = <d20|0> + <0|d20> + 2<d0|d0> = 2<0|d20> + 2<d0|d0>
         #
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
-        #Nstructorbhess=full.matrix((ls, mo, ao))
         Norbstructhess = full.matrix((ao, mo, ls))
         Norbhess = full.matrix((ao, mo, ao, mo))
         d12 = full.matrix((mo, mo))
         #
-        # Structures left
-        #
-        for s1 in range(len(self.structs)):
-            str1 = self.structs[s1]
-            #
-            #Structures right
-            #
-            for s2 in range(len(self.structs)):
-                str2 = self.structs[s2]
-                #
-                #Determinants in left structure
-                #
-                for d1 in range(len(str1.nods)):
-                    det1 = str1.nods[d1]
-                    #
-                    #Determinants in right structure
-                    #
-                    for d2 in range(len(str2.nods)):
-                        det2 = str2.nods[d2]
+        for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
+            for s2, (str2, Cs2) in enumerate(zip(self.structs, self.coef)):
+                for d1, (det1, Cd1) in enumerate(zip(str1.nods, str1.coef)):
+                    for d2, (det2, Cd2) in enumerate(zip(str2.nods, str2.coef)):
                         #
-                        # Structure hessian terms
-                        #
-                        S12 = det1*det2
-                        Cs1 = self.coef[s1]
-                        Cs2 = self.coef[s2]
-                        Cd1 = str1.coef[d1]
-                        Cd2 = str2.coef[d2]
+                        bk12 = BraKet(det1, det2)
                         C1 = Cs1*Cd1
                         C2 = Cs2*Cd2
                         #
-                        # Structure hessian terms
-                        #
-                        N12 = (Cd1*Cd2)*S12
-                        Nstructhess[s1, s2] += N12
-                        #
-                        # Orbital-structrue hessian terms
-                        #
-                        CK = det1.orbitals()
-                        CL = det2.orbitals()
-                        Dmo12 = Dmo(det1, det2)
-                        Dmo21 = Dmo(det2, det1)
-                        #
-                        Sog12 = [None, None]
-                        Sog21 = [None, None]
-                        Dog12 = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-                        Dog21 = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-                        Dmm = [full.matrix((mo, mo)), full.matrix((mo, mo))]
-                        Delta = [full.matrix((ao, ao)), full.matrix((ao, ao))]
-                        for s in range(2):
-                            #D^m_\mu
-                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
-                            Sog21[s] = Dmo21[s]*CK[s].T*Nod.S
-                            Dog12[s][det1(s), :] = Sog12[s]
-                            Dog21[s][det2(s), :] = Sog21[s]
-                            #Dmm[s][det1(s), det2(s)]=Dmo12[s] numpy bug
-                            Dmo12[s].scatter(
-                                Dmm[s], rows=det1(s), columns=det2(s)
-                                )
-                            Delta[s] = Nod.S-Nod.S*CK[s]*Dmo12[s]*CL[s].T*Nod.S
-                        #
-                        # Scatter to orbitals
-                        #
-                            ((Cd1*C2*S12)*Sog12[s]).T.scatteradd(
-                                Norbstructhess[:, :, s1], columns=det1(s)
-                                )
-                            ((Cd1*C2*S12)*Sog21[s]).T.scatteradd(
-                                Norbstructhess[:, :, s1], columns=det2(s)
-                                )
-                        #
-                        # Orbital-orbital hessian
-                        #
-                        C12 = C1*C2*S12
-                        for s in range(0):
-                            #print "Dog12[%d]"%s,Dog12[s]
-                            for t in range(2):
-                                #print "Dog21[%d]"%t,Dog21[t]
-                                Norbhess += C12*Dog12[s].x(Dog12[t])
-                                Norbhess += C12*Dog12[s].x(Dog21[t])
-                            Norbhess -= C12*Dog12[s].x(Dog12[s]).transpose(
-                                (0, 3, 2, 1)
-                                )
-                            Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
-                                (0, 3, 1, 2)
-                                )
-                        Norbhess += C1*C2*BraKet(det1, det2).norm_orbital_hessian()
+                        Nstructhess[s1, s2] += (Cd1*Cd2)*bk12.overlap()
+                        Norbstructhess[:, :, s1] += Cd1*C2*bk12.orbital_gradient()
+                        Norbhess += C1*C2*bk12.norm_orbital_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
         Norbhess *= 2
-        return (
-            Nstructhess,
-            Norbstructhess[:, :, :],
-            Norbhess[:, :, :, :]
-            )
+        return Nstructhess, Norbstructhess, Norbhess
 
     def vb_metric(self):
         #
@@ -658,12 +582,12 @@ class WaveFunction(object):
                     #
                     for L, CLT in zip(T.nods, T.coef):
                         #
-                        # Structure hessian terms
+                        # Structure Hessian terms
                         #
                         KL = K*L
                         Nstructhess[s1, s2] += KL*CKS*CLT
                         #
-                        # Orbital-structrue hessian terms
+                        # Orbital-structure Hessian terms
                         #
                         #
                         CK = K.orbitals()
