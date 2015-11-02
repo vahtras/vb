@@ -24,10 +24,19 @@ class BraKet(object):
     def overlap(self):
         return self.K*self.L
 
+    def energy(self):
+        return self.transition_density()
+
     @property
     def transition_density(self):
         if self._td is None:
             self._td = Dmo(self.K, self.L)
+        return self._td
+
+    @property
+    def transition_ao_density(self):
+        if self._td is None:
+            self._td = Dao(self.K, self.L)
         return self._td
 
     def orbital_gradient(self):
@@ -124,6 +133,10 @@ class BraKet(object):
             )*self.overlap()
 
         return dKdL
+
+    def __mul__(self, h):
+        dao = self.transition_ao_density
+        return h&(dao[0] + dao[1])
         
 #
 # Class of non-orthogonal determinants
@@ -344,17 +357,15 @@ class WaveFunction(object):
         N = 0
         for S, CS in zip(self.structs, self.coef):
             for T, CT in zip(self.structs, self.coef):
-                for K, CKS in zip(S.nods, S.coef):
-                    for L, CLT in zip(T.nods, T.coef):
+                for K, CK in zip(S.nods, S.coef):
+                    for L, CL in zip(T.nods, T.coef):
                         D12 = DKL(K, L)
                         S12 = K*L
-                        C1 = CS*CKS
-                        C2 = CT*CLT
                         Na = (D12[0]&Nod.S)
                         Nb = (D12[1]&Nod.S)
-                        Nel += (Na+Nb)*C1*C2*S12
-                        N += S12*C1*C2
-        print "N", N
+                        C12 = CS*CT*CK*CL
+                        Nel += (Na+Nb)*C12
+                        N += C12
         return Nel/N
 
     def StructureHamiltonian(self):
@@ -743,6 +754,7 @@ class WaveFunction(object):
                         S12 = det1*det2
                         F12 = Fao(D12, filename=self.tmp('AOTWOINT'))
                         h12 = self.h&(D12[0]+D12[1])
+                        #h12 = Braket(det1, det2).trace(self.h1)
                         g12 = HKL(F12, D12)
                         C12 = cs1*cs2*cd1*cd2*S12
                         Eone += h12*C12

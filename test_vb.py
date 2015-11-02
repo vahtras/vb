@@ -95,15 +95,15 @@ B   0.0  0.0  0.7428
 
    def test_energy_mixed_hessian(self):
       """Energy mixed Hessian"""
-      _, nummixhess, _ = self.WF.numenergyhess()
+      _, nummixhess, _ = self.WF.numenergyhess(self.delta)
       _, anamixhess, _ = self.WF.energyhess()
-      np.testing.assert_allclose(nummixhess, anamixhess, self.delta)
+      np.testing.assert_allclose(nummixhess, anamixhess, rtol=self.delta , atol=self.delta)
 
    def test_energy_struct_hessian(self):
       """Energy structure Hessian"""
-      numstrhess, _, _ = self.WF.numenergyhess()
+      numstrhess, _, _ = self.WF.numenergyhess(self.delta)
       anastrhess, _, _ = self.WF.energyhess()
-      np.testing.assert_allclose(numstrhess, anastrhess, self.delta)
+      np.testing.assert_allclose(numstrhess, anastrhess, rtol=self.delta, atol=self.delta)
 
    def test_energy_orb_gradient(self):
       """Energy orbital gradient"""

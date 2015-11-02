@@ -92,6 +92,7 @@ class BraKetTest(unittest.TestCase):
 
     def setUp(self):
         Nod.S = init([[1.0, 0.1], [0.1, 1.0]])
+        Nod.h = init([[-0.5, 0.1], [0.1, -0.25]])
         Nod.C = init([[0.7, 0.6], [0.6, -0.7]])
         self.a0a0 = BraKet(Nod([0], []), Nod([0], []))
         self.a0a1 = BraKet(Nod([0], []), Nod([1], []))
@@ -131,6 +132,12 @@ class BraKetTest(unittest.TestCase):
     def test_b0b0_right_analytical_differential_overlap(self):
         KL00 = self.b0b0.right_orbital_gradient()
         np.testing.assert_allclose(KL00, [[0.76, 0.0], [0.67, 0]])
+
+    def test_a0a0_energy(self):
+        self.assertAlmostEqual(self.a0a0*Nod.h, -0.268736616702)
+
+    def test_b0b0_energy(self):
+        self.assertAlmostEqual(self.a0a0*Nod.h, -0.268736616702)
 
 
 ###
