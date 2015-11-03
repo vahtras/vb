@@ -194,6 +194,39 @@ class BraKet(object):
 
         return dKdL
 
+    def right_energy_hessian(self, h1):
+        """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Delta = tuple((I - S*d) for d in Dao)
+
+
+        K_h_d2L = \
+            self.energy(h1)*self.right_orbital_hessian() +\
+            self.right_orbital_gradient().x(self.right_energy_gradient(h1)) +\
+            self.right_energy_gradient(h1).x(self.right_orbital_gradient()) 
+
+        CK = self.K.orbitals()
+        D_am = (
+            full.matrix(Nod.C.shape),
+            full.matrix(Nod.C.shape)
+            )
+        D_am[0][:, self.K(0)] = S*CK[0]*Dmo[0]
+        D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
+
+        if self.K(0):
+            pass
+            
+            
+        if self.K(1):
+            pass
+            
+        
+        return K_h_d2L
+
         
 #
 # Class of non-orthogonal determinants

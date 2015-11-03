@@ -919,10 +919,38 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+    def test_00_dd11(self):
+        np.testing.assert_allclose(
+            self.B00K11.right_orbital_hessian(),
+            clhess(self.B00K11, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
     def test_01_dd00(self):
         np.testing.assert_allclose(
             self.B01K00.right_orbital_hessian(),
             clhess(self.B01K00, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_dd01(self):
+        np.testing.assert_allclose(
+            self.B01K01.right_orbital_hessian(),
+            clhess(self.B01K01, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_dd10(self):
+        np.testing.assert_allclose(
+            self.B01K10.right_orbital_hessian(),
+            clhess(self.B01K10, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_dd11(self):
+        np.testing.assert_allclose(
+            self.B01K11.right_orbital_hessian(),
+            clhess(self.B01K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
@@ -932,6 +960,170 @@ class BraKetTest2(unittest.TestCase):
             clhess(self.B10K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
+
+    def test_10_dd01(self):
+        np.testing.assert_allclose(
+            self.B10K01.right_orbital_hessian(),
+            clhess(self.B10K01, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_dd10(self):
+        np.testing.assert_allclose(
+            self.B10K10.right_orbital_hessian(),
+            clhess(self.B10K10, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_dd11(self):
+        np.testing.assert_allclose(
+            self.B10K11.right_orbital_hessian(),
+            clhess(self.B10K11, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_dd00(self):
+        np.testing.assert_allclose(
+            self.B11K00.right_orbital_hessian(),
+            clhess(self.B11K00, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_dd01(self):
+        np.testing.assert_allclose(
+            self.B11K01.right_orbital_hessian(),
+            clhess(self.B11K01, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_dd10(self):
+        np.testing.assert_allclose(
+            self.B11K10.right_orbital_hessian(),
+            clhess(self.B11K10, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_dd11(self):
+        np.testing.assert_allclose(
+            self.B11K11.right_orbital_hessian(),
+            clhess(self.B11K11, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_h_dd00(self):
+        np.testing.assert_allclose(
+            self.B00K00.right_energy_hessian(Nod.h),
+            clhess(self.B00K00, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_h_dd01(self):
+        np.testing.assert_allclose(
+            self.B00K01.right_energy_hessian(Nod.h),
+            clhess(self.B00K01, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_h_dd10(self):
+        np.testing.assert_allclose(
+            self.B00K10.right_energy_hessian(Nod.h),
+            clhess(self.B00K10, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_h_dd11(self):
+        np.testing.assert_allclose(
+            self.B00K11.right_energy_hessian(Nod.h),
+            clhess(self.B00K11, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_h_dd00(self):
+        np.testing.assert_allclose(
+            self.B01K00.right_energy_hessian(Nod.h),
+            clhess(self.B01K00, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_h_dd01(self):
+        np.testing.assert_allclose(
+            self.B01K01.right_energy_hessian(Nod.h),
+            clhess(self.B01K01, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_h_dd10(self):
+        np.testing.assert_allclose(
+            self.B01K10.right_energy_hessian(Nod.h),
+            clhess(self.B01K10, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_h_dd11(self):
+        np.testing.assert_allclose(
+            self.B01K11.right_energy_hessian(Nod.h),
+            clhess(self.B01K11, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_h_dd00(self):
+        np.testing.assert_allclose(
+            self.B10K00.right_energy_hessian(Nod.h),
+            clhess(self.B10K00, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_h_dd01(self):
+        np.testing.assert_allclose(
+            self.B10K01.right_energy_hessian(Nod.h),
+            clhess(self.B10K01, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_h_dd10(self):
+        np.testing.assert_allclose(
+            self.B10K10.right_energy_hessian(Nod.h),
+            clhess(self.B10K10, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_h_dd11(self):
+        np.testing.assert_allclose(
+            self.B10K11.right_energy_hessian(Nod.h),
+            clhess(self.B10K11, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_h_dd00(self):
+        np.testing.assert_allclose(
+            self.B11K00.right_energy_hessian(Nod.h),
+            clhess(self.B11K00, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_h_dd01(self):
+        np.testing.assert_allclose(
+            self.B11K01.right_energy_hessian(Nod.h),
+            clhess(self.B11K01, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_h_dd10(self):
+        np.testing.assert_allclose(
+            self.B11K10.right_energy_hessian(Nod.h),
+            clhess(self.B11K10, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_h_dd11(self):
+        np.testing.assert_allclose(
+            self.B11K11.right_energy_hessian(Nod.h),
+            clhess(self.B11K11, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+
+####
 
     def test_010_dd010(self):
         np.testing.assert_allclose(
