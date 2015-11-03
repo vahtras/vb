@@ -45,36 +45,46 @@ class BraKet(object):
         return self.left_orbital_gradient() + self.right_orbital_gradient()
 
     def right_orbital_gradient(self):
+        KdLa, KdLb = self.right_orbital_gradient_ab()
+        return KdLa + KdLb
+
+    def right_orbital_gradient_ab(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = self.transition_density
         CK = self.K.orbitals()
 
-        KdL = full.matrix(Nod.C.shape)
+        KdLa = full.matrix(Nod.C.shape)
+        KdLb = full.matrix(Nod.C.shape)
         if self.K(0):
-            KdLa = Nod.S*CK[0]*DmoKL[0]*self.overlap()
-            KdLa.scatteradd(KdL, columns=self.L(0))
+            KdLa[:, self.L(0)] += Nod.S*CK[0]*DmoKL[0]*self.overlap()
         if self.K(1):
-            KdLb = Nod.S*CK[1]*DmoKL[1]*self.overlap()
-            KdLb.scatteradd(KdL, columns=self.L(1))
+            KdLb[:, self.L(1)] += Nod.S*CK[1]*DmoKL[1]*self.overlap()
         
-        return KdL
+        return KdLa, KdLb
 
     def left_orbital_gradient(self):
+        dKLa, dKLb = self.left_orbital_gradient_ab()
+        return dKLa + dKLb
+
+    def left_orbital_gradient_ab(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = self.transition_density
         CL = self.L.orbitals()
 
-        dKL = full.matrix(Nod.C.shape[::-1])
+        dKLa = full.matrix(Nod.C.shape[::-1])
+        dKLb = full.matrix(Nod.C.shape[::-1])
         if self.L(0):
-            dKLa = DmoKL[0]*CL[0].T*Nod.S*self.overlap()
-            dKLa.scatteradd(dKL, rows=self.K(0))
+            dKLa[self.K(0), :] += DmoKL[0]*CL[0].T*Nod.S*self.overlap()
         if self.L(1):
-            dKLa = DmoKL[1]*CL[1].T*Nod.S*self.overlap()
-            dKLa.scatteradd(dKL, rows=self.K(1))
+            dKLb[self.K(1), :] += DmoKL[1]*CL[1].T*Nod.S*self.overlap()
         
-        return dKL.T
+        return dKLa.T, dKLb.T
 
     def right_energy_gradient(self, h1):
+        K_h_dLa, K_h_dLb = self.right_energy_gradient_ab(h1)
+        return K_h_dLa + K_h_dLb 
+
+    def right_energy_gradient_ab(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
         S = Nod.S
         I = full.unit(S.shape[0])
@@ -84,17 +94,23 @@ class BraKet(object):
         Delta = tuple((I - S*d) for d in Dao)
 
 
-        K_h_dL = self.energy(h1)*self.right_orbital_gradient()
+        K_h_dLa, K_h_dLb = (
+            self.energy(h1)*g 
+            for g in self.right_orbital_gradient_ab()
+            )
 
         CK = self.K.orbitals()
         if self.K(0):
-            K_h_dL[:, self.L(0)] += Delta[0]*h1.T*CK[0]*Dmo[0]*self.overlap()
+            K_h_dLa[:, self.L(0)] += Delta[0]*h1.T*CK[0]*Dmo[0]*self.overlap()
         if self.K(1):
-            K_h_dL[:, self.L(1)] += Delta[1]*h1.T*CK[1]*Dmo[1]*self.overlap()
-        
-        return K_h_dL
+            K_h_dLb[:, self.L(1)] += Delta[1]*h1.T*CK[1]*Dmo[1]*self.overlap()
+        return K_h_dLa, K_h_dLb
 
     def left_energy_gradient(self, h1):
+        dK_h_La, dK_h_Lb = self.left_energy_gradient_ab(h1)
+        return dK_h_La + dK_h_Lb 
+
+    def left_energy_gradient_ab(self, h1):
         """Lhs derivative <dK/dC(mu,m)|h|L>"""
         S = Nod.S
         I = full.unit(S.shape[0])
@@ -103,15 +119,18 @@ class BraKet(object):
         Dao = self.transition_ao_density
         Delta = tuple((I - d*S) for d in Dao)
 
-        dK_h_L = self.energy(h1)*self.left_orbital_gradient().T
+        dK_h_La, dK_h_Lb = (
+            self.energy(h1)*g.T
+            for g in self.left_orbital_gradient_ab()
+            )
 
         CL = self.L.orbitals()
         if self.L(0):
-            dK_h_L[self.K(0), :]  += Dmo[0]*CL[0].T*h1.T*Delta[0]*self.overlap()
+            dK_h_La[self.K(0), :]  += Dmo[0]*CL[0].T*h1.T*Delta[0]*self.overlap()
         if self.L(1):
-            dK_h_L[self.K(1), :]  += Dmo[1]*CL[1].T*h1.T*Delta[1]*self.overlap()
+            dK_h_Lb[self.K(1), :]  += Dmo[1]*CL[1].T*h1.T*Delta[1]*self.overlap()
         
-        return dK_h_L.T
+        return dK_h_La.T, dK_h_Lb.T
     
     def norm_orbital_hessian(self):
         return self.right_orbital_hessian() + self.mixed_orbital_hessian()
