@@ -21,11 +21,15 @@ class BraKet(object):
     def __str__(self):
         return "<%s|...|%s>" % (self.K, self.L)
 
+    def __mul__(self, h):
+        return self.energy(h)*self.overlap()
+
     def overlap(self):
         return self.K*self.L
 
-    def energy(self):
-        return self.transition_density()
+    def energy(self, h):
+        dao = self.transition_ao_density
+        return h&(dao[0] + dao[1])
 
     @property
     def transition_density(self):
@@ -35,9 +39,7 @@ class BraKet(object):
 
     @property
     def transition_ao_density(self):
-        if self._td is None:
-            self._td = Dao(self.K, self.L)
-        return self._td
+        return Dao(self.K, self.L)
 
     def orbital_gradient(self):
         return self.left_orbital_gradient() + self.right_orbital_gradient()
@@ -71,6 +73,45 @@ class BraKet(object):
             dKLa.scatteradd(dKL, rows=self.K(1))
         
         return dKL.T
+
+    def right_energy_gradient(self, h1):
+        """Rhs derivative <K|h|dL/dC(mu, m)>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Delta = tuple((I - S*d) for d in Dao)
+
+
+        K_h_dL = self.energy(h1)*self.right_orbital_gradient()
+
+        CK = self.K.orbitals()
+        if self.K(0):
+            K_h_dL[:, self.L(0)] += Delta[0]*h1.T*CK[0]*Dmo[0]*self.overlap()
+        if self.K(1):
+            K_h_dL[:, self.L(1)] += Delta[1]*h1.T*CK[1]*Dmo[1]*self.overlap()
+        
+        return K_h_dL
+
+    def left_energy_gradient(self, h1):
+        """Lhs derivative <dK/dC(mu,m)|h|L>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Delta = tuple((I - d*S) for d in Dao)
+
+        dK_h_L = self.energy(h1)*self.left_orbital_gradient().T
+
+        CL = self.L.orbitals()
+        if self.L(0):
+            dK_h_L[self.K(0), :]  += Dmo[0]*CL[0].T*h1.T*Delta[0]*self.overlap()
+        if self.L(1):
+            dK_h_L[self.K(1), :]  += Dmo[1]*CL[1].T*h1.T*Delta[1]*self.overlap()
+        
+        return dK_h_L.T
     
     def norm_orbital_hessian(self):
         return self.right_orbital_hessian() + self.mixed_orbital_hessian()
@@ -134,9 +175,6 @@ class BraKet(object):
 
         return dKdL
 
-    def __mul__(self, h):
-        dao = self.transition_ao_density
-        return h&(dao[0] + dao[1])
         
 #
 # Class of non-orthogonal determinants
