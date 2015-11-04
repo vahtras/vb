@@ -217,14 +217,11 @@ class BraKet(object):
         D_am[0][:, self.K(0)] = S*CK[0]*Dmo[0]
         D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
 
-        if self.K(0):
-            pass
+        na, nb = self.right_orbital_gradient_ab()
+        ha, hb = self.right_energy_gradient_ab(h1)
+        K_h_d2L -= (na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3)
+        K_h_d2L -= (nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3)
             
-            
-        if self.K(1):
-            pass
-            
-        
         return K_h_d2L
 
         
