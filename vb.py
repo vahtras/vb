@@ -41,14 +41,14 @@ class BraKet(object):
     def transition_ao_density(self):
         return Dao(self.K, self.L)
 
-    def orbital_gradient(self):
-        return self.left_orbital_gradient() + self.right_orbital_gradient()
+    def overlap_gradient(self):
+        return self.left_overlap_gradient() + self.right_overlap_gradient()
 
-    def right_orbital_gradient(self):
-        KdLa, KdLb = self.right_orbital_gradient_ab()
+    def right_overlap_gradient(self):
+        KdLa, KdLb = self.right_overlap_gradient_ab()
         return KdLa + KdLb
 
-    def right_orbital_gradient_ab(self):
+    def right_overlap_gradient_ab(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = self.transition_density
         CK = self.K.orbitals()
@@ -62,11 +62,11 @@ class BraKet(object):
         
         return KdLa, KdLb
 
-    def left_orbital_gradient(self):
-        dKLa, dKLb = self.left_orbital_gradient_ab()
+    def left_overlap_gradient(self):
+        dKLa, dKLb = self.left_overlap_gradient_ab()
         return dKLa + dKLb
 
-    def left_orbital_gradient_ab(self):
+    def left_overlap_gradient_ab(self):
         """Rhs derivative <K|dL/dC(mu, m)>"""
         DmoKL = self.transition_density
         CL = self.L.orbitals()
@@ -96,7 +96,7 @@ class BraKet(object):
 
         K_h_dLa, K_h_dLb = (
             self.energy(h1)*g 
-            for g in self.right_orbital_gradient_ab()
+            for g in self.right_overlap_gradient_ab()
             )
 
         CK = self.K.orbitals()
@@ -121,7 +121,7 @@ class BraKet(object):
 
         dK_h_La, dK_h_Lb = (
             self.energy(h1)*g.T
-            for g in self.left_orbital_gradient_ab()
+            for g in self.left_overlap_gradient_ab()
             )
 
         CL = self.L.orbitals()
@@ -533,7 +533,7 @@ class WaveFunction(object):
                         #
                         # Orbital gradient terms
                         #
-                        Norbgrad += CS*CT*CKS*CLT*K_L.right_orbital_gradient()
+                        Norbgrad += CS*CT*CKS*CLT*K_L.right_overlap_gradient()
             NGS.append(GS)
 
         Nstructgrad = full.init(NGS)
@@ -599,7 +599,7 @@ class WaveFunction(object):
                         C2 = Cs2*Cd2
                         #
                         Nstructhess[s1, s2] += (Cd1*Cd2)*bk12.overlap()
-                        Norbstructhess[:, :, s1] += Cd1*C2*bk12.orbital_gradient()
+                        Norbstructhess[:, :, s1] += Cd1*C2*bk12.overlap_gradient()
                         Norbhess += C1*C2*bk12.norm_orbital_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2

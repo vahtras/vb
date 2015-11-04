@@ -122,7 +122,7 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[0.76, 0.0], [0.67, 0.0]])
 
     def test_a0a0_right_analytical_differential_overlap(self):
-        KL00 = self.a0a0.right_orbital_gradient()
+        KL00 = self.a0a0.right_overlap_gradient()
         np.testing.assert_allclose(KL00, [[0.76, 0.0], [0.67, 0]])
 
     def test_b0b0_right_numerical_differential_overlap(self):
@@ -130,7 +130,7 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[0.76, 0.0], [0.67, 0.0]])
 
     def test_b0b0_right_analytical_differential_overlap(self):
-        KL00 = self.b0b0.right_orbital_gradient()
+        KL00 = self.b0b0.right_overlap_gradient()
         np.testing.assert_allclose(KL00, [[0.76, 0.0], [0.67, 0]])
 
     def test_a0a0_energy(self):
@@ -162,11 +162,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[0.0, 0.76], [0.0, 0.67]])
 
     def test_a0a1_right_analytical_differential_overlap(self):
-        KL01 = self.a0a1.right_orbital_gradient()
+        KL01 = self.a0a1.right_overlap_gradient()
         np.testing.assert_allclose(KL01, [[0, 0.76], [0.0, 0.67]])
 
     def test_b0b1_right_analytical_differential_overlap(self):
-        KL01 = self.b0b1.right_orbital_gradient()
+        KL01 = self.b0b1.right_overlap_gradient()
         np.testing.assert_allclose(KL01, [[0, 0.76], [0.0, 0.67]])
 
     def test_a0a1_one_energy_right_differential(self):
@@ -200,11 +200,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[0.53, 0.0], [-0.64, 0.0]])
 
     def test_a1a0_right_analytical_differential_overlap(self):
-        KL10 = self.a1a0.right_orbital_gradient()
+        KL10 = self.a1a0.right_overlap_gradient()
         np.testing.assert_allclose(KL10, [[0.53, 0.0], [-0.64, 0]])
 
     def test_b1b0_right_analytical_differential_overlap(self):
-        KL10 = self.b1b0.right_orbital_gradient()
+        KL10 = self.b1b0.right_overlap_gradient()
         np.testing.assert_allclose(KL10, [[0.53, 0.0], [-0.64, 0]])
 
     def test_a1a0_one_energy_right_differential(self):
@@ -228,11 +228,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[0.0, 0.53], [0.0, -0.64]])
 
     def test_a1a1_right_analytical_differential_overlap(self):
-        KL11 = self.a1a1.right_orbital_gradient()
+        KL11 = self.a1a1.right_overlap_gradient()
         np.testing.assert_allclose(KL11, [[0., 0.53], [0.0, -0.64]])
 
     def test_b1b1_right_analytical_differential_overlap(self):
-        KL11 = self.b1b1.right_orbital_gradient()
+        KL11 = self.b1b1.right_overlap_gradient()
         np.testing.assert_allclose(KL11, [[0., 0.53], [0.0, -0.64]])
 
     def test_a1a1_one_energy_right_differential(self):
@@ -256,11 +256,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(dKL, [[0.76, 0.67], [0.0, 0.0]])
 
     def test_a0a0_left_analytical_differential_overlap(self):
-        KL00 = self.a0a0.left_orbital_gradient()
+        KL00 = self.a0a0.left_overlap_gradient()
         np.testing.assert_allclose(KL00, [[0.76, 0.], [0.67, 0]])
 
     def test_b0b0_left_analytical_differential_overlap(self):
-        KL00 = self.b0b0.left_orbital_gradient()
+        KL00 = self.b0b0.left_overlap_gradient()
         np.testing.assert_allclose(KL00, [[0.76, 0], [0.67, 0]])
 
     def test_a0a0_one_energy_left_differential(self):
@@ -283,11 +283,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(dKL, [[0.53, -0.64], [0.0, 0.0]])
 
     def test_a0a1_left_analytical_differential_overlap(self):
-        KL01 = self.a0a1.left_orbital_gradient()
+        KL01 = self.a0a1.left_overlap_gradient()
         np.testing.assert_allclose(KL01, [[0.53, 0.], [-0.64, 0]])
 
     def test_b0b1_left_analytical_differential_overlap(self):
-        KL01 = self.b0b1.left_orbital_gradient()
+        KL01 = self.b0b1.left_overlap_gradient()
         np.testing.assert_allclose(KL01, [[0.53, 0], [-0.64, 0]])
 
     def test_a0a1_one_energy_left_differential(self):
@@ -311,11 +311,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(dKL, [[0, .0], [0.76, 0.67]])
 
     def test_a1a0_left_analytical_differential_overlap(self):
-        KL10 = self.a1a0.left_orbital_gradient()
+        KL10 = self.a1a0.left_overlap_gradient()
         np.testing.assert_allclose(KL10, [[0, 0.76], [0, 0.67]])
 
     def test_b1b0_left_analytical_differential_overlap(self):
-        KL10 = self.b1b0.left_orbital_gradient()
+        KL10 = self.b1b0.left_overlap_gradient()
         np.testing.assert_allclose(KL10, [[0, .76], [0., 0.67]])
 
     def test_a1a0_one_energy_left_differential(self):
@@ -338,11 +338,11 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(dKL, [[0, 0], [0.53, -.64]])
 
     def test_a1a1_left_analytical_differential_overlap(self):
-        KL11 = self.a1a1.left_orbital_gradient()
+        KL11 = self.a1a1.left_overlap_gradient()
         np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
 
     def test_b1b1_left_analytical_differential_overlap(self):
-        KL11 = self.b1b1.left_orbital_gradient()
+        KL11 = self.b1b1.left_overlap_gradient()
         np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
 
     def test_a1a1_one_energy_left_differential(self):
@@ -369,7 +369,7 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KdL, [[1.41968, 0.0], [1.25156, 0.0]])
 
     def notest_K00_L00_overlap_analytial_right_gradient(self):
-        KdL = self.K00_L00.right_orbital_gradient()
+        KdL = self.K00_L00.right_overlap_gradient()
         np.testing.assert_allclose(KdL, [[1.41968, 0.0], [1.25156, 0.0]])
 
     def test_K00_L00_right_numerical_overlap_hessian(self):
@@ -444,112 +444,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_00_d00(self):
         np.testing.assert_allclose(
-            self.B00K00.right_orbital_gradient(),
+            self.B00K00.right_overlap_gradient(),
             clgrad(self.B00K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_d01(self):
         np.testing.assert_allclose(
-            self.B00K01.right_orbital_gradient(),
+            self.B00K01.right_overlap_gradient(),
             clgrad(self.B00K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_d10(self):
         np.testing.assert_allclose(
-            self.B00K10.right_orbital_gradient(),
+            self.B00K10.right_overlap_gradient(),
             clgrad(self.B00K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_d11(self):
         np.testing.assert_allclose(
-            self.B00K11.right_orbital_gradient(),
+            self.B00K11.right_overlap_gradient(),
             clgrad(self.B00K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_d00(self):
         np.testing.assert_allclose(
-            self.B01K00.right_orbital_gradient(),
+            self.B01K00.right_overlap_gradient(),
             clgrad(self.B01K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_d01(self):
         np.testing.assert_allclose(
-            self.B01K01.right_orbital_gradient(),
+            self.B01K01.right_overlap_gradient(),
             clgrad(self.B01K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_d10(self):
         np.testing.assert_allclose(
-            self.B01K10.right_orbital_gradient(),
+            self.B01K10.right_overlap_gradient(),
             clgrad(self.B01K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_d11(self):
         np.testing.assert_allclose(
-            self.B01K11.right_orbital_gradient(),
+            self.B01K11.right_overlap_gradient(),
             clgrad(self.B01K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_d00(self):
         np.testing.assert_allclose(
-            self.B10K00.right_orbital_gradient(),
+            self.B10K00.right_overlap_gradient(),
             clgrad(self.B10K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_d01(self):
         np.testing.assert_allclose(
-            self.B10K01.right_orbital_gradient(),
+            self.B10K01.right_overlap_gradient(),
             clgrad(self.B10K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_d10(self):
         np.testing.assert_allclose(
-            self.B10K10.right_orbital_gradient(),
+            self.B10K10.right_overlap_gradient(),
             clgrad(self.B10K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_d11(self):
         np.testing.assert_allclose(
-            self.B10K11.right_orbital_gradient(),
+            self.B10K11.right_overlap_gradient(),
             clgrad(self.B10K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_d00(self):
         np.testing.assert_allclose(
-            self.B11K00.right_orbital_gradient(),
+            self.B11K00.right_overlap_gradient(),
             clgrad(self.B11K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_d01(self):
         np.testing.assert_allclose(
-            self.B11K01.right_orbital_gradient(),
+            self.B11K01.right_overlap_gradient(),
             clgrad(self.B11K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_d10(self):
         np.testing.assert_allclose(
-            self.B11K10.right_orbital_gradient(),
+            self.B11K10.right_overlap_gradient(),
             clgrad(self.B11K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_d11(self):
         np.testing.assert_allclose(
-            self.B11K11.right_orbital_gradient(),
+            self.B11K11.right_overlap_gradient(),
             clgrad(self.B11K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
@@ -672,112 +672,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_00(self):
         np.testing.assert_allclose(
-            self.B00K00.left_orbital_gradient(),
+            self.B00K00.left_overlap_gradient(),
             clgrad(self.B00K00, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_01(self):
         np.testing.assert_allclose(
-            self.B00K01.left_orbital_gradient(),
+            self.B00K01.left_overlap_gradient(),
             clgrad(self.B00K01, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_10(self):
         np.testing.assert_allclose(
-            self.B00K10.left_orbital_gradient(),
+            self.B00K10.left_overlap_gradient(),
             clgrad(self.B00K10, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_11(self):
         np.testing.assert_allclose(
-            self.B00K11.left_orbital_gradient(),
+            self.B00K11.left_overlap_gradient(),
             clgrad(self.B00K11, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_00(self):
         np.testing.assert_allclose(
-            self.B01K00.left_orbital_gradient(),
+            self.B01K00.left_overlap_gradient(),
             clgrad(self.B01K00, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_01(self):
         np.testing.assert_allclose(
-            self.B01K01.left_orbital_gradient(),
+            self.B01K01.left_overlap_gradient(),
             clgrad(self.B01K01, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_10(self):
         np.testing.assert_allclose(
-            self.B01K10.left_orbital_gradient(),
+            self.B01K10.left_overlap_gradient(),
             clgrad(self.B01K10, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_11(self):
         np.testing.assert_allclose(
-            self.B01K11.left_orbital_gradient(),
+            self.B01K11.left_overlap_gradient(),
             clgrad(self.B01K11, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_00(self):
         np.testing.assert_allclose(
-            self.B10K00.left_orbital_gradient(),
+            self.B10K00.left_overlap_gradient(),
             clgrad(self.B10K00, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_01(self):
         np.testing.assert_allclose(
-            self.B10K01.left_orbital_gradient(),
+            self.B10K01.left_overlap_gradient(),
             clgrad(self.B10K01, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_10(self):
         np.testing.assert_allclose(
-            self.B10K10.left_orbital_gradient(),
+            self.B10K10.left_overlap_gradient(),
             clgrad(self.B10K10, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_11(self):
         np.testing.assert_allclose(
-            self.B10K11.left_orbital_gradient(),
+            self.B10K11.left_overlap_gradient(),
             clgrad(self.B10K11, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_00(self):
         np.testing.assert_allclose(
-            self.B11K00.left_orbital_gradient(),
+            self.B11K00.left_overlap_gradient(),
             clgrad(self.B11K00, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_01(self):
         np.testing.assert_allclose(
-            self.B11K01.left_orbital_gradient(),
+            self.B11K01.left_overlap_gradient(),
             clgrad(self.B11K01, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_10(self):
         np.testing.assert_allclose(
-            self.B11K10.left_orbital_gradient(),
+            self.B11K10.left_overlap_gradient(),
             clgrad(self.B11K10, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_11(self):
         np.testing.assert_allclose(
-            self.B11K11.left_orbital_gradient(),
+            self.B11K11.left_overlap_gradient(),
             clgrad(self.B11K11, 'overlap', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
