@@ -1017,7 +1017,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_00_h_dd01(self):
         np.testing.assert_allclose(
             self.B00K01.right_energy_hessian(Nod.h),
@@ -1025,7 +1024,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_00_h_dd10(self):
         np.testing.assert_allclose(
             self.B00K10.right_energy_hessian(Nod.h),
@@ -1033,7 +1031,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_00_h_dd11(self):
         np.testing.assert_allclose(
             self.B00K11.right_energy_hessian(Nod.h),
@@ -1041,7 +1038,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_01_h_dd00(self):
         np.testing.assert_allclose(
             self.B01K00.right_energy_hessian(Nod.h),
@@ -1049,7 +1045,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_01_h_dd01(self):
         np.testing.assert_allclose(
             self.B01K01.right_energy_hessian(Nod.h),
@@ -1057,7 +1052,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_01_h_dd10(self):
         np.testing.assert_allclose(
             self.B01K10.right_energy_hessian(Nod.h),
@@ -1065,7 +1059,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_01_h_dd11(self):
         np.testing.assert_allclose(
             self.B01K11.right_energy_hessian(Nod.h),
@@ -1073,7 +1066,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_10_h_dd00(self):
         np.testing.assert_allclose(
             self.B10K00.right_energy_hessian(Nod.h),
@@ -1081,7 +1073,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_10_h_dd01(self):
         np.testing.assert_allclose(
             self.B10K01.right_energy_hessian(Nod.h),
@@ -1089,7 +1080,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_10_h_dd10(self):
         np.testing.assert_allclose(
             self.B10K10.right_energy_hessian(Nod.h),
@@ -1097,7 +1087,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_10_h_dd11(self):
         np.testing.assert_allclose(
             self.B10K11.right_energy_hessian(Nod.h),
@@ -1105,7 +1094,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_11_h_dd00(self):
         np.testing.assert_allclose(
             self.B11K00.right_energy_hessian(Nod.h),
@@ -1113,7 +1101,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_11_h_dd01(self):
         np.testing.assert_allclose(
             self.B11K01.right_energy_hessian(Nod.h),
@@ -1121,7 +1108,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_11_h_dd10(self):
         np.testing.assert_allclose(
             self.B11K10.right_energy_hessian(Nod.h),
@@ -1129,7 +1115,6 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-    @unittest.skip('hold')
     def test_11_h_dd11(self):
         np.testing.assert_allclose(
             self.B11K11.right_energy_hessian(Nod.h),
@@ -1165,6 +1150,34 @@ class BraKetTest2(unittest.TestCase):
         np.testing.assert_allclose(
             self.B011K011.right_orbital_hessian(),
             clhess(self.B011K011, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_h_dd010(self):
+        np.testing.assert_allclose(
+            self.B010K010.right_energy_hessian(Nod.h),
+            clhess(self.B010K010, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_h_dd011(self):
+        np.testing.assert_allclose(
+            self.B010K011.right_energy_hessian(Nod.h),
+            clhess(self.B010K011, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_h_dd010(self):
+        np.testing.assert_allclose(
+            self.B011K010.right_energy_hessian(Nod.h),
+            clhess(self.B011K010, '__mul__', 'L.C')(Nod.h),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_h_dd011(self):
+        np.testing.assert_allclose(
+            self.B011K011.right_energy_hessian(Nod.h),
+            clhess(self.B011K011, '__mul__', 'L.C')(Nod.h),
             rtol=DELTA, atol=DELTA
             )
 
