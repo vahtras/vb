@@ -99,6 +99,19 @@ class BraKet(object):
         return K_h_dLa + K_h_dLb 
 
     def right_energy_gradient_ab(self, h1):
+        eg1_a, eg1_b = self.right_energy_gradient_ab1(h1)
+        eg2_a, eg2_b = self.right_energy_gradient_ab2(h1)
+        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
+        return eg_ab
+
+    def right_energy_gradient_ab1(self, h1):
+        K_h_dLa, K_h_dLb = (
+            self.energy(h1)*g 
+            for g in self.right_overlap_gradient_ab()
+            )
+        return K_h_dLa, K_h_dLb 
+
+    def right_energy_gradient_ab2(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
         S = Nod.S
         I = full.unit(S.shape[0])
@@ -107,11 +120,8 @@ class BraKet(object):
         Dao = self.transition_ao_density
         Delta = tuple((I - S*d) for d in Dao)
 
-
-        K_h_dLa, K_h_dLb = (
-            self.energy(h1)*g 
-            for g in self.right_overlap_gradient_ab()
-            )
+        K_h_dLa = full.matrix(Nod.C.shape)
+        K_h_dLb = full.matrix(Nod.C.shape)
 
         CK = self.K.orbitals()
         if self.K(0):
@@ -226,13 +236,14 @@ class BraKet(object):
 
         Dmo = self.transition_density
         Dao = self.transition_ao_density
-        Delta = tuple((I - S*d) for d in Dao)
 
+        e1 = self.energy(h1)
+        KL = self.overlap()
+        KdL = self.right_overlap_gradient()
+        Kd2L = self.right_orbital_hessian()
+        KhdL = self.right_energy_gradient(h1-e1)
 
-        K_h_d2L = \
-            self.energy(h1)*self.right_orbital_hessian() +\
-            self.right_overlap_gradient().x(self.right_energy_gradient(h1)) +\
-            self.right_energy_gradient(h1).x(self.right_overlap_gradient()) 
+        K_h_d2L = e1*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
 
         CK = self.K.orbitals()
         D_am = (
@@ -243,9 +254,9 @@ class BraKet(object):
         D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
 
         na, nb = self.right_overlap_gradient_ab()
-        ha, hb = self.right_energy_gradient_ab(h1)
-        K_h_d2L -= (na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3)
-        K_h_d2L -= (nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3)
+        ha, hb = self.right_energy_gradient_ab(h1-e1)
+        K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
+        K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
             
         return K_h_d2L
 
