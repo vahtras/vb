@@ -241,7 +241,8 @@ class BraKet(object):
         KL = self.overlap()
         KdL = self.right_overlap_gradient()
         Kd2L = self.right_orbital_hessian()
-        KhdL = self.right_energy_gradient(h1-e1)
+        KhdL = sum(self.right_energy_gradient_ab2(h1))
+        
 
         K_h_d2L = e1*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
 
@@ -254,7 +255,7 @@ class BraKet(object):
         D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
 
         na, nb = self.right_overlap_gradient_ab()
-        ha, hb = self.right_energy_gradient_ab(h1-e1)
+        ha, hb = self.right_energy_gradient_ab2(h1)
         K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
         K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
             
