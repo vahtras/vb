@@ -42,14 +42,20 @@ class BraKet(object):
         return Dao(self.K, self.L)
 
     def overlap_gradient(self):
+        """ d/dC(^mu,_m)<K|L>"""
         return self.left_overlap_gradient() + self.right_overlap_gradient()
 
     def right_overlap_gradient(self):
+        """
+        Rhs derivative <K|dL/dC(^mu, _m)>
+        
+        D(_mu,^m)<K|L>
+        """
         KdLa, KdLb = self.right_overlap_gradient_ab()
         return KdLa + KdLb
 
     def right_overlap_gradient_ab(self):
-        """Rhs derivative <K|dL/dC(mu, m)>"""
+        """Rhs alpha,beta derivative <K|dLa/dC(mu, m)Lb> ,<K|La dLb/dC(mu,m)>"""
         DmoKL = self.transition_density
         CK = self.K.orbitals()
 
@@ -63,11 +69,19 @@ class BraKet(object):
         return KdLa, KdLb
 
     def left_overlap_gradient(self):
+        """
+        Lhs derivative <dK/dC(^mu, _m)|L>
+        
+        D(^m,_mu)<K|L>
+        """
         dKLa, dKLb = self.left_overlap_gradient_ab()
         return dKLa + dKLb
 
     def left_overlap_gradient_ab(self):
-        """Rhs derivative <K|dL/dC(mu, m)>"""
+        """
+        Lhs alpha,beta derivative 
+        <dKa/dC(mu, m) Kb|L> ,<Ka dKb/dC(mu,m)|La dLb>
+        """
         DmoKL = self.transition_density
         CL = self.L.orbitals()
 
@@ -136,7 +150,12 @@ class BraKet(object):
         return self.right_orbital_hessian() + self.mixed_orbital_hessian()
 
     def right_orbital_hessian(self):
-        """Rhs derivative <K|d2/dC(mu, m)2|L>"""
+        """
+        Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
+
+        <K|a_mu+ a_nu+ a^n a^m|L>
+        (D(_mu, ^n)D(_nu, ^n) - sum(s)D(s)(_mu, ^n)D(s)(_nu,^m))<K|L>
+        """
         #
         # Orbital-orbital hessian
         #
@@ -160,7 +179,13 @@ class BraKet(object):
         return Kd2L
 
     def mixed_orbital_hessian(self):
-        """L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>"""
+        """
+        L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>
+
+        <K|a^m+ a_mu a_nu+ a^n |L>
+        (D(^m, _mu)D(_nu, ^n) + sum(s)D(s)(^m, ^n)Delta(s)(_nu,_mu))<K|L>
+        Delta = S - S*D*S
+        """
 
         S = Nod.S
 
@@ -206,8 +231,8 @@ class BraKet(object):
 
         K_h_d2L = \
             self.energy(h1)*self.right_orbital_hessian() +\
-            self.right_orbital_gradient().x(self.right_energy_gradient(h1)) +\
-            self.right_energy_gradient(h1).x(self.right_orbital_gradient()) 
+            self.right_overlap_gradient().x(self.right_energy_gradient(h1)) +\
+            self.right_energy_gradient(h1).x(self.right_overlap_gradient()) 
 
         CK = self.K.orbitals()
         D_am = (
@@ -217,7 +242,7 @@ class BraKet(object):
         D_am[0][:, self.K(0)] = S*CK[0]*Dmo[0]
         D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
 
-        na, nb = self.right_orbital_gradient_ab()
+        na, nb = self.right_overlap_gradient_ab()
         ha, hb = self.right_energy_gradient_ab(h1)
         K_h_d2L -= (na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3)
         K_h_d2L -= (nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3)
