@@ -29,7 +29,8 @@ class BraKet(object):
 
     def energy(self, h):
         dao = self.transition_ao_density
-        return h&(dao[0] + dao[1])
+        ha, hb = h
+        return (ha&dao[0]) + (hb&dao[1])
 
     @property
     def transition_density(self):
@@ -125,9 +126,9 @@ class BraKet(object):
 
         CK = self.K.orbitals()
         if self.K(0):
-            K_h_dLa[:, self.L(0)] += Delta[0]*h1.T*CK[0]*Dmo[0]*self.overlap()
+            K_h_dLa[:, self.L(0)] += Delta[0]*h1[0].T*CK[0]*Dmo[0]*self.overlap()
         if self.K(1):
-            K_h_dLb[:, self.L(1)] += Delta[1]*h1.T*CK[1]*Dmo[1]*self.overlap()
+            K_h_dLb[:, self.L(1)] += Delta[1]*h1[1].T*CK[1]*Dmo[1]*self.overlap()
         return K_h_dLa, K_h_dLb
 
     def left_energy_gradient(self, h1):
@@ -161,9 +162,9 @@ class BraKet(object):
 
         CL = self.L.orbitals()
         if self.L(0):
-            dK_h_La[self.K(0), :]  += Dmo[0]*CL[0].T*h1.T*Delta[0]*self.overlap()
+            dK_h_La[self.K(0), :]  += Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
         if self.L(1):
-            dK_h_Lb[self.K(1), :]  += Dmo[1]*CL[1].T*h1.T*Delta[1]*self.overlap()
+            dK_h_Lb[self.K(1), :]  += Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
         
         return dK_h_La.T, dK_h_Lb.T
     
@@ -319,8 +320,8 @@ class BraKet(object):
         Delta2 = tuple(full.unit(ao) - d*S for d in Dao)
 
         dK_h_dL += (
-            Dmm[0].x(Delta1[0]*h1.T*Delta2[0])*KL + \
-            Dmm[1].x(Delta1[1]*h1.T*Delta2[1])*KL
+            Dmm[0].x(Delta1[0]*h1[0].T*Delta2[0])*KL + \
+            Dmm[1].x(Delta1[1]*h1[1].T*Delta2[1])*KL
             ).transpose(3, 0, 2, 1)
 
         # Delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
@@ -329,11 +330,11 @@ class BraKet(object):
 
         Dmm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
         if self.K(0) and self.L(0):
-            (D_KL[0]*CL[0].T*h1.T*CK[0]*D_KL[0]).scatter(
+            (D_KL[0]*CL[0].T*h1[0].T*CK[0]*D_KL[0]).scatter(
             Dmm[0], rows=self.K(0), columns=self.L(0)
             )
         if self.K(1) and self.L(1):
-            (D_KL[1]*CL[1].T*h1.T*CK[1]*D_KL[1]).scatter(
+            (D_KL[1]*CL[1].T*h1[1].T*CK[1]*D_KL[1]).scatter(
             Dmm[1], rows=self.K(1), columns=self.L(1)
             )
         Delta = tuple(S - S*d*S for d in Dao)

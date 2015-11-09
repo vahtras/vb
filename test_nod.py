@@ -118,6 +118,7 @@ class BraKetTest(unittest.TestCase):
         self.K11_L01  = BraKet(Nod([1], [1]), Nod([0], [1]))
         self.K11_L10  = BraKet(Nod([1], [1]), Nod([1], [0]))
         self.K11_L11  = BraKet(Nod([1], [1]), Nod([1], [1]))
+        self.f = (Nod.h, Nod.h)
 
     def tearDown(self):
         pass
@@ -149,29 +150,29 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL00, [[0.76, 0.0], [0.67, 0]])
 
     def test_a0a0_energy(self):
-        self.assertAlmostEqual(self.a0a0*Nod.h, -0.251)
+        self.assertAlmostEqual(self.a0a0*self.f, -0.251)
 
     def test_b0b0_energy(self):
-        self.assertAlmostEqual(self.a0a0*Nod.h, -0.251)
+        self.assertAlmostEqual(self.a0a0*self.f, -0.251)
 
     def test_a0a0_one_energy_right_differential(self):
-        num_diff = clgrad(self.a0a0, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.a0a0.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a0, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.a0a0.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b0_one_energy_right_differential(self):
-        num_diff = clgrad(self.b0b0, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.b0b0.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b0b0, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.b0b0.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a0a0_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.a0a0, '__mul__', 'L.C', 'K.C')(Nod.h)
-        ana_diff = self.a0a0.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.a0a0, '__mul__', 'L.C', 'K.C')(self.f)
+        ana_diff = self.a0a0.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b0b0_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.b0b0, '__mul__', 'L.C', 'K.C')(Nod.h)
-        ana_diff = self.b0b0.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.b0b0, '__mul__', 'L.C', 'K.C')(self.f)
+        ana_diff = self.b0b0.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 
@@ -195,33 +196,33 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL01, [[0, 0.76], [0.0, 0.67]])
 
     def test_a0a1_one_energy_right_differential(self):
-        num_diff = clgrad(self.a0a0, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.a0a0.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a0, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.a0a0.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a0a1_one_energy_left_differential(self):
-        num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.a0a0.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.a0a0.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a0a1_one_energy_right_differential(self):
-        num_diff = clgrad(self.a0a1, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.a0a1.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a1, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.a0a1.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b1_one_energy_right_differential(self):
-        num_diff = clgrad(self.b0b1, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.b0b1.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b0b1, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.b0b1.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a0a1_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.a0a1, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.a0a1.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.a0a1, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.a0a1.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b0b1_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.b0b1, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.b0b1.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.b0b1, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.b0b1.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -243,23 +244,23 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL10, [[0.53, 0.0], [-0.64, 0]])
 
     def test_a1a0_one_energy_right_differential(self):
-        num_diff = clgrad(self.a1a0, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.a1a0.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a1a0, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.a1a0.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b0_one_energy_right_differential(self):
-        num_diff = clgrad(self.b1b0, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.b1b0.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b1b0, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.b1b0.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a1a0_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.a1a0, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.a1a0.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.a1a0, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.a1a0.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b1b0_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.b1b0, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.b1b0.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.b1b0, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.b1b0.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -281,23 +282,23 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL11, [[0., 0.53], [0.0, -0.64]])
 
     def test_a1a1_one_energy_right_differential(self):
-        num_diff = clgrad(self.a1a1, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.a1a1.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a1a1, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.a1a1.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b1_one_energy_right_differential(self):
-        num_diff = clgrad(self.b1b1, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.b1b1.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b1b1, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.b1b1.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a1a1_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.a1a1, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.a1a1.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.a1a1, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.a1a1.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b1b1_one_energy_mixed_differential(self):
-        num_diff = clmixhess(self.b1b1, '__mul__', 'K.C', 'L.C')(Nod.h)
-        ana_diff = self.b1b1.mixed_energy_hessian(Nod.h)
+        num_diff = clmixhess(self.b1b1, '__mul__', 'K.C', 'L.C')(self.f)
+        ana_diff = self.b1b1.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -319,13 +320,13 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL00, [[0.76, 0], [0.67, 0]])
 
     def test_a0a0_one_energy_left_differential(self):
-        num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.a0a0.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.a0a0.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b0_one_energy_left_differential(self):
-        num_diff = clgrad(self.b0b0, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.b0b0.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b0b0, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.b0b0.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 ###
 
@@ -346,13 +347,13 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL01, [[0.53, 0], [-0.64, 0]])
 
     def test_a0a1_one_energy_left_differential(self):
-        num_diff = clgrad(self.a0a1, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.a0a1.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a0a1, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.a0a1.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b1_one_energy_left_differential(self):
-        num_diff = clgrad(self.b0b1, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.b0b1.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b0b1, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.b0b1.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
 ###
@@ -374,13 +375,13 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL10, [[0, .76], [0., 0.67]])
 
     def test_a1a0_one_energy_left_differential(self):
-        num_diff = clgrad(self.a1a0, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.a1a0.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a1a0, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.a1a0.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b0_one_energy_left_differential(self):
-        num_diff = clgrad(self.b1b0, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.b1b0.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b1b0, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.b1b0.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 ###
 
@@ -401,13 +402,13 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(KL11, [[0, 0.53], [0, -.64]])
 
     def test_a1a1_one_energy_left_differential(self):
-        num_diff = clgrad(self.a1a1, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.a1a1.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.a1a1, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.a1a1.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b1_one_energy_left_differential(self):
-        num_diff = clgrad(self.b1b1, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.b1b1.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.b1b1, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.b1b1.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 ### (0|0)
 
@@ -416,7 +417,7 @@ class BraKetTest(unittest.TestCase):
         self.assertAlmostEqual(NKL, 0.872356)
 
     def test_K00_L00_energy(self):
-        HKL = self.K00_L00.energy(Nod.h)
+        HKL = self.K00_L00.energy(self.f)
         self.assertAlmostEqual(HKL, -0.5374732)
 
     def notest_K00_L00_overlap_numerical_right_gradient(self):
@@ -452,93 +453,93 @@ class BraKetTest(unittest.TestCase):
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L00_one_energy_right_gradient(self):
-        num_diff = clgrad(self.K00_L00, '__mul__', 'L.C', )(Nod.h)
-        ana_diff = self.K00_L00.right_energy_gradient(Nod.h)
+        num_diff = clgrad(self.K00_L00, '__mul__', 'L.C', )(self.f)
+        ana_diff = self.K00_L00.right_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_K00_L00_one_energy_left_gradient(self):
-        num_diff = clgrad(self.K00_L00, '__mul__', 'K.C', )(Nod.h)
-        ana_diff = self.K00_L00.left_energy_gradient(Nod.h)
+        num_diff = clgrad(self.K00_L00, '__mul__', 'K.C', )(self.f)
+        ana_diff = self.K00_L00.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_K00_L00_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K00_L00, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K00_L00.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K00_L00, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K00_L00.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L01_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K00_L01, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K00_L01.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K00_L01, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K00_L01.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L10_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K00_L10, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K00_L10.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K00_L10, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K00_L10.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L11_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K00_L11, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K00_L11.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K00_L11, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K00_L11.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L00_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K01_L00, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K01_L00.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K01_L00, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K01_L00.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L01_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K01_L01, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K01_L01.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K01_L01, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K01_L01.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L10_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K01_L10, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K01_L10.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K01_L10, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K01_L10.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L11_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K01_L11, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K01_L11.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K01_L11, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K01_L11.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L00_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K10_L00, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K10_L00.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K10_L00, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K10_L00.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L01_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K10_L01, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K10_L01.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K10_L01, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K10_L01.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L10_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K10_L10, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K10_L10.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K10_L10, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K10_L10.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L11_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K10_L11, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K10_L11.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K10_L11, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K10_L11.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L00_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K11_L00, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K11_L00.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K11_L00, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K11_L00.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L01_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K11_L01, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K11_L01.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K11_L01, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K11_L01.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L10_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K11_L10, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K11_L10.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K11_L10, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K11_L10.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L11_left_right_analytical_vs_numerical_energy_hessian(self):
-        dKdL_num = clmixhess(self.K11_L11, '__mul__', 'K.C', 'L.C')(Nod.h)
-        dKdL_ana = self.K11_L11.mixed_energy_hessian(Nod.h)
+        dKdL_num = clmixhess(self.K11_L11, '__mul__', 'K.C', 'L.C')(self.f)
+        dKdL_ana = self.K11_L11.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
 class BraKetTest2(unittest.TestCase):
@@ -547,6 +548,7 @@ class BraKetTest2(unittest.TestCase):
         Nod.S = init([[1.0, 0.2, 0.1], [0.2, 1.0, 0.2], [0.1, 0.2, 1.0]])
         Nod.h = init([[-0.5, 0.2, 0.1], [0.2, -0.25, 0.2], [0.1, -0.1, 1.0]])
         Nod.C = init([[0.7, 0.6, 0.5], [0.4, 0.3, 0.2]])
+        self.f = (Nod.h, Nod.h)
 
         self.B00K00 = BraKet(Nod([0], [0]), Nod([0], [0]))
         self.B00K01 = BraKet(Nod([0], [0]), Nod([0], [1]))
@@ -691,113 +693,113 @@ class BraKetTest2(unittest.TestCase):
 
     def test_00_h_d00(self):
         np.testing.assert_allclose(
-            self.B00K00.right_energy_gradient(Nod.h),
-            clgrad(self.B00K00, '__mul__', 'L.C')(Nod.h),
+            self.B00K00.right_energy_gradient(self.f),
+            clgrad(self.B00K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_d01(self):
         np.testing.assert_allclose(
-            self.B00K01.right_energy_gradient(Nod.h),
-            clgrad(self.B00K01, '__mul__', 'L.C')(Nod.h),
+            self.B00K01.right_energy_gradient(self.f),
+            clgrad(self.B00K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_d10(self):
         np.testing.assert_allclose(
-            self.B00K10.right_energy_gradient(Nod.h),
-            clgrad(self.B00K10, '__mul__', 'L.C')(Nod.h),
+            self.B00K10.right_energy_gradient(self.f),
+            clgrad(self.B00K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_d11(self):
         np.testing.assert_allclose(
-            self.B00K11.right_energy_gradient(Nod.h),
-            clgrad(self.B00K11, '__mul__', 'L.C')(Nod.h),
+            self.B00K11.right_energy_gradient(self.f),
+            clgrad(self.B00K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_d00(self):
         np.testing.assert_allclose(
-            self.B01K00.right_energy_gradient(Nod.h),
-            clgrad(self.B01K00, '__mul__', 'L.C')(Nod.h),
+            self.B01K00.right_energy_gradient(self.f),
+            clgrad(self.B01K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_d01(self):
         np.testing.assert_allclose(
-            self.B01K01.right_energy_gradient(Nod.h),
-            clgrad(self.B01K01, '__mul__', 'L.C')(Nod.h),
+            self.B01K01.right_energy_gradient(self.f),
+            clgrad(self.B01K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_d10(self):
         np.testing.assert_allclose(
-            self.B01K10.right_energy_gradient(Nod.h),
-            clgrad(self.B01K10, '__mul__', 'L.C')(Nod.h),
+            self.B01K10.right_energy_gradient(self.f),
+            clgrad(self.B01K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_d11(self):
         np.testing.assert_allclose(
-            self.B01K11.right_energy_gradient(Nod.h),
-            clgrad(self.B01K11, '__mul__', 'L.C')(Nod.h),
+            self.B01K11.right_energy_gradient(self.f),
+            clgrad(self.B01K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_d00(self):
         np.testing.assert_allclose(
-            self.B10K00.right_energy_gradient(Nod.h),
-            clgrad(self.B10K00, '__mul__', 'L.C')(Nod.h),
+            self.B10K00.right_energy_gradient(self.f),
+            clgrad(self.B10K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_d01(self):
         np.testing.assert_allclose(
-            self.B10K01.right_energy_gradient(Nod.h),
-            clgrad(self.B10K01, '__mul__', 'L.C')(Nod.h),
+            self.B10K01.right_energy_gradient(self.f),
+            clgrad(self.B10K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_d10(self):
         np.testing.assert_allclose(
-            self.B10K10.right_energy_gradient(Nod.h),
-            clgrad(self.B10K10, '__mul__', 'L.C')(Nod.h),
+            self.B10K10.right_energy_gradient(self.f),
+            clgrad(self.B10K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_d11(self):
         np.testing.assert_allclose(
-            self.B10K11.right_energy_gradient(Nod.h),
-            clgrad(self.B10K11, '__mul__', 'L.C')(Nod.h),
+            self.B10K11.right_energy_gradient(self.f),
+            clgrad(self.B10K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_d00(self):
         np.testing.assert_allclose(
-            self.B11K00.right_energy_gradient(Nod.h),
-            clgrad(self.B11K00, '__mul__', 'L.C')(Nod.h),
+            self.B11K00.right_energy_gradient(self.f),
+            clgrad(self.B11K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_d01(self):
         np.testing.assert_allclose(
-            self.B11K01.right_energy_gradient(Nod.h),
-            clgrad(self.B11K01, '__mul__', 'L.C')(Nod.h),
+            self.B11K01.right_energy_gradient(self.f),
+            clgrad(self.B11K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_d10(self):
         np.testing.assert_allclose(
-            self.B11K10.right_energy_gradient(Nod.h),
-            clgrad(self.B11K10, '__mul__', 'L.C')(Nod.h),
+            self.B11K10.right_energy_gradient(self.f),
+            clgrad(self.B11K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_d11(self):
         np.testing.assert_allclose(
-            self.B11K11.right_energy_gradient(Nod.h),
-            clgrad(self.B11K11, '__mul__', 'L.C')(Nod.h),
+            self.B11K11.right_energy_gradient(self.f),
+            clgrad(self.B11K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
@@ -919,113 +921,113 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_h_00(self):
         np.testing.assert_allclose(
-            self.B00K00.left_energy_gradient(Nod.h),
-            clgrad(self.B00K00, '__mul__', 'K.C')(Nod.h),
+            self.B00K00.left_energy_gradient(self.f),
+            clgrad(self.B00K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_01(self):
         np.testing.assert_allclose(
-            self.B00K01.left_energy_gradient(Nod.h),
-            clgrad(self.B00K01, '__mul__', 'K.C')(Nod.h),
+            self.B00K01.left_energy_gradient(self.f),
+            clgrad(self.B00K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_10(self):
         np.testing.assert_allclose(
-            self.B00K10.left_energy_gradient(Nod.h),
-            clgrad(self.B00K10, '__mul__', 'K.C')(Nod.h),
+            self.B00K10.left_energy_gradient(self.f),
+            clgrad(self.B00K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_11(self):
         np.testing.assert_allclose(
-            self.B00K11.left_energy_gradient(Nod.h),
-            clgrad(self.B00K11, '__mul__', 'K.C')(Nod.h),
+            self.B00K11.left_energy_gradient(self.f),
+            clgrad(self.B00K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_00(self):
         np.testing.assert_allclose(
-            self.B01K00.left_energy_gradient(Nod.h),
-            clgrad(self.B01K00, '__mul__', 'K.C')(Nod.h),
+            self.B01K00.left_energy_gradient(self.f),
+            clgrad(self.B01K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_01(self):
         np.testing.assert_allclose(
-            self.B01K01.left_energy_gradient(Nod.h),
-            clgrad(self.B01K01, '__mul__', 'K.C')(Nod.h),
+            self.B01K01.left_energy_gradient(self.f),
+            clgrad(self.B01K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_10(self):
         np.testing.assert_allclose(
-            self.B01K10.left_energy_gradient(Nod.h),
-            clgrad(self.B01K10, '__mul__', 'K.C')(Nod.h),
+            self.B01K10.left_energy_gradient(self.f),
+            clgrad(self.B01K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_11(self):
         np.testing.assert_allclose(
-            self.B01K11.left_energy_gradient(Nod.h),
-            clgrad(self.B01K11, '__mul__', 'K.C')(Nod.h),
+            self.B01K11.left_energy_gradient(self.f),
+            clgrad(self.B01K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_00(self):
         np.testing.assert_allclose(
-            self.B10K00.left_energy_gradient(Nod.h),
-            clgrad(self.B10K00, '__mul__', 'K.C')(Nod.h),
+            self.B10K00.left_energy_gradient(self.f),
+            clgrad(self.B10K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_01(self):
         np.testing.assert_allclose(
-            self.B10K01.left_energy_gradient(Nod.h),
-            clgrad(self.B10K01, '__mul__', 'K.C')(Nod.h),
+            self.B10K01.left_energy_gradient(self.f),
+            clgrad(self.B10K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_10(self):
         np.testing.assert_allclose(
-            self.B10K10.left_energy_gradient(Nod.h),
-            clgrad(self.B10K10, '__mul__', 'K.C')(Nod.h),
+            self.B10K10.left_energy_gradient(self.f),
+            clgrad(self.B10K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_11(self):
         np.testing.assert_allclose(
-            self.B10K11.left_energy_gradient(Nod.h),
-            clgrad(self.B10K11, '__mul__', 'K.C')(Nod.h),
+            self.B10K11.left_energy_gradient(self.f),
+            clgrad(self.B10K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_00(self):
         np.testing.assert_allclose(
-            self.B11K00.left_energy_gradient(Nod.h),
-            clgrad(self.B11K00, '__mul__', 'K.C')(Nod.h),
+            self.B11K00.left_energy_gradient(self.f),
+            clgrad(self.B11K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_01(self):
         np.testing.assert_allclose(
-            self.B11K01.left_energy_gradient(Nod.h),
-            clgrad(self.B11K01, '__mul__', 'K.C')(Nod.h),
+            self.B11K01.left_energy_gradient(self.f),
+            clgrad(self.B11K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_10(self):
         np.testing.assert_allclose(
-            self.B11K10.left_energy_gradient(Nod.h),
-            clgrad(self.B11K10, '__mul__', 'K.C')(Nod.h),
+            self.B11K10.left_energy_gradient(self.f),
+            clgrad(self.B11K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_11(self):
         np.testing.assert_allclose(
-            self.B11K11.left_energy_gradient(Nod.h),
-            clgrad(self.B11K11, '__mul__', 'K.C')(Nod.h),
+            self.B11K11.left_energy_gradient(self.f),
+            clgrad(self.B11K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
@@ -1147,113 +1149,113 @@ class BraKetTest2(unittest.TestCase):
 
     def test_00_h_dd00(self):
         np.testing.assert_allclose(
-            self.B00K00.right_energy_hessian(Nod.h),
-            clhess(self.B00K00, '__mul__', 'L.C')(Nod.h),
+            self.B00K00.right_energy_hessian(self.f),
+            clhess(self.B00K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd01(self):
         np.testing.assert_allclose(
-            self.B00K01.right_energy_hessian(Nod.h),
-            clhess(self.B00K01, '__mul__', 'L.C')(Nod.h),
+            self.B00K01.right_energy_hessian(self.f),
+            clhess(self.B00K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd10(self):
         np.testing.assert_allclose(
-            self.B00K10.right_energy_hessian(Nod.h),
-            clhess(self.B00K10, '__mul__', 'L.C')(Nod.h),
+            self.B00K10.right_energy_hessian(self.f),
+            clhess(self.B00K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd11(self):
         np.testing.assert_allclose(
-            self.B00K11.right_energy_hessian(Nod.h),
-            clhess(self.B00K11, '__mul__', 'L.C')(Nod.h),
+            self.B00K11.right_energy_hessian(self.f),
+            clhess(self.B00K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd00(self):
         np.testing.assert_allclose(
-            self.B01K00.right_energy_hessian(Nod.h),
-            clhess(self.B01K00, '__mul__', 'L.C')(Nod.h),
+            self.B01K00.right_energy_hessian(self.f),
+            clhess(self.B01K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd01(self):
         np.testing.assert_allclose(
-            self.B01K01.right_energy_hessian(Nod.h),
-            clhess(self.B01K01, '__mul__', 'L.C')(Nod.h),
+            self.B01K01.right_energy_hessian(self.f),
+            clhess(self.B01K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd10(self):
         np.testing.assert_allclose(
-            self.B01K10.right_energy_hessian(Nod.h),
-            clhess(self.B01K10, '__mul__', 'L.C')(Nod.h),
+            self.B01K10.right_energy_hessian(self.f),
+            clhess(self.B01K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd11(self):
         np.testing.assert_allclose(
-            self.B01K11.right_energy_hessian(Nod.h),
-            clhess(self.B01K11, '__mul__', 'L.C')(Nod.h),
+            self.B01K11.right_energy_hessian(self.f),
+            clhess(self.B01K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd00(self):
         np.testing.assert_allclose(
-            self.B10K00.right_energy_hessian(Nod.h),
-            clhess(self.B10K00, '__mul__', 'L.C')(Nod.h),
+            self.B10K00.right_energy_hessian(self.f),
+            clhess(self.B10K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd01(self):
         np.testing.assert_allclose(
-            self.B10K01.right_energy_hessian(Nod.h),
-            clhess(self.B10K01, '__mul__', 'L.C')(Nod.h),
+            self.B10K01.right_energy_hessian(self.f),
+            clhess(self.B10K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd10(self):
         np.testing.assert_allclose(
-            self.B10K10.right_energy_hessian(Nod.h),
-            clhess(self.B10K10, '__mul__', 'L.C')(Nod.h),
+            self.B10K10.right_energy_hessian(self.f),
+            clhess(self.B10K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd11(self):
         np.testing.assert_allclose(
-            self.B10K11.right_energy_hessian(Nod.h),
-            clhess(self.B10K11, '__mul__', 'L.C')(Nod.h),
+            self.B10K11.right_energy_hessian(self.f),
+            clhess(self.B10K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd00(self):
         np.testing.assert_allclose(
-            self.B11K00.right_energy_hessian(Nod.h),
-            clhess(self.B11K00, '__mul__', 'L.C')(Nod.h),
+            self.B11K00.right_energy_hessian(self.f),
+            clhess(self.B11K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd01(self):
         np.testing.assert_allclose(
-            self.B11K01.right_energy_hessian(Nod.h),
-            clhess(self.B11K01, '__mul__', 'L.C')(Nod.h),
+            self.B11K01.right_energy_hessian(self.f),
+            clhess(self.B11K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd10(self):
         np.testing.assert_allclose(
-            self.B11K10.right_energy_hessian(Nod.h),
-            clhess(self.B11K10, '__mul__', 'L.C')(Nod.h),
+            self.B11K10.right_energy_hessian(self.f),
+            clhess(self.B11K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd11(self):
         np.testing.assert_allclose(
-            self.B11K11.right_energy_hessian(Nod.h),
-            clhess(self.B11K11, '__mul__', 'L.C')(Nod.h),
+            self.B11K11.right_energy_hessian(self.f),
+            clhess(self.B11K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
@@ -1290,29 +1292,29 @@ class BraKetTest2(unittest.TestCase):
 
     def test_010_h_dd010(self):
         np.testing.assert_allclose(
-            self.B010K010.right_energy_hessian(Nod.h),
-            clhess(self.B010K010, '__mul__', 'L.C')(Nod.h),
+            self.B010K010.right_energy_hessian(self.f),
+            clhess(self.B010K010, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_010_h_dd011(self):
         np.testing.assert_allclose(
-            self.B010K011.right_energy_hessian(Nod.h),
-            clhess(self.B010K011, '__mul__', 'L.C')(Nod.h),
+            self.B010K011.right_energy_hessian(self.f),
+            clhess(self.B010K011, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_h_dd010(self):
         np.testing.assert_allclose(
-            self.B011K010.right_energy_hessian(Nod.h),
-            clhess(self.B011K010, '__mul__', 'L.C')(Nod.h),
+            self.B011K010.right_energy_hessian(self.f),
+            clhess(self.B011K010, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_h_dd011(self):
         np.testing.assert_allclose(
-            self.B011K011.right_energy_hessian(Nod.h),
-            clhess(self.B011K011, '__mul__', 'L.C')(Nod.h),
+            self.B011K011.right_energy_hessian(self.f),
+            clhess(self.B011K011, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
@@ -1432,113 +1434,113 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_h_d00(self):
         np.testing.assert_allclose(
-            self.B00K00.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B00K00, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B00K00.mixed_energy_hessian(self.f),
+            clmixhess(self.B00K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d01(self):
         np.testing.assert_allclose(
-            self.B00K01.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B00K01, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B00K01.mixed_energy_hessian(self.f),
+            clmixhess(self.B00K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d10(self):
         np.testing.assert_allclose(
-            self.B00K10.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B00K10, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B00K10.mixed_energy_hessian(self.f),
+            clmixhess(self.B00K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d11(self):
         np.testing.assert_allclose(
-            self.B00K11.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B00K11, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B00K11.mixed_energy_hessian(self.f),
+            clmixhess(self.B00K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d00(self):
         np.testing.assert_allclose(
-            self.B01K00.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B01K00, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B01K00.mixed_energy_hessian(self.f),
+            clmixhess(self.B01K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d01(self):
         np.testing.assert_allclose(
-            self.B01K01.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B01K01, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B01K01.mixed_energy_hessian(self.f),
+            clmixhess(self.B01K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d10(self):
         np.testing.assert_allclose(
-            self.B01K10.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B01K10, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B01K10.mixed_energy_hessian(self.f),
+            clmixhess(self.B01K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d11(self):
         np.testing.assert_allclose(
-            self.B01K11.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B01K11, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B01K11.mixed_energy_hessian(self.f),
+            clmixhess(self.B01K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d00(self):
         np.testing.assert_allclose(
-            self.B10K00.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B10K00, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B10K00.mixed_energy_hessian(self.f),
+            clmixhess(self.B10K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d01(self):
         np.testing.assert_allclose(
-            self.B10K01.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B10K01, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B10K01.mixed_energy_hessian(self.f),
+            clmixhess(self.B10K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d10(self):
         np.testing.assert_allclose(
-            self.B10K10.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B10K10, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B10K10.mixed_energy_hessian(self.f),
+            clmixhess(self.B10K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d11(self):
         np.testing.assert_allclose(
-            self.B10K11.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B10K11, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B10K11.mixed_energy_hessian(self.f),
+            clmixhess(self.B10K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d00(self):
         np.testing.assert_allclose(
-            self.B11K00.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B11K00, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B11K00.mixed_energy_hessian(self.f),
+            clmixhess(self.B11K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d01(self):
         np.testing.assert_allclose(
-            self.B11K01.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B11K01, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B11K01.mixed_energy_hessian(self.f),
+            clmixhess(self.B11K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d10(self):
         np.testing.assert_allclose(
-            self.B11K10.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B11K10, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B11K10.mixed_energy_hessian(self.f),
+            clmixhess(self.B11K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d11(self):
         np.testing.assert_allclose(
-            self.B11K11.mixed_energy_hessian(Nod.h),
-            clmixhess(self.B11K11, '__mul__', 'K.C', 'L.C')(Nod.h),
+            self.B11K11.mixed_energy_hessian(self.f),
+            clmixhess(self.B11K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
