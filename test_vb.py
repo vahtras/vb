@@ -5,6 +5,7 @@ import random, unittest
 from daltools import one
 from daltools.util import full, timing
 import vb
+from num_diff import findif as fd
 
 class test_vb(unittest.TestCase):
    def setUp(self):
@@ -131,7 +132,7 @@ B   0.0  0.0  0.7428
 
    def test_norm_struct_hessian(self):
       """Norm structure hessian"""
-      numstrhess, _, _ = self.WF.numnormhess()
+      numstrhess = fd.clhess(self.WF, 'norm', 'coef')()
       anastrhess, _, _ = self.WF.normhess()
       np.testing.assert_allclose(numstrhess, anastrhess, self.delta)
 
@@ -143,7 +144,7 @@ B   0.0  0.0  0.7428
 
    def test_norm_struct_gradient(self):
       """Norm structure gradient"""
-      numstrgr, _ = self.WF.numnormgrad()
+      numstrgr = fd.clgrad(self.WF, 'norm', 'coef')()
       anastrgr, _ = self.WF.normgrad()
       np.testing.assert_allclose(numstrgr, anastrgr, rtol=self.delta)
 

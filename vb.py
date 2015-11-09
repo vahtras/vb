@@ -17,9 +17,14 @@ class BraKet(object):
         self.K = K
         self.L = L
         self._td = None
+        self._aotd = None
+        self.tmpdir = '/tmp'
 
     def __str__(self):
         return "<%s|...|%s>" % (self.K, self.L)
+
+    def tmp(self, filename):
+        return os.path.join(self.tmpdir, filename)
 
     def __mul__(self, h):
         return self.energy(h)*self.overlap()
@@ -41,6 +46,10 @@ class BraKet(object):
     @property
     def transition_ao_density(self):
         return Dao(self.K, self.L)
+
+    @property
+    def transition_ao_fock(self):
+        return Fao(self.transition_ao_density, filename=self.tmp('AOTWOINT'))
 
     def overlap_gradient(self):
         """ d/dC(^mu,_m)<K|L>"""
@@ -545,7 +554,7 @@ class WaveFunction(object):
         # For VBSCF all structures share orbitals
         #
         if VBSCF:
-            self.C = structs[0].C
+            self.C = Nod.C
             nao, nmo = self.C.shape
         else:
             raise Exception("not implemented")
@@ -587,9 +596,10 @@ class WaveFunction(object):
                 H = 0
                 for K, CKS in zip(S.nods, S.coef):
                     for L, CLT in zip(T.nods, T.coef):
-                        D12 = Dao(K, L)
-                        KL = K*L
-                        FKL = Fao(D12, filename=self.tmp('AOTWOINT'))
+                        K_L = BraKet(K, L)
+                        D12 = K_L.transition_ao_density
+                        KL = K_L.overlap()
+                        FKL = K_L.transition_ao_fock
                         hKL = self.h&(D12[0]+D12[1])
                         gKL = HKL(FKL, D12)
                         H += (hKL+gKL)*KL*CKS*CLT
@@ -957,9 +967,10 @@ class WaveFunction(object):
                 for det1, cd1 in zip(str1.nods, str1.coef):
                     #Determinants in right structure
                     for det2, cd2 in zip(str2.nods, str2.coef):
-                        D12 = Dao(det1, det2)
-                        S12 = det1*det2
-                        F12 = Fao(D12, filename=self.tmp('AOTWOINT'))
+                        BK12 = BraKet(det1, det2)
+                        D12 = BK12.transition_ao_density
+                        S12 = BK12.overlap()
+                        F12 = BK12.transition_ao_fock
                         h12 = self.h&(D12[0]+D12[1])
                         #h12 = Braket(det1, det2).trace(self.h1)
                         g12 = HKL(F12, D12)

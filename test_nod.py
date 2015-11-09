@@ -448,8 +448,6 @@ class BraKetTest(unittest.TestCase):
     def test_K00_L00_left_right_analytical_vs_numerical_overlap_hessian(self):
         dKdL_num = clmixhess(self.K00_L00, 'overlap', 'K.C', 'L.C')()
         dKdL_ana = self.K00_L00.mixed_overlap_hessian()
-        print dKdL_num.view(matrix)
-        print dKdL_ana
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L00_one_energy_right_gradient(self):
