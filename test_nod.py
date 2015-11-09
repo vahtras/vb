@@ -433,7 +433,7 @@ class BraKetTest(unittest.TestCase):
         self.assertAlmostEqual(Kd2L[0, 0, 0, 0], 1.15520, delta=DELTA)
 
     def test_K00_L00_right_analytical_overlap_hessian(self):
-        Kd2L = self.K00_L00.right_orbital_hessian()
+        Kd2L = self.K00_L00.right_overlap_hessian()
         self.assertAlmostEqual(Kd2L[0, 0, 0, 0], 1.15520, delta=DELTA)
 
     def test_K00_L00_left_right_numerical_overlap_hessian(self):
@@ -442,12 +442,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_K00_L00_right_analytical_vs_numerical_overlap_hessian(self):
         Kd2L_num = clhess(self.K00_L00, 'overlap', 'L.C')()
-        Kd2L_ana = self.K00_L00.right_orbital_hessian()
+        Kd2L_ana = self.K00_L00.right_overlap_hessian()
         np.testing.assert_allclose(Kd2L_num, Kd2L_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L00_left_right_analytical_vs_numerical_overlap_hessian(self):
         dKdL_num = clmixhess(self.K00_L00, 'overlap', 'K.C', 'L.C')()
-        dKdL_ana = self.K00_L00.mixed_orbital_hessian()
+        dKdL_ana = self.K00_L00.mixed_overlap_hessian()
         print dKdL_num.view(matrix)
         print dKdL_ana
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
@@ -1037,112 +1037,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_00_dd00(self):
         np.testing.assert_allclose(
-            self.B00K00.right_orbital_hessian(),
+            self.B00K00.right_overlap_hessian(),
             clhess(self.B00K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_dd01(self):
         np.testing.assert_allclose(
-            self.B00K01.right_orbital_hessian(),
+            self.B00K01.right_overlap_hessian(),
             clhess(self.B00K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_dd10(self):
         np.testing.assert_allclose(
-            self.B00K10.right_orbital_hessian(),
+            self.B00K10.right_overlap_hessian(),
             clhess(self.B00K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_dd11(self):
         np.testing.assert_allclose(
-            self.B00K11.right_orbital_hessian(),
+            self.B00K11.right_overlap_hessian(),
             clhess(self.B00K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_dd00(self):
         np.testing.assert_allclose(
-            self.B01K00.right_orbital_hessian(),
+            self.B01K00.right_overlap_hessian(),
             clhess(self.B01K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_dd01(self):
         np.testing.assert_allclose(
-            self.B01K01.right_orbital_hessian(),
+            self.B01K01.right_overlap_hessian(),
             clhess(self.B01K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_dd10(self):
         np.testing.assert_allclose(
-            self.B01K10.right_orbital_hessian(),
+            self.B01K10.right_overlap_hessian(),
             clhess(self.B01K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_dd11(self):
         np.testing.assert_allclose(
-            self.B01K11.right_orbital_hessian(),
+            self.B01K11.right_overlap_hessian(),
             clhess(self.B01K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_dd00(self):
         np.testing.assert_allclose(
-            self.B10K00.right_orbital_hessian(),
+            self.B10K00.right_overlap_hessian(),
             clhess(self.B10K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_dd01(self):
         np.testing.assert_allclose(
-            self.B10K01.right_orbital_hessian(),
+            self.B10K01.right_overlap_hessian(),
             clhess(self.B10K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_dd10(self):
         np.testing.assert_allclose(
-            self.B10K10.right_orbital_hessian(),
+            self.B10K10.right_overlap_hessian(),
             clhess(self.B10K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_dd11(self):
         np.testing.assert_allclose(
-            self.B10K11.right_orbital_hessian(),
+            self.B10K11.right_overlap_hessian(),
             clhess(self.B10K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_dd00(self):
         np.testing.assert_allclose(
-            self.B11K00.right_orbital_hessian(),
+            self.B11K00.right_overlap_hessian(),
             clhess(self.B11K00, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_dd01(self):
         np.testing.assert_allclose(
-            self.B11K01.right_orbital_hessian(),
+            self.B11K01.right_overlap_hessian(),
             clhess(self.B11K01, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_dd10(self):
         np.testing.assert_allclose(
-            self.B11K10.right_orbital_hessian(),
+            self.B11K10.right_overlap_hessian(),
             clhess(self.B11K10, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_dd11(self):
         np.testing.assert_allclose(
-            self.B11K11.right_orbital_hessian(),
+            self.B11K11.right_overlap_hessian(),
             clhess(self.B11K11, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
@@ -1264,28 +1264,28 @@ class BraKetTest2(unittest.TestCase):
 
     def test_010_dd010(self):
         np.testing.assert_allclose(
-            self.B010K010.right_orbital_hessian(),
+            self.B010K010.right_overlap_hessian(),
             clhess(self.B010K010, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_010_dd011(self):
         np.testing.assert_allclose(
-            self.B010K011.right_orbital_hessian(),
+            self.B010K011.right_overlap_hessian(),
             clhess(self.B010K011, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_dd010(self):
         np.testing.assert_allclose(
-            self.B011K010.right_orbital_hessian(),
+            self.B011K010.right_overlap_hessian(),
             clhess(self.B011K010, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_dd011(self):
         np.testing.assert_allclose(
-            self.B011K011.right_orbital_hessian(),
+            self.B011K011.right_overlap_hessian(),
             clhess(self.B011K011, 'overlap', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
@@ -1322,112 +1322,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_d00(self):
         np.testing.assert_allclose(
-            self.B00K00.mixed_orbital_hessian(),
+            self.B00K00.mixed_overlap_hessian(),
             clmixhess(self.B00K00, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_d01(self):
         np.testing.assert_allclose(
-            self.B00K01.mixed_orbital_hessian(),
+            self.B00K01.mixed_overlap_hessian(),
             clmixhess(self.B00K01, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_d10(self):
         np.testing.assert_allclose(
-            self.B00K10.mixed_orbital_hessian(),
+            self.B00K10.mixed_overlap_hessian(),
             clmixhess(self.B00K10, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_d11(self):
         np.testing.assert_allclose(
-            self.B00K11.mixed_orbital_hessian(),
+            self.B00K11.mixed_overlap_hessian(),
             clmixhess(self.B00K11, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_d00(self):
         np.testing.assert_allclose(
-            self.B01K00.mixed_orbital_hessian(),
+            self.B01K00.mixed_overlap_hessian(),
             clmixhess(self.B01K00, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_d01(self):
         np.testing.assert_allclose(
-            self.B01K01.mixed_orbital_hessian(),
+            self.B01K01.mixed_overlap_hessian(),
             clmixhess(self.B01K01, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_d10(self):
         np.testing.assert_allclose(
-            self.B01K10.mixed_orbital_hessian(),
+            self.B01K10.mixed_overlap_hessian(),
             clmixhess(self.B01K10, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_d11(self):
         np.testing.assert_allclose(
-            self.B01K11.mixed_orbital_hessian(),
+            self.B01K11.mixed_overlap_hessian(),
             clmixhess(self.B01K11, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_d00(self):
         np.testing.assert_allclose(
-            self.B10K00.mixed_orbital_hessian(),
+            self.B10K00.mixed_overlap_hessian(),
             clmixhess(self.B10K00, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_d01(self):
         np.testing.assert_allclose(
-            self.B10K01.mixed_orbital_hessian(),
+            self.B10K01.mixed_overlap_hessian(),
             clmixhess(self.B10K01, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_d10(self):
         np.testing.assert_allclose(
-            self.B10K10.mixed_orbital_hessian(),
+            self.B10K10.mixed_overlap_hessian(),
             clmixhess(self.B10K10, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_d11(self):
         np.testing.assert_allclose(
-            self.B10K11.mixed_orbital_hessian(),
+            self.B10K11.mixed_overlap_hessian(),
             clmixhess(self.B10K11, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_d00(self):
         np.testing.assert_allclose(
-            self.B11K00.mixed_orbital_hessian(),
+            self.B11K00.mixed_overlap_hessian(),
             clmixhess(self.B11K00, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_d01(self):
         np.testing.assert_allclose(
-            self.B11K01.mixed_orbital_hessian(),
+            self.B11K01.mixed_overlap_hessian(),
             clmixhess(self.B11K01, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_d10(self):
         np.testing.assert_allclose(
-            self.B11K10.mixed_orbital_hessian(),
+            self.B11K10.mixed_overlap_hessian(),
             clmixhess(self.B11K10, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_d11(self):
         np.testing.assert_allclose(
-            self.B11K11.mixed_orbital_hessian(),
+            self.B11K11.mixed_overlap_hessian(),
             clmixhess(self.B11K11, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
@@ -1548,28 +1548,28 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d010_d010(self):
         np.testing.assert_allclose(
-            self.B010K010.mixed_orbital_hessian(),
+            self.B010K010.mixed_overlap_hessian(),
             clmixhess(self.B010K010, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d010_d011(self):
         np.testing.assert_allclose(
-            self.B010K011.mixed_orbital_hessian(),
+            self.B010K011.mixed_overlap_hessian(),
             clmixhess(self.B010K011, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d011_d010(self):
         np.testing.assert_allclose(
-            self.B011K010.mixed_orbital_hessian(),
+            self.B011K010.mixed_overlap_hessian(),
             clmixhess(self.B011K010, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d011_d011(self):
         np.testing.assert_allclose(
-            self.B011K011.mixed_orbital_hessian(),
+            self.B011K011.mixed_overlap_hessian(),
             clmixhess(self.B011K011, 'overlap', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )

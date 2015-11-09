@@ -168,10 +168,10 @@ class BraKet(object):
         
         return dK_h_La.T, dK_h_Lb.T
     
-    def norm_orbital_hessian(self):
-        return self.right_orbital_hessian() + self.mixed_orbital_hessian()
+    def norm_overlap_hessian(self):
+        return self.right_overlap_hessian() + self.mixed_overlap_hessian()
 
-    def right_orbital_hessian(self):
+    def right_overlap_hessian(self):
         """
         Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
 
@@ -200,7 +200,7 @@ class BraKet(object):
 
         return Kd2L
 
-    def mixed_orbital_hessian(self):
+    def mixed_overlap_hessian(self):
         """
         L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>
 
@@ -261,7 +261,7 @@ class BraKet(object):
         e1 = self.energy(h1)
         KL = self.overlap()
         KdL = self.right_overlap_gradient()
-        Kd2L = self.right_orbital_hessian()
+        Kd2L = self.right_overlap_hessian()
         KhdL = sum(self.right_energy_gradient_ab2(h1))
         
 
@@ -295,7 +295,7 @@ class BraKet(object):
 
         # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
         e1 = self.energy(h1)
-        dK_dL = self.mixed_orbital_hessian()
+        dK_dL = self.mixed_overlap_hessian()
 
         dK_h_dL = e1*dK_dL
 
@@ -750,7 +750,7 @@ class WaveFunction(object):
                         #
                         Nstructhess[s1, s2] += (Cd1*Cd2)*bk12.overlap()
                         Norbstructhess[:, :, s1] += Cd1*C2*bk12.overlap_gradient()
-                        Norbhess += C1*C2*bk12.norm_orbital_hessian()
+                        Norbhess += C1*C2*bk12.norm_overlap_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
         Norbhess *= 2
