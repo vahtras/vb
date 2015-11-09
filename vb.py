@@ -575,8 +575,9 @@ class WaveFunction(object):
             for T, CT in zip(self.structs, self.coef):
                 for K, CK in zip(S.nods, S.coef):
                     for L, CL in zip(T.nods, T.coef):
-                        D12 = DKL(K, L)
-                        S12 = K*L
+                        KL = BraKet(K, L)
+                        D12 = KL.transition_ao_density
+                        S12 = KL.overlap()
                         Na = (D12[0]&Nod.S)
                         Nb = (D12[1]&Nod.S)
                         C12 = CS*CT*CK*CL
@@ -596,13 +597,12 @@ class WaveFunction(object):
                 H = 0
                 for K, CKS in zip(S.nods, S.coef):
                     for L, CLT in zip(T.nods, T.coef):
-                        K_L = BraKet(K, L)
-                        D12 = K_L.transition_ao_density
-                        KL = K_L.overlap()
-                        FKL = K_L.transition_ao_fock
+                        KL = BraKet(K, L)
+                        D12 = KL.transition_ao_density
+                        FKL = KL.transition_ao_fock
                         hKL = self.h&(D12[0]+D12[1])
                         gKL = HKL(FKL, D12)
-                        H += (hKL+gKL)*KL*CKS*CLT
+                        H += (hKL+gKL)*CKS*CLT*KL.overlap()
                 SH.append(H)
         LS = len(self.structs)
         return full.init(SH).reshape((LS, LS))
