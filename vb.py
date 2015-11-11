@@ -27,7 +27,12 @@ class BraKet(object):
         return os.path.join(self.tmpdir, filename)
 
     def __mul__(self, h):
-        return self.energy(h)*self.overlap()
+        if is_one_electron(h):
+            return self.energy(h)*self.overlap()
+        elif is_two_electron(h):
+            raise Exception("Not implemented")
+        else:
+            raise Exception("Unknown multiplicator")
 
     def overlap(self):
         return self.K*self.L
@@ -49,7 +54,12 @@ class BraKet(object):
 
     @property
     def transition_ao_fock(self):
-        return Fao(self.transition_ao_density, filename=self.tmp('AOTWOINT'))
+        FKL = tuple(f.view(full.matrix) 
+            for f in Fao(
+                self.transition_ao_density, filename=self.tmp('AOTWOINT')
+                )
+            )
+        return FKL
 
     def overlap_gradient(self):
         """ d/dC(^mu,_m)<K|L>"""
@@ -171,11 +181,97 @@ class BraKet(object):
 
         CL = self.L.orbitals()
         if self.L(0):
-            dK_h_La[self.K(0), :]  += Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
+            dK_h_La[self.K(0), :] += Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
         if self.L(1):
-            dK_h_Lb[self.K(1), :]  += Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
+            dK_h_Lb[self.K(1), :] += Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
         
         return dK_h_La.T, dK_h_Lb.T
+
+    def twoel_energy(self):
+        DKL = self.transition_ao_density
+        FKL = self.transition_ao_fock
+        return (FKL[0]&DKL[0]) + (FKL[1]&DKL[1])
+
+    def twoel_tme(self):
+        """<K|g|L>"""
+        return self.twoel_energy()*self.overlap()
+
+    def right_2el_energy_gradient(self):
+        K_h_dLa, K_h_dLb = self.right_2el_energy_gradient_ab()
+        return K_h_dLa + K_h_dLb 
+
+    def right_2el_energy_gradient_ab(self):
+        eg1_a, eg1_b = self.right_2el_energy_gradient_ab1()
+        eg2_a, eg2_b = self.right_2el_energy_gradient_ab2()
+        eg_ab = (eg1_a + 2*eg2_a, eg1_b + 2*eg2_b)
+        return eg_ab
+
+    def right_2el_energy_gradient_ab1(self):
+        fab = self.transition_ao_fock
+        K_h_dLa, K_h_dLb = (
+            self.energy(fab)*g 
+            for g in self.right_overlap_gradient_ab()
+            )
+        return K_h_dLa, K_h_dLb 
+
+    def right_2el_energy_gradient_ab2(self):
+        """Rhs derivative <K|g|dL/dC(mu, m)>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Fao = self.transition_ao_fock
+        Delta = tuple((I - S*d) for d in Dao)
+
+        K_h_dLa = full.matrix(Nod.C.shape)
+        K_h_dLb = full.matrix(Nod.C.shape)
+
+        CK = self.K.orbitals()
+        if self.K(0):
+            K_h_dLa[:, self.L(0)] += Delta[0]*Fao[0].T*CK[0]*Dmo[0]*self.overlap()
+        if self.K(1):
+            K_h_dLb[:, self.L(1)] += Delta[1]*Fao[1].T*CK[1]*Dmo[1]*self.overlap()
+        return K_h_dLa, K_h_dLb
+
+    def left_2el_energy_gradient(self):
+        K_h_dLa, K_h_dLb = self.left_2el_energy_gradient_ab()
+        return K_h_dLa + K_h_dLb 
+
+    def left_2el_energy_gradient_ab(self):
+        eg1_a, eg1_b = self.left_2el_energy_gradient_ab1()
+        eg2_a, eg2_b = self.left_2el_energy_gradient_ab2()
+        eg_ab = (eg1_a + 2*eg2_a, eg1_b + 2*eg2_b)
+        return eg_ab
+
+    def left_2el_energy_gradient_ab1(self):
+        fab = self.transition_ao_fock
+        dK_h_La, dK_h_Lb = (
+            self.energy(fab)*g 
+            for g in self.left_overlap_gradient_ab()
+            )
+        return dK_h_La, dK_h_Lb 
+
+    def left_2el_energy_gradient_ab2(self):
+        """Rhs derivative <dK/dC(mu, m)|g|L>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Fao = self.transition_ao_fock
+        Delta = tuple((I - d*S) for d in Dao)
+
+        dK_h_La = full.matrix(Nod.C.shape[::-1])
+        dK_h_Lb = full.matrix(Nod.C.shape[::-1])
+
+        CL = self.L.orbitals()
+        if self.L(0):
+            dK_h_La[self.K(0), :] += Dmo[0]*CL[0].T*Fao[0].T*Delta[0]*self.overlap()
+        if self.L(1):
+            dK_h_Lb[self.K(1), :] += Dmo[1]*CL[1].T*Fao[1].T*Delta[1]*self.overlap()
+        return dK_h_La.T, dK_h_Lb.T
+
     
     def norm_overlap_hessian(self):
         return self.right_overlap_hessian() + self.mixed_overlap_hessian()
@@ -1405,6 +1501,24 @@ class WaveFunction(object):
         h[:ls, ls:] = mh1T
         h[ls:, ls:] = oh1
         return h
+
+def is_one_electron(h):
+    return is_one_tuple(h) or is_one_array(h)
+
+def is_one_tuple(h):
+    return isinstance(h, tuple) and \
+        len(h) == 2 and \
+        is_one_array(h[0]) and \
+        is_one_array(h[1])
+
+def is_one_array(h):
+    import numpy
+    return isinstance(h, numpy.ndarray) and \
+           len(h.shape) == 2 and \
+           h.shape[0] == h.shape[1]
+
+def is_two_electron(h):
+    pass
 
 if __name__ == "__main__":
     pass

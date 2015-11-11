@@ -175,6 +175,9 @@ class BraKetTest(unittest.TestCase):
         ana_diff = self.b0b0.mixed_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
+    def test_a0a0_2el_energy(self):
+        self.assertAlmostEqual(self.a0a0.twoel_tme(), 0)
+
 
 
 ###
@@ -458,6 +461,16 @@ class BraKetTest(unittest.TestCase):
     def test_K00_L00_one_energy_left_gradient(self):
         num_diff = clgrad(self.K00_L00, '__mul__', 'K.C', )(self.f)
         ana_diff = self.K00_L00.left_energy_gradient(self.f)
+        np.testing.assert_allclose(ana_diff, num_diff)
+
+    def test_K00_L00_2el_energy_right_gradient(self):
+        num_diff = clgrad(self.K00_L00, 'twoel_tme', 'L.C', )()
+        ana_diff = self.K00_L00.right_2el_energy_gradient()
+        np.testing.assert_allclose(ana_diff, num_diff)
+
+    def test_K00_L00_2el_energy_left_gradient(self):
+        num_diff = clgrad(self.K00_L00, 'twoel_tme', 'K.C', )()
+        ana_diff = self.K00_L00.left_2el_energy_gradient()
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_K00_L00_left_right_analytical_vs_numerical_energy_hessian(self):
@@ -801,6 +814,118 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+    def test_00_g_d00(self):
+        np.testing.assert_allclose(
+            self.B00K00.right_2el_energy_gradient(),
+            clgrad(self.B00K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_g_d01(self):
+        np.testing.assert_allclose(
+            self.B00K01.right_2el_energy_gradient(),
+            clgrad(self.B00K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_g_d10(self):
+        np.testing.assert_allclose(
+            self.B00K10.right_2el_energy_gradient(),
+            clgrad(self.B00K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_00_g_d11(self):
+        np.testing.assert_allclose(
+            self.B00K11.right_2el_energy_gradient(),
+            clgrad(self.B00K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_g_d00(self):
+        np.testing.assert_allclose(
+            self.B01K00.right_2el_energy_gradient(),
+            clgrad(self.B01K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_g_d01(self):
+        np.testing.assert_allclose(
+            self.B01K01.right_2el_energy_gradient(),
+            clgrad(self.B01K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_g_d10(self):
+        np.testing.assert_allclose(
+            self.B01K10.right_2el_energy_gradient(),
+            clgrad(self.B01K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_01_g_d11(self):
+        np.testing.assert_allclose(
+            self.B01K11.right_2el_energy_gradient(),
+            clgrad(self.B01K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_d00(self):
+        np.testing.assert_allclose(
+            self.B10K00.right_2el_energy_gradient(),
+            clgrad(self.B10K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_d01(self):
+        np.testing.assert_allclose(
+            self.B10K01.right_2el_energy_gradient(),
+            clgrad(self.B10K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_d10(self):
+        np.testing.assert_allclose(
+            self.B10K10.right_2el_energy_gradient(),
+            clgrad(self.B10K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_d11(self):
+        np.testing.assert_allclose(
+            self.B10K11.right_2el_energy_gradient(),
+            clgrad(self.B10K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_d00(self):
+        np.testing.assert_allclose(
+            self.B11K00.right_2el_energy_gradient(),
+            clgrad(self.B11K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_d01(self):
+        np.testing.assert_allclose(
+            self.B11K01.right_2el_energy_gradient(),
+            clgrad(self.B11K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_d10(self):
+        np.testing.assert_allclose(
+            self.B11K10.right_2el_energy_gradient(),
+            clgrad(self.B11K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_d11(self):
+        np.testing.assert_allclose(
+            self.B11K11.right_2el_energy_gradient(),
+            clgrad(self.B11K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
 
 
 # Left
@@ -1026,6 +1151,118 @@ class BraKetTest2(unittest.TestCase):
         np.testing.assert_allclose(
             self.B11K11.left_energy_gradient(self.f),
             clgrad(self.B11K11, '__mul__', 'K.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_00(self):
+        np.testing.assert_allclose(
+            self.B00K00.left_2el_energy_gradient(),
+            clgrad(self.B00K00, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_01(self):
+        np.testing.assert_allclose(
+            self.B00K01.left_2el_energy_gradient(),
+            clgrad(self.B00K01, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_10(self):
+        np.testing.assert_allclose(
+            self.B00K10.left_2el_energy_gradient(),
+            clgrad(self.B00K10, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_11(self):
+        np.testing.assert_allclose(
+            self.B00K11.left_2el_energy_gradient(),
+            clgrad(self.B00K11, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_00(self):
+        np.testing.assert_allclose(
+            self.B01K00.left_2el_energy_gradient(),
+            clgrad(self.B01K00, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_01(self):
+        np.testing.assert_allclose(
+            self.B01K01.left_2el_energy_gradient(),
+            clgrad(self.B01K01, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_10(self):
+        np.testing.assert_allclose(
+            self.B01K10.left_2el_energy_gradient(),
+            clgrad(self.B01K10, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_11(self):
+        np.testing.assert_allclose(
+            self.B01K11.left_2el_energy_gradient(),
+            clgrad(self.B01K11, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_00(self):
+        np.testing.assert_allclose(
+            self.B10K00.left_2el_energy_gradient(),
+            clgrad(self.B10K00, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_01(self):
+        np.testing.assert_allclose(
+            self.B10K01.left_2el_energy_gradient(),
+            clgrad(self.B10K01, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_10(self):
+        np.testing.assert_allclose(
+            self.B10K10.left_2el_energy_gradient(),
+            clgrad(self.B10K10, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_11(self):
+        np.testing.assert_allclose(
+            self.B10K11.left_2el_energy_gradient(),
+            clgrad(self.B10K11, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_00(self):
+        np.testing.assert_allclose(
+            self.B11K00.left_2el_energy_gradient(),
+            clgrad(self.B11K00, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_01(self):
+        np.testing.assert_allclose(
+            self.B11K01.left_2el_energy_gradient(),
+            clgrad(self.B11K01, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_10(self):
+        np.testing.assert_allclose(
+            self.B11K10.left_2el_energy_gradient(),
+            clgrad(self.B11K10, 'twoel_tme', 'K.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_11(self):
+        np.testing.assert_allclose(
+            self.B11K11.left_2el_energy_gradient(),
+            clgrad(self.B11K11, 'twoel_tme', 'K.C')(),
             rtol=DELTA, atol=DELTA
             )
 
