@@ -190,7 +190,7 @@ class BraKet(object):
     def twoel_energy(self):
         DKL = self.transition_ao_density
         FKL = self.transition_ao_fock
-        return (FKL[0]&DKL[0]) + (FKL[1]&DKL[1])
+        return .5*((FKL[0]&DKL[0]) + (FKL[1]&DKL[1]))
 
     def twoel_tme(self):
         """<K|g|L>"""
@@ -203,13 +203,13 @@ class BraKet(object):
     def right_2el_energy_gradient_ab(self):
         eg1_a, eg1_b = self.right_2el_energy_gradient_ab1()
         eg2_a, eg2_b = self.right_2el_energy_gradient_ab2()
-        eg_ab = (eg1_a + 2*eg2_a, eg1_b + 2*eg2_b)
+        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
     def right_2el_energy_gradient_ab1(self):
         fab = self.transition_ao_fock
         K_h_dLa, K_h_dLb = (
-            self.energy(fab)*g 
+            0.5*self.energy(fab)*g 
             for g in self.right_overlap_gradient_ab()
             )
         return K_h_dLa, K_h_dLb 
@@ -241,13 +241,13 @@ class BraKet(object):
     def left_2el_energy_gradient_ab(self):
         eg1_a, eg1_b = self.left_2el_energy_gradient_ab1()
         eg2_a, eg2_b = self.left_2el_energy_gradient_ab2()
-        eg_ab = (eg1_a + 2*eg2_a, eg1_b + 2*eg2_b)
+        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
     def left_2el_energy_gradient_ab1(self):
         fab = self.transition_ao_fock
         dK_h_La, dK_h_Lb = (
-            self.energy(fab)*g 
+            0.5*self.energy(fab)*g 
             for g in self.left_overlap_gradient_ab()
             )
         return dK_h_La, dK_h_Lb 
@@ -377,13 +377,48 @@ class BraKet(object):
             full.matrix(Nod.C.shape),
             full.matrix(Nod.C.shape)
             )
-        D_am[0][:, self.K(0)] = S*CK[0]*Dmo[0]
-        D_am[1][:, self.K(1)] = S*CK[1]*Dmo[1]
+        D_am[0][:, self.L(0)] = S*CK[0]*Dmo[0]
+        D_am[1][:, self.L(1)] = S*CK[1]*Dmo[1]
 
         na, nb = self.right_overlap_gradient_ab()
         ha, hb = self.right_energy_gradient_ab2(h1)
         K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
         K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
+            
+        return K_h_d2L
+
+    def right_2el_energy_hessian(self):
+        """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Delta = tuple(I - S*d for d in Dao)
+
+        e2 = self.twoel_energy()
+        KL = self.overlap()
+        KdL = self.right_overlap_gradient()
+        Kd2L = self.right_overlap_hessian()
+        KhdL = sum(self.right_2el_energy_gradient_ab2())
+        
+
+        K_h_d2L = e2*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
+
+        CK = self.K.orbitals()
+        Dam = (
+            full.matrix(Nod.C.shape),
+            full.matrix(Nod.C.shape)
+            )
+        Dam[0][:, self.L(0)] = CK[0]*Dmo[0]
+        Dam[1][:, self.L(1)] = CK[1]*Dmo[1]
+
+        na, nb = self.right_overlap_gradient_ab()
+        ha, hb = self.right_2el_energy_gradient_ab2()
+        K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
+        K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
+
+        K_h_d2L += two.vb_transform(Dam, Delta)*KL
             
         return K_h_d2L
 
