@@ -413,6 +413,7 @@ class BraKetTest(unittest.TestCase):
         num_diff = clgrad(self.b1b1, '__mul__', 'K.C', )(self.f)
         ana_diff = self.b1b1.left_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
+
 ### (0|0)
 
     def test_K00_L00_norm(self):
@@ -556,6 +557,7 @@ class BraKetTest(unittest.TestCase):
     def test_K00_L00_right_2el_energy_hessian(self):
         num_diff = clhess(self.K00_L00, 'twoel_tme', 'L.C', )()
         ana_diff = self.K00_L00.right_2el_energy_hessian()
+        print "one", ana_diff
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 class BraKetTest2(unittest.TestCase):
@@ -586,14 +588,10 @@ class BraKetTest2(unittest.TestCase):
         self.B11K10 = BraKet(Nod([1], [1]), Nod([1], [0]))
         self.B11K11 = BraKet(Nod([1], [1]), Nod([1], [1]))
 
-        self.B010K010 = BraKet(Nod([0, 1], [0]), Nod([0, 1], [0]))
-        self.B010K011 = BraKet(Nod([0, 1], [0]), Nod([0, 1], [1]))
-        self.B011K010 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [0]))
-        self.B011K011 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [1]))
 
 ##Gradient tests
 
-# Right
+# Right overlap gradient
 
     def test_00_d00(self):
         np.testing.assert_allclose(
@@ -707,6 +705,8 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Right one-electron energy gradient
+
     def test_00_h_d00(self):
         np.testing.assert_allclose(
             self.B00K00.right_energy_gradient(self.f),
@@ -818,6 +818,8 @@ class BraKetTest2(unittest.TestCase):
             clgrad(self.B11K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
+
+# Right two-electron energy gradient
 
     def test_00_g_d00(self):
         np.testing.assert_allclose(
@@ -933,7 +935,7 @@ class BraKetTest2(unittest.TestCase):
 
 
 
-# Left
+# Left overlap gradient
 
     def test_d00_00(self):
         np.testing.assert_allclose(
@@ -1047,6 +1049,8 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Left one-electron energy gradient
+
     def test_d00_h_00(self):
         np.testing.assert_allclose(
             self.B00K00.left_energy_gradient(self.f),
@@ -1158,6 +1162,8 @@ class BraKetTest2(unittest.TestCase):
             clgrad(self.B11K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
+
+# Left two-electron energy gradient
 
     def test_d00_g_00(self):
         np.testing.assert_allclose(
@@ -1271,9 +1277,8 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
-## Hessian
 
-# Right
+# Right overlap Hessian
 
     def test_00_dd00(self):
         np.testing.assert_allclose(
@@ -1387,6 +1392,8 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Right one-electron energy Hessian
+
     def test_00_h_dd00(self):
         np.testing.assert_allclose(
             self.B00K00.right_energy_hessian(self.f),
@@ -1499,66 +1506,121 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Right two-electron energy Hessian
 
-####
-
-    def test_010_dd010(self):
+    def test_00_g_dd00(self):
         np.testing.assert_allclose(
-            self.B010K010.right_overlap_hessian(),
-            clhess(self.B010K010, 'overlap', 'L.C')(),
+            self.B00K00.right_2el_energy_hessian(),
+            clhess(self.B00K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA*2
+            )
+
+    def test_00_g_dd01(self):
+        np.testing.assert_allclose(
+            self.B00K01.right_2el_energy_hessian(),
+            clhess(self.B00K01, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_010_dd011(self):
+    def test_00_g_dd10(self):
         np.testing.assert_allclose(
-            self.B010K011.right_overlap_hessian(),
-            clhess(self.B010K011, 'overlap', 'L.C')(),
+            self.B00K10.right_2el_energy_hessian(),
+            clhess(self.B00K10, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_011_dd010(self):
+    def test_00_g_dd11(self):
         np.testing.assert_allclose(
-            self.B011K010.right_overlap_hessian(),
-            clhess(self.B011K010, 'overlap', 'L.C')(),
+            self.B00K11.right_2el_energy_hessian(),
+            clhess(self.B00K11, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_011_dd011(self):
+    def test_01_g_dd00(self):
         np.testing.assert_allclose(
-            self.B011K011.right_overlap_hessian(),
-            clhess(self.B011K011, 'overlap', 'L.C')(),
+            self.B01K00.right_2el_energy_hessian(),
+            clhess(self.B01K00, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_010_h_dd010(self):
+    def test_01_g_dd01(self):
         np.testing.assert_allclose(
-            self.B010K010.right_energy_hessian(self.f),
-            clhess(self.B010K010, '__mul__', 'L.C')(self.f),
+            self.B01K01.right_2el_energy_hessian(),
+            clhess(self.B01K01, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_010_h_dd011(self):
+    def test_01_g_dd10(self):
         np.testing.assert_allclose(
-            self.B010K011.right_energy_hessian(self.f),
-            clhess(self.B010K011, '__mul__', 'L.C')(self.f),
+            self.B01K10.right_2el_energy_hessian(),
+            clhess(self.B01K10, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_011_h_dd010(self):
+    def test_01_g_dd11(self):
         np.testing.assert_allclose(
-            self.B011K010.right_energy_hessian(self.f),
-            clhess(self.B011K010, '__mul__', 'L.C')(self.f),
+            self.B01K11.right_2el_energy_hessian(),
+            clhess(self.B01K11, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-    def test_011_h_dd011(self):
+    def test_10_g_dd00(self):
         np.testing.assert_allclose(
-            self.B011K011.right_energy_hessian(self.f),
-            clhess(self.B011K011, '__mul__', 'L.C')(self.f),
+            self.B10K00.right_2el_energy_hessian(),
+            clhess(self.B10K00, 'twoel_tme', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
 
-# Mixed 
+    def test_10_g_dd01(self):
+        np.testing.assert_allclose(
+            self.B10K01.right_2el_energy_hessian(),
+            clhess(self.B10K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_dd10(self):
+        np.testing.assert_allclose(
+            self.B10K10.right_2el_energy_hessian(),
+            clhess(self.B10K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_10_g_dd11(self):
+        np.testing.assert_allclose(
+            self.B10K11.right_2el_energy_hessian(),
+            clhess(self.B10K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_dd00(self):
+        np.testing.assert_allclose(
+            self.B11K00.right_2el_energy_hessian(),
+            clhess(self.B11K00, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_dd01(self):
+        np.testing.assert_allclose(
+            self.B11K01.right_2el_energy_hessian(),
+            clhess(self.B11K01, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_dd10(self):
+        np.testing.assert_allclose(
+            self.B11K10.right_2el_energy_hessian(),
+            clhess(self.B11K10, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_11_g_dd11(self):
+        np.testing.assert_allclose(
+            self.B11K11.right_2el_energy_hessian(),
+            clhess(self.B11K11, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+# Mixed overlap Hessian
 
     def test_d00_d00(self):
         np.testing.assert_allclose(
@@ -1672,6 +1734,8 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Mixed one-electron energy Hessian
+
     def test_d00_h_d00(self):
         np.testing.assert_allclose(
             self.B00K00.mixed_energy_hessian(self.f),
@@ -1783,6 +1847,77 @@ class BraKetTest2(unittest.TestCase):
             clmixhess(self.B11K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
+
+####
+class BraKetTest3(unittest.TestCase):
+
+    def setUp(self):
+        Nod.S = init([[1.0, 0.2, 0.1], [0.2, 1.0, 0.2], [0.1, 0.2, 1.0]])
+        Nod.h = init([[-0.5, 0.2, 0.1], [0.2, -0.25, 0.2], [0.1, -0.1, 1.0]])
+        Nod.C = init([[0.7, 0.6, 0.5], [0.4, 0.3, 0.2]])
+        self.f = (Nod.h, Nod.h)
+
+        self.B010K010 = BraKet(Nod([0, 1], [0]), Nod([0, 1], [0]))
+        self.B010K011 = BraKet(Nod([0, 1], [0]), Nod([0, 1], [1]))
+        self.B011K010 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [0]))
+        self.B011K011 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [1]))
+
+    def test_010_dd010(self):
+        np.testing.assert_allclose(
+            self.B010K010.right_overlap_hessian(),
+            clhess(self.B010K010, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_dd011(self):
+        np.testing.assert_allclose(
+            self.B010K011.right_overlap_hessian(),
+            clhess(self.B010K011, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_dd010(self):
+        np.testing.assert_allclose(
+            self.B011K010.right_overlap_hessian(),
+            clhess(self.B011K010, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_dd011(self):
+        np.testing.assert_allclose(
+            self.B011K011.right_overlap_hessian(),
+            clhess(self.B011K011, 'overlap', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_h_dd010(self):
+        np.testing.assert_allclose(
+            self.B010K010.right_energy_hessian(self.f),
+            clhess(self.B010K010, '__mul__', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_h_dd011(self):
+        np.testing.assert_allclose(
+            self.B010K011.right_energy_hessian(self.f),
+            clhess(self.B010K011, '__mul__', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_h_dd010(self):
+        np.testing.assert_allclose(
+            self.B011K010.right_energy_hessian(self.f),
+            clhess(self.B011K010, '__mul__', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_h_dd011(self):
+        np.testing.assert_allclose(
+            self.B011K011.right_energy_hessian(self.f),
+            clhess(self.B011K011, '__mul__', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
 
 ###
 
