@@ -17,6 +17,7 @@ class BraKet(object):
         self.K = K
         self.L = L
         self._td = None
+        self._ftd = None
         self._aotd = None
         self.tmpdir = '/tmp'
 
@@ -47,6 +48,20 @@ class BraKet(object):
         if self._td is None:
             self._td = Dmo(self.K, self.L)
         return self._td
+
+    @property
+    def full_mo_transition_density(self):
+        if self._ftd is None:
+            ao, mo = Nod.C.shape
+            D_KL = self.transition_density
+            self._ftd = (full.matrix((mo, mo)), full.matrix((mo, mo)))
+            for s in (0, 1):
+                if self.K(s) and self.L(s):
+                    D_KL[s].scatter(
+                        self._ftd[s], rows=self.K(s), columns=self.L(s)
+                        )
+            
+        return self._ftd
 
     @property
     def transition_ao_density(self):
@@ -449,15 +464,11 @@ class BraKet(object):
 
         # D^{mn}Delta^xi_mu h_{xi,rho}Delta_nu^rho
         ao, mo = Nod.C.shape
+        Dmm = self.full_mo_transition_density
         Dao = self.transition_ao_density
-        Dmm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
-
-        if self.K(0) and self.L(0):
-            D_KL[0].scatter(Dmm[0], rows=self.K(0), columns=self.L(0))
-        if self.K(1) and self.L(1):
-            D_KL[1].scatter(Dmm[1], rows=self.K(1), columns=self.L(1))
         Delta1 = tuple(full.unit(ao) - S*d for d in Dao)
         Delta2 = tuple(full.unit(ao) - d*S for d in Dao)
+
 
         dK_h_dL += (
             Dmm[0].x(Delta1[0]*h1[0].T*Delta2[0])*KL + \
@@ -468,22 +479,59 @@ class BraKet(object):
         CK = self.K.orbitals()
         CL = self.L.orbitals()
 
-        Dmm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
+        h1mm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
         if self.K(0) and self.L(0):
             (D_KL[0]*CL[0].T*h1[0].T*CK[0]*D_KL[0]).scatter(
-            Dmm[0], rows=self.K(0), columns=self.L(0)
+            h1mm[0], rows=self.K(0), columns=self.L(0)
             )
         if self.K(1) and self.L(1):
             (D_KL[1]*CL[1].T*h1[1].T*CK[1]*D_KL[1]).scatter(
-            Dmm[1], rows=self.K(1), columns=self.L(1)
+            h1mm[1], rows=self.K(1), columns=self.L(1)
             )
         Delta = tuple(S - S*d*S for d in Dao)
         dK_h_dL -= (
-            Delta[0].x(Dmm[0])*KL + Delta[1].x(Dmm[1])*KL
+            Delta[0].x(h1mm[0])*KL + Delta[1].x(h1mm[1])*KL
             ).transpose(1, 2, 0, 3)
 
         return dK_h_dL
 
+    def mixed_2el_energy_hessian(self):
+        """Rhs derivative <dK/dC(mu, m)|g|dL/dC(nu, n)>"""
+        S = Nod.S
+        I = full.unit(S.shape[0])
+
+        Dmo = self.transition_density
+        Dao = self.transition_ao_density
+        Delta = tuple(I - S*d for d in Dao)
+
+        e2 = self.twoel_energy()
+        KL = self.overlap()
+        KdL = self.right_overlap_gradient()
+        KgdL = self.right_2el_energy_gradient()
+        dKL = self.left_overlap_gradient()
+        dKgL = self.left_2el_energy_gradient()
+        dKdL = self.mixed_overlap_hessian()
+        KhdL = sum(self.right_2el_energy_gradient_ab2())
+        
+
+        K_h_d2L = e2*dKdL + (dKL.x(KgdL) + dKgL.x(KdL))/KL
+
+        CK = self.K.orbitals()
+        Dam = (
+            full.matrix(Nod.C.shape),
+            full.matrix(Nod.C.shape)
+            )
+        Dam[0][:, self.L(0)] = CK[0]*Dmo[0]
+        Dam[1][:, self.L(1)] = CK[1]*Dmo[1]
+
+        na, nb = self.right_overlap_gradient_ab()
+        ha, hb = self.right_2el_energy_gradient_ab2()
+        K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
+        K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
+
+        K_h_d2L += two.vb_transform(Dam, Delta)*KL
+            
+        return K_h_d2L
         
 #
 # Class of non-orthogonal determinants

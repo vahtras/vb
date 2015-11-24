@@ -557,7 +557,12 @@ class BraKetTest(unittest.TestCase):
     def test_K00_L00_right_2el_energy_hessian(self):
         num_diff = clhess(self.K00_L00, 'twoel_tme', 'L.C', )()
         ana_diff = self.K00_L00.right_2el_energy_hessian()
-        print "one", ana_diff
+        np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
+
+    @unittest.skip('hold')
+    def test_K00_L00_mixed_2el_energy_hessian(self):
+        num_diff = clmixhess(self.K00_L00, 'twoel_tme', 'K.C', 'L.C')()
+        ana_diff = self.K00_L00.mixed_2el_energy_hessian()
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 class BraKetTest2(unittest.TestCase):
