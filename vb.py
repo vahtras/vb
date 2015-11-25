@@ -197,8 +197,7 @@ class BraKet(object):
         return K_h_dL
 
     def left_energy_gradient(self, h1):
-        dK_h_La, dK_h_Lb = self.left_energy_gradient_ab(h1)
-        return dK_h_La + dK_h_Lb 
+        return sum(self.left_energy_gradient_ab(h1))
 
     def left_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = self.left_energy_gradient_ab1(h1)
@@ -215,12 +214,9 @@ class BraKet(object):
 
     def left_energy_gradient_ab2(self, h1):
         """Lhs derivative <dK/dC(mu,m)|h|L>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
 
         Dmo = self.transition_density
-        Dao = self.transition_ao_density
-        Delta = tuple((I - d*S) for d in Dao)
+        Delta = self.contra_covariant_transition_delta()
 
         dK_h_La = full.matrix(Nod.C.shape[::-1])
         dK_h_Lb = full.matrix(Nod.C.shape[::-1])
@@ -262,27 +258,11 @@ class BraKet(object):
 
     def right_2el_energy_gradient_ab2(self):
         """Rhs derivative <K|g|dL/dC(mu, m)>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
-
-        Dmo = self.transition_density
-        Dao = self.transition_ao_density
         Fao = self.transition_ao_fock
-        Delta = tuple((I - S*d) for d in Dao)
-
-        K_h_dLa = full.matrix(Nod.C.shape)
-        K_h_dLb = full.matrix(Nod.C.shape)
-
-        CK = self.K.orbitals()
-        if self.K(0):
-            K_h_dLa[:, self.L(0)] += Delta[0]*Fao[0].T*CK[0]*Dmo[0]*self.overlap()
-        if self.K(1):
-            K_h_dLb[:, self.L(1)] += Delta[1]*Fao[1].T*CK[1]*Dmo[1]*self.overlap()
-        return K_h_dLa, K_h_dLb
+        return self.right_energy_gradient_ab2(Fao)
 
     def left_2el_energy_gradient(self):
-        K_h_dLa, K_h_dLb = self.left_2el_energy_gradient_ab()
-        return K_h_dLa + K_h_dLb 
+        return sum(self.left_2el_energy_gradient_ab())
 
     def left_2el_energy_gradient_ab(self):
         eg1_a, eg1_b = self.left_2el_energy_gradient_ab1()
