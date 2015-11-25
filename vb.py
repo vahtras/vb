@@ -109,6 +109,12 @@ class BraKet(object):
         Delta_aa = (I - S*d for d in self.transition_ao_density)
         return tuple(Delta_aa)
 
+    def contra_covariant_transition_delta(self):
+        S = Nod.S
+        I = full.unit(S.shape[0])
+        Delta_aa = (I - d*S for d in self.transition_ao_density)
+        return tuple(Delta_aa)
+
 ###
 
     @property
@@ -178,22 +184,17 @@ class BraKet(object):
 
     def right_energy_gradient_ab2(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
 
         Dmo = self.transition_density
-        Dao = self.transition_ao_density
-        Delta = tuple((I - S*d) for d in Dao)
+        Delta = self.co_contravariant_transition_delta()
 
-        K_h_dLa = full.matrix(Nod.C.shape)
-        K_h_dLb = full.matrix(Nod.C.shape)
+        K_h_dL = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
 
         CK = self.K.orbitals()
-        if self.K(0):
-            K_h_dLa[:, self.L(0)] += Delta[0]*h1[0].T*CK[0]*Dmo[0]*self.overlap()
-        if self.K(1):
-            K_h_dLb[:, self.L(1)] += Delta[1]*h1[1].T*CK[1]*Dmo[1]*self.overlap()
-        return K_h_dLa, K_h_dLb
+        for s in (0, 1):
+            if self.K(s) and self.L(s):
+                K_h_dL[s][:, self.L(s)] += Delta[s]*h1[s].T*CK[s]*Dmo[s]*self.overlap()
+        return K_h_dL
 
     def left_energy_gradient(self, h1):
         dK_h_La, dK_h_Lb = self.left_energy_gradient_ab(h1)
@@ -445,10 +446,8 @@ class BraKet(object):
         # D^{mn}Delta^xi_mu h_{xi,rho}Delta_nu^rho
         ao, mo = Nod.C.shape
         Dmm = self.full_mo_transition_density
-        Dao = self.transition_ao_density
-        Delta1 = tuple(full.unit(ao) - S*d for d in Dao)
-        Delta2 = tuple(full.unit(ao) - d*S for d in Dao)
-
+        Delta1 = self.co_contravariant_transition_delta()
+        Delta2 = self.contra_covariant_transition_delta()
 
         dK_h_dL += (
             Dmm[0].x(Delta1[0]*h1[0].T*Delta2[0])*KL + \
@@ -476,36 +475,39 @@ class BraKet(object):
         return dK_h_dL
 
     def mixed_2el_energy_hessian(self):
-        """Rhs derivative <dK/dC(mu, m)|g|dL/dC(nu, n)>"""
+        """
+        L-R derivative <dK/dC(mu,m)|h|dL/dC(nu,n)>
+
+        <K|a^m+ a_\mu h a\nu+ a^n|L>
+        """
+
         S = Nod.S
-        I = full.unit(S.shape[0])
-
-        D_KL = self.transition_density
-        Dao = self.transition_ao_density
-        Delta = tuple(I - S*d for d in Dao)
-
-        e2 = self.twoel_energy()
         KL = self.overlap()
-        KdL = self.right_overlap_gradient()
-        KgdL = self.right_2el_energy_gradient()
-        dKL = self.left_overlap_gradient()
-        dKgL = self.left_2el_energy_gradient()
-        dKdL = self.mixed_overlap_hessian()
-        KhdL = sum(self.right_2el_energy_gradient_ab2())
-        Fao = self.transition_ao_fock
-        
+        D_KL = self.transition_density
 
-        dK_g_dL = e2*dKdL + (dKL.x(KgdL) + dKgL.x(KdL))/KL
+        # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
+        e2 = self.twoel_energy()
+        dK_dL = self.mixed_overlap_hessian()
 
-        CK = self.K.orbitals()
-        CK = self.K.orbitals()
+        dK_g_dL = e2*dK_dL 
+
+        # D^m_mu<K|H|dL/dC^nu_n> + <dK/dC^mu_m|h|L>D_nu^n
+        dK_L = self.left_overlap_gradient()
+        K_dL = self.right_overlap_gradient()
+        K_g_dL = self.right_2el_energy_gradient()
+        dK_g_L = self.left_2el_energy_gradient()
+        dK_g_dL += (dK_L.x(K_g_dL) + dK_g_L.x(K_dL))/KL
 
         # D^{mn}Delta^xi_mu F_{xi,rho}Delta_nu^rho
         ao, mo = Nod.C.shape
         Dmm = self.full_mo_transition_density
-        Dao = self.transition_ao_density
-        Delta1 = co_contravariant_transition_delta()
-        Delta2 = contra_covariant_transition_delta()
+        Delta1 = self.co_contravariant_transition_delta()
+        Delta2 = self.contra_covariant_transition_delta()
+
+
+        Fao = self.transition_ao_fock
+
+
         dK_g_dL += (
             Dmm[0].x(Delta1[0]*Fao[0].T*Delta2[0])*KL + \
             Dmm[1].x(Delta1[1]*Fao[1].T*Delta2[1])*KL
@@ -529,7 +531,12 @@ class BraKet(object):
             Delta[0].x(Fmm[0])*KL + Delta[1].x(Fmm[1])*KL
             ).transpose(1, 2, 0, 3)
 
-        dK_g_dL += two.vb_transform2(dma, dam, Delta_ud, Delta_du)
+        dK_g_dL += two.vb_transform2(
+            self.contravariant_transition_density_mo_ao,
+            self.contravariant_transition_density_ao_mo,
+            self.contra_covariant_transition_delta,
+            self.co_contravariant_transition_delta
+            )
         return dK_g_dL
         
 #
