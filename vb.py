@@ -280,23 +280,8 @@ class BraKet(object):
 
     def left_2el_energy_gradient_ab2(self):
         """Rhs derivative <dK/dC(mu, m)|g|L>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
-
-        Dmo = self.transition_density
-        Dao = self.transition_ao_density
         Fao = self.transition_ao_fock
-        Delta = tuple((I - d*S) for d in Dao)
-
-        dK_h_La = full.matrix(Nod.C.shape[::-1])
-        dK_h_Lb = full.matrix(Nod.C.shape[::-1])
-
-        CL = self.L.orbitals()
-        if self.L(0):
-            dK_h_La[self.K(0), :] += Dmo[0]*CL[0].T*Fao[0].T*Delta[0]*self.overlap()
-        if self.L(1):
-            dK_h_Lb[self.K(1), :] += Dmo[1]*CL[1].T*Fao[1].T*Delta[1]*self.overlap()
-        return dK_h_La.T, dK_h_Lb.T
+        return self.left_energy_gradient_ab2(Fao)
 
     
     def norm_overlap_hessian(self):
@@ -312,10 +297,8 @@ class BraKet(object):
         #
         # Orbital-orbital hessian
         #
-        CK = self.K.orbitals()
         DmoKL = self.transition_density
         D_am = self.co_contravariant_transition_density_ao_mo()
-
 
         Kd2L = (
             (D_am[0] + D_am[1]).x(D_am[0] + D_am[1])
@@ -349,11 +332,6 @@ class BraKet(object):
 
     def right_energy_hessian(self, h1):
         """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
-
-        Dmo = self.transition_density
-        Dao = self.transition_ao_density
 
         e1 = self.energy(h1)
         KL = self.overlap()
@@ -372,28 +350,22 @@ class BraKet(object):
 
     def right_2el_energy_hessian(self):
         """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
-        S = Nod.S
-        I = full.unit(S.shape[0])
-
-        Dam = self.contravariant_transition_density_ao_mo
-        Delta = self.co_contravariant_transition_delta()
-        
 
         e2 = self.twoel_energy()
         KL = self.overlap()
         KdL = self.right_overlap_gradient()
         Kd2L = self.right_overlap_hessian()
         KhdL = sum(self.right_2el_energy_gradient_ab2())
-        
 
         K_h_d2L = e2*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
-
 
         na, nb = self.right_overlap_gradient_ab()
         ha, hb = self.right_2el_energy_gradient_ab2()
         K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
         K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
 
+        Dam = self.contravariant_transition_density_ao_mo
+        Delta = self.co_contravariant_transition_delta()
         K_h_d2L += two.vb_transform(Dam, Delta)*KL
             
         return K_h_d2L
