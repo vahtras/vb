@@ -330,44 +330,43 @@ class BraKet(object):
 
         return dKdL
 
-    def right_energy_hessian(self, h1):
+    def right_1el_energy_hessian(self, h1):
+        K_h_d2L = self.right_energy_hessian(
+            self.energy,
+            self.right_energy_gradient_ab2,
+            h1
+            )
+        return K_h_d2L
+
+    def right_energy_hessian(self, energy, right_gradient, *args):
         """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
 
-        e1 = self.energy(h1)
         KL = self.overlap()
         KdL = self.right_overlap_gradient()
         Kd2L = self.right_overlap_hessian()
-        KhdL = sum(self.right_energy_gradient_ab2(h1))
+        KhdL = sum(right_gradient(*args))
+
+        e1 = energy(*args)
 
         K_h_d2L = e1*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
 
         na, nb = self.right_overlap_gradient_ab()
-        ha, hb = self.right_energy_gradient_ab2(h1)
+        ha, hb = right_gradient(*args)
         K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
         K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
             
         return K_h_d2L
 
     def right_2el_energy_hessian(self):
-        """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
-
-        e2 = self.twoel_energy()
-        KL = self.overlap()
-        KdL = self.right_overlap_gradient()
-        Kd2L = self.right_overlap_hessian()
-        KhdL = sum(self.right_2el_energy_gradient_ab2())
-
-        K_h_d2L = e2*Kd2L + (KdL.x(KhdL) + KhdL.x(KdL))/KL
-
-        na, nb = self.right_overlap_gradient_ab()
-        ha, hb = self.right_2el_energy_gradient_ab2()
-        K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
-        K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
+        K_h_d2L = self.right_energy_hessian(
+            self.twoel_energy,
+            self.right_2el_energy_gradient_ab2
+            )
 
         Dam = self.contravariant_transition_density_ao_mo
         Delta = self.co_contravariant_transition_delta()
-        K_h_d2L += two.vb_transform(Dam, Delta)*KL
-            
+        K_h_d2L += two.vb_transform(Dam, Delta)*self.overlap()
+
         return K_h_d2L
 
     def mixed_1el_energy_hessian(self, h1):

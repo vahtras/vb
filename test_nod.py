@@ -1401,112 +1401,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_00_h_dd00(self):
         np.testing.assert_allclose(
-            self.B00K00.right_energy_hessian(self.f),
+            self.B00K00.right_1el_energy_hessian(self.f),
             clhess(self.B00K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd01(self):
         np.testing.assert_allclose(
-            self.B00K01.right_energy_hessian(self.f),
+            self.B00K01.right_1el_energy_hessian(self.f),
             clhess(self.B00K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd10(self):
         np.testing.assert_allclose(
-            self.B00K10.right_energy_hessian(self.f),
+            self.B00K10.right_1el_energy_hessian(self.f),
             clhess(self.B00K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_00_h_dd11(self):
         np.testing.assert_allclose(
-            self.B00K11.right_energy_hessian(self.f),
+            self.B00K11.right_1el_energy_hessian(self.f),
             clhess(self.B00K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd00(self):
         np.testing.assert_allclose(
-            self.B01K00.right_energy_hessian(self.f),
+            self.B01K00.right_1el_energy_hessian(self.f),
             clhess(self.B01K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd01(self):
         np.testing.assert_allclose(
-            self.B01K01.right_energy_hessian(self.f),
+            self.B01K01.right_1el_energy_hessian(self.f),
             clhess(self.B01K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd10(self):
         np.testing.assert_allclose(
-            self.B01K10.right_energy_hessian(self.f),
+            self.B01K10.right_1el_energy_hessian(self.f),
             clhess(self.B01K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_01_h_dd11(self):
         np.testing.assert_allclose(
-            self.B01K11.right_energy_hessian(self.f),
+            self.B01K11.right_1el_energy_hessian(self.f),
             clhess(self.B01K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd00(self):
         np.testing.assert_allclose(
-            self.B10K00.right_energy_hessian(self.f),
+            self.B10K00.right_1el_energy_hessian(self.f),
             clhess(self.B10K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd01(self):
         np.testing.assert_allclose(
-            self.B10K01.right_energy_hessian(self.f),
+            self.B10K01.right_1el_energy_hessian(self.f),
             clhess(self.B10K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd10(self):
         np.testing.assert_allclose(
-            self.B10K10.right_energy_hessian(self.f),
+            self.B10K10.right_1el_energy_hessian(self.f),
             clhess(self.B10K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_10_h_dd11(self):
         np.testing.assert_allclose(
-            self.B10K11.right_energy_hessian(self.f),
+            self.B10K11.right_1el_energy_hessian(self.f),
             clhess(self.B10K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd00(self):
         np.testing.assert_allclose(
-            self.B11K00.right_energy_hessian(self.f),
+            self.B11K00.right_1el_energy_hessian(self.f),
             clhess(self.B11K00, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd01(self):
         np.testing.assert_allclose(
-            self.B11K01.right_energy_hessian(self.f),
+            self.B11K01.right_1el_energy_hessian(self.f),
             clhess(self.B11K01, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd10(self):
         np.testing.assert_allclose(
-            self.B11K10.right_energy_hessian(self.f),
+            self.B11K10.right_1el_energy_hessian(self.f),
             clhess(self.B11K10, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_11_h_dd11(self):
         np.testing.assert_allclose(
-            self.B11K11.right_energy_hessian(self.f),
+            self.B11K11.right_1el_energy_hessian(self.f),
             clhess(self.B11K11, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
@@ -1897,28 +1897,28 @@ class BraKetTest3(unittest.TestCase):
 
     def test_010_h_dd010(self):
         np.testing.assert_allclose(
-            self.B010K010.right_energy_hessian(self.f),
+            self.B010K010.right_1el_energy_hessian(self.f),
             clhess(self.B010K010, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_010_h_dd011(self):
         np.testing.assert_allclose(
-            self.B010K011.right_energy_hessian(self.f),
+            self.B010K011.right_1el_energy_hessian(self.f),
             clhess(self.B010K011, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_h_dd010(self):
         np.testing.assert_allclose(
-            self.B011K010.right_energy_hessian(self.f),
+            self.B011K010.right_1el_energy_hessian(self.f),
             clhess(self.B011K010, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_011_h_dd011(self):
         np.testing.assert_allclose(
-            self.B011K011.right_energy_hessian(self.f),
+            self.B011K011.right_1el_energy_hessian(self.f),
             clhess(self.B011K011, '__mul__', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
