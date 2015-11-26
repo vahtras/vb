@@ -115,7 +115,7 @@ class BraKet(object):
         Delta_aa = (I - d*S for d in self.transition_ao_density)
         return tuple(Delta_aa)
 
-###
+### Fock
 
     @property
     def transition_ao_fock(self):
@@ -125,6 +125,8 @@ class BraKet(object):
                 )
             )
         return FKL
+
+### Overlap differentiation
 
     def left_overlap_gradient(self):
         """
@@ -200,12 +202,13 @@ class BraKet(object):
             )*self.overlap()
 
         return dKdL
-###
 
-    def right_energy_gradient(self, h1):
-        return sum(self.right_energy_gradient_ab(h1))
+### Energy differentiation
 
-    def right_energy_gradient_ab(self, h1):
+    def right_1el_energy_gradient(self, h1):
+        return sum(self.right_1el_energy_gradient_ab(h1))
+
+    def right_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.right_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_virtual_occupied(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
@@ -262,22 +265,13 @@ class BraKet(object):
         return self.twoel_energy()*self.overlap()
 
     def right_2el_energy_gradient(self):
-        K_h_dLa, K_h_dLb = self.right_2el_energy_gradient_ab()
-        return K_h_dLa + K_h_dLb 
+        return sum(self.right_2el_energy_gradient_ab())
 
     def right_2el_energy_gradient_ab(self):
-        eg1_a, eg1_b = self.right_2el_energy_gradient_ab1()
-        eg2_a, eg2_b = self.right_2el_energy_gradient_ab2()
+        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.right_overlap_gradient_ab())
+        eg2_a, eg2_b = self.project_virtual_occupied(self.transition_ao_fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
-
-    def right_2el_energy_gradient_ab1(self):
-        fab = self.transition_ao_fock
-        K_h_dLa, K_h_dLb = (
-            0.5*self.energy(fab)*g 
-            for g in self.right_overlap_gradient_ab()
-            )
-        return K_h_dLa, K_h_dLb 
 
     def right_2el_energy_gradient_ab2(self):
         """Rhs derivative <K|g|dL/dC(mu, m)>"""
@@ -342,8 +336,8 @@ class BraKet(object):
 
         na, nb = self.right_overlap_gradient_ab()
         ha, hb = right_gradient(*args)
-        K_h_d2L -= ((na.x(ha)).transpose(0, 3, 2, 1) + (na.x(ha)).transpose(2, 1, 0, 3))/KL
-        K_h_d2L -= ((nb.x(hb)).transpose(0, 3, 2, 1) + (nb.x(hb)).transpose(2, 1, 0, 3))/KL
+        nh = na.x(ha) + nb.x(hb)
+        K_h_d2L -= (nh.transpose(0, 3, 2, 1) + nh.transpose(2, 1, 0, 3))/KL
             
         return K_h_d2L
 
