@@ -385,11 +385,7 @@ class BraKet(object):
         dK_h_dL += (dK_L.x(K_h_dL) + dK_h_L.x(K_dL))/KL
 
         # D^{mn}Delta^xi_mu h_{xi,rho}Delta_nu^rho
-        ao, mo = Nod.C.shape
         Dmm = self.full_mo_transition_density
-        Delta1 = self.co_contravariant_transition_delta()
-        Delta2 = self.contra_covariant_transition_delta()
-
         DhD = self.project_virtual_virtual(*args)
         dK_h_dL += (
             Dmm[0].x(DhD[0])*KL +\
@@ -397,13 +393,10 @@ class BraKet(object):
             ).transpose(3, 0, 2, 1)
 
         # Delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
-        CK = self.K.orbitals()
-        CL = self.L.orbitals()
-
-        h1mm = self.project_occupied_occupied(*args)
+        Hmm = self.project_occupied_occupied(*args)
         Delta = self.covariant_transition_delta()
         dK_h_dL -= (
-            Delta[0].x(h1mm[0])*KL + Delta[1].x(h1mm[1])*KL
+            Delta[0].x(Hmm[0])*KL + Delta[1].x(Hmm[1])*KL
             ).transpose(1, 2, 0, 3)
 
         return dK_h_dL
@@ -414,19 +407,9 @@ class BraKet(object):
         return tuple(d1*h.T*d2 for d1, h, d2 in zip(Delta1, op, Delta2))
         
     def project_occupied_occupied(self, op):
-        _, mo = Nod.C.shape
-        h1mm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
-        D_KL = self.transition_density
-        CK = self.K.orbitals()
-        CL = self.L.orbitals()
-        if self.K(0) and self.L(0):
-            (D_KL[0]*CL[0].T*op[0].T*CK[0]*D_KL[0]).scatter(
-            h1mm[0], rows=self.K(0), columns=self.L(0)
-            )
-        if self.K(1) and self.L(1):
-            (D_KL[1]*CL[1].T*op[1].T*CK[1]*D_KL[1]).scatter(
-            h1mm[1], rows=self.K(1), columns=self.L(1)
-            )
+        Dma = self.contravariant_transition_density_mo_ao
+        Dam = self.contravariant_transition_density_ao_mo
+        h1mm = (Dma[0]*op[0].T*Dam[0], Dma[1]*op[1].T*Dam[1])
         return h1mm
 
         
