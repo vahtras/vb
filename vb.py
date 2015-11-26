@@ -335,10 +335,10 @@ class BraKet(object):
 
     def mixed_1el_energy_hessian(self, h1):
         dK_h_dL = self.mixed_gen_hessian(
-            h1, 
-            self.energy(h1), 
+            self.energy, 
             self.project_occupied_virtual,
-            self.project_virtual_occupied
+            self.project_virtual_occupied,
+            h1
             )
         return dK_h_dL
 
@@ -359,7 +359,7 @@ class BraKet(object):
             )
         return dK_g_dL
 
-    def mixed_gen_hessian(self, h1, e1, left_gradient, right_gradient):
+    def mixed_gen_hessian(self, energy, left_gradient, right_gradient, *args):
         """
         L-R derivative <dK/dC(mu,m)|h|dL/dC(nu,n)>
 
@@ -373,13 +373,14 @@ class BraKet(object):
         # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
         dK_dL = self.mixed_overlap_hessian()
 
+        e1 = energy(*args)
         dK_h_dL = e1*dK_dL
 
         # D^m_mu<K|H|dL/dC^nu_n> + <dK/dC^mu_m|h|L>D_nu^n
         dK_L = self.left_overlap_gradient()
         K_dL = self.right_overlap_gradient()
-        K_h_dL = sum(right_gradient(h1))
-        dK_h_L = sum(left_gradient(h1))
+        K_h_dL = sum(right_gradient(*args))
+        dK_h_L = sum(left_gradient(*args))
         
         dK_h_dL += (dK_L.x(K_h_dL) + dK_h_L.x(K_dL))/KL
 
@@ -389,30 +390,44 @@ class BraKet(object):
         Delta1 = self.co_contravariant_transition_delta()
         Delta2 = self.contra_covariant_transition_delta()
 
+        DhD = self.project_virtual_virtual(*args)
         dK_h_dL += (
-            Dmm[0].x(Delta1[0]*h1[0].T*Delta2[0])*KL + \
-            Dmm[1].x(Delta1[1]*h1[1].T*Delta2[1])*KL
+            Dmm[0].x(DhD[0])*KL +\
+            Dmm[1].x(DhD[1])*KL
             ).transpose(3, 0, 2, 1)
 
         # Delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
         CK = self.K.orbitals()
         CL = self.L.orbitals()
 
-        h1mm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
-        if self.K(0) and self.L(0):
-            (D_KL[0]*CL[0].T*h1[0].T*CK[0]*D_KL[0]).scatter(
-            h1mm[0], rows=self.K(0), columns=self.L(0)
-            )
-        if self.K(1) and self.L(1):
-            (D_KL[1]*CL[1].T*h1[1].T*CK[1]*D_KL[1]).scatter(
-            h1mm[1], rows=self.K(1), columns=self.L(1)
-            )
+        h1mm = self.project_occupied_occupied(*args)
         Delta = self.covariant_transition_delta()
         dK_h_dL -= (
             Delta[0].x(h1mm[0])*KL + Delta[1].x(h1mm[1])*KL
             ).transpose(1, 2, 0, 3)
 
         return dK_h_dL
+
+    def project_virtual_virtual(self, op):
+        Delta1 = self.co_contravariant_transition_delta()
+        Delta2 = self.contra_covariant_transition_delta()
+        return tuple(d1*h.T*d2 for d1, h, d2 in zip(Delta1, op, Delta2))
+        
+    def project_occupied_occupied(self, op):
+        _, mo = Nod.C.shape
+        h1mm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
+        D_KL = self.transition_density
+        CK = self.K.orbitals()
+        CL = self.L.orbitals()
+        if self.K(0) and self.L(0):
+            (D_KL[0]*CL[0].T*op[0].T*CK[0]*D_KL[0]).scatter(
+            h1mm[0], rows=self.K(0), columns=self.L(0)
+            )
+        if self.K(1) and self.L(1):
+            (D_KL[1]*CL[1].T*op[1].T*CK[1]*D_KL[1]).scatter(
+            h1mm[1], rows=self.K(1), columns=self.L(1)
+            )
+        return h1mm
 
         
 #
