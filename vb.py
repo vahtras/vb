@@ -126,9 +126,13 @@ class BraKet(object):
             )
         return FKL
 
-    def overlap_gradient(self):
-        """ d/dC(^mu,_m)<K|L>"""
-        return self.left_overlap_gradient() + self.right_overlap_gradient()
+    def left_overlap_gradient(self):
+        """
+        Lhs derivative <dK/dC(^mu, _m)|L>
+        
+        D(^m,_mu)<K|L>
+        """
+        return sum(self.left_overlap_gradient_ab())
 
     def right_overlap_gradient(self):
         """
@@ -136,24 +140,7 @@ class BraKet(object):
         
         D(_mu,^m)<K|L>
         """
-        KdLa, KdLb = self.right_overlap_gradient_ab()
-        return KdLa + KdLb
-
-    def right_overlap_gradient_ab(self):
-        """Rhs alpha,beta derivative <K|dLa/dC(mu, m)Lb> ,<K|La dLb/dC(mu,m)>"""
-
-        ol = self.overlap()
-        KdL = (d*ol for d in self.co_contravariant_transition_density_ao_mo())
-        return tuple(KdL)
-
-    def left_overlap_gradient(self):
-        """
-        Lhs derivative <dK/dC(^mu, _m)|L>
-        
-        D(^m,_mu)<K|L>
-        """
-        dKLa, dKLb = self.left_overlap_gradient_ab()
-        return dKLa + dKLb
+        return sum(self.right_overlap_gradient_ab())
 
     def left_overlap_gradient_ab(self):
         """
@@ -162,27 +149,69 @@ class BraKet(object):
         """
 
         ol = self.overlap()
-        dKLa, dKLb = (d*ol for d in self.contra_covariant_transition_density_mo_ao())
-        return dKLa.T, dKLb.T
+        dKL = (d.T*ol for d in self.contra_covariant_transition_density_mo_ao())
+        return tuple(dKL)
+
+    def right_overlap_gradient_ab(self):
+        """Rhs alpha,beta derivative <K|dLa/dC(mu, m)Lb> ,<K|La dLb/dC(mu,m)>"""
+
+        ol = self.overlap()
+        KdL = (d*ol for d in self.co_contravariant_transition_density_ao_mo())
+        return tuple(KdL)
+
+    def right_overlap_hessian(self):
+        """
+        Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
+
+        <K|a_mu+ a_nu+ a^n a^m|L>
+        (D(_mu, ^n)D(_nu, ^n) - sum(s)D(s)(_mu, ^n)D(s)(_nu,^m))<K|L>
+        """
+        #
+        # Orbital-orbital hessian
+        #
+        aD_am, bD_am = self.co_contravariant_transition_density_ao_mo()
+        D_am = aD_am + bD_am
+
+        Kd2L = (
+            D_am.x(D_am)
+          - (aD_am.x(aD_am) + bD_am.x(bD_am)).transpose((2, 1, 0, 3))
+            )*self.overlap()
+
+        return Kd2L
+
+    def mixed_overlap_hessian(self):
+        """
+        L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>
+
+        <K|a^m+ a_mu a_nu+ a^n |L>
+        (D(^m, _mu)D(_nu, ^n) + sum(s)D(s)(^m, ^n)Delta(s)(_nu,_mu))<K|L>
+        Delta = S - S*D*S
+        """
+
+        D_am = sum(self.co_contravariant_transition_density_ao_mo())
+        Dm_a = sum(self.contra_covariant_transition_density_mo_ao())
+        aDmm, bDmm = self.full_mo_transition_density
+
+        aDelta, bDelta = self.covariant_transition_delta()
+
+        dKdL = (
+            Dm_a.T.x(D_am)
+            + (aDelta.x(aDmm) + bDelta.x(bDmm)).transpose(1, 2, 0, 3)
+            )*self.overlap()
+
+        return dKdL
+###
 
     def right_energy_gradient(self, h1):
-        K_h_dLa, K_h_dLb = self.right_energy_gradient_ab(h1)
-        return K_h_dLa + K_h_dLb 
+        return sum(self.right_energy_gradient_ab(h1))
 
     def right_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = self.right_energy_gradient_ab1(h1)
-        eg2_a, eg2_b = self.right_energy_gradient_ab2(h1)
+        eg1_a, eg1_b = (self.energy(h1)*g for g in self.right_overlap_gradient_ab())
+        eg2_a, eg2_b = self.project_virtual_occupied(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
-    def right_energy_gradient_ab1(self, h1):
-        K_h_dLa, K_h_dLb = (
-            self.energy(h1)*g 
-            for g in self.right_overlap_gradient_ab()
-            )
-        return K_h_dLa, K_h_dLb 
-
-    def right_energy_gradient_ab2(self, h1):
+    def project_virtual_occupied(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
 
         Dmo = self.transition_density
@@ -196,23 +225,17 @@ class BraKet(object):
                 K_h_dL[s][:, self.L(s)] += Delta[s]*h1[s].T*CK[s]*Dmo[s]*self.overlap()
         return K_h_dL
 
+
     def left_energy_gradient(self, h1):
         return sum(self.left_energy_gradient_ab(h1))
 
     def left_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = self.left_energy_gradient_ab1(h1)
-        eg2_a, eg2_b = self.left_energy_gradient_ab2(h1)
+        eg1_a, eg1_b = (self.energy(h1)*g for g in self.left_overlap_gradient_ab())
+        eg2_a, eg2_b = self.project_occupied_virtual(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
-    def left_energy_gradient_ab1(self, h1):
-        dK_h_La, dK_h_Lb = (
-            self.energy(h1)*g 
-            for g in self.left_overlap_gradient_ab()
-            )
-        return dK_h_La, dK_h_Lb 
-
-    def left_energy_gradient_ab2(self, h1):
+    def project_occupied_virtual(self, h1):
         """Lhs derivative <dK/dC(mu,m)|h|L>"""
 
         Dmo = self.transition_density
@@ -259,7 +282,7 @@ class BraKet(object):
     def right_2el_energy_gradient_ab2(self):
         """Rhs derivative <K|g|dL/dC(mu, m)>"""
         Fao = self.transition_ao_fock
-        return self.right_energy_gradient_ab2(Fao)
+        return self.project_virtual_occupied(Fao)
 
     def left_2el_energy_gradient(self):
         return sum(self.left_2el_energy_gradient_ab())
@@ -281,59 +304,14 @@ class BraKet(object):
     def left_2el_energy_gradient_ab2(self):
         """Rhs derivative <dK/dC(mu, m)|g|L>"""
         Fao = self.transition_ao_fock
-        return self.left_energy_gradient_ab2(Fao)
+        return self.project_occupied_virtual(Fao)
 
     
-    def norm_overlap_hessian(self):
-        return self.right_overlap_hessian() + self.mixed_overlap_hessian()
-
-    def right_overlap_hessian(self):
-        """
-        Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
-
-        <K|a_mu+ a_nu+ a^n a^m|L>
-        (D(_mu, ^n)D(_nu, ^n) - sum(s)D(s)(_mu, ^n)D(s)(_nu,^m))<K|L>
-        """
-        #
-        # Orbital-orbital hessian
-        #
-        DmoKL = self.transition_density
-        D_am = self.co_contravariant_transition_density_ao_mo()
-
-        Kd2L = (
-            (D_am[0] + D_am[1]).x(D_am[0] + D_am[1])
-          - D_am[0].x(D_am[0]).transpose((2, 1, 0, 3))
-          - D_am[1].x(D_am[1]).transpose((2, 1, 0, 3))
-            )*self.overlap()
-
-        return Kd2L
-
-    def mixed_overlap_hessian(self):
-        """
-        L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>
-
-        <K|a^m+ a_mu a_nu+ a^n |L>
-        (D(^m, _mu)D(_nu, ^n) + sum(s)D(s)(^m, ^n)Delta(s)(_nu,_mu))<K|L>
-        Delta = S - S*D*S
-        """
-
-        D_am = self.co_contravariant_transition_density_ao_mo()
-        D_ma = self.contra_covariant_transition_density_mo_ao()
-        D_mm = self.full_mo_transition_density
-
-        DeltaKL = self.covariant_transition_delta()
-
-        dKdL = ((D_ma[0] + D_ma[1]).T.x(D_am[0] + D_am[1])
-            + DeltaKL[0].x(D_mm[0]).transpose(1, 2, 0, 3)
-            + DeltaKL[1].x(D_mm[1]).transpose(1, 2, 0, 3)
-            )*self.overlap()
-
-        return dKdL
 
     def right_1el_energy_hessian(self, h1):
         K_h_d2L = self.right_energy_hessian(
             self.energy,
-            self.right_energy_gradient_ab2,
+            self.project_virtual_occupied,
             h1
             )
         return K_h_d2L
@@ -374,8 +352,8 @@ class BraKet(object):
         dK_h_dL = self.mixed_gen_hessian(
             h1, 
             self.energy(h1), 
-            self.left_energy_gradient_ab2,
-            self.right_energy_gradient_ab2
+            self.project_occupied_virtual,
+            self.project_virtual_occupied
             )
         return dK_h_dL
 
