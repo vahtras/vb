@@ -205,7 +205,7 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a1_one_energy_left_differential(self):
         num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.a0a0.left_energy_gradient(self.f)
+        ana_diff = self.a0a0.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_a0a1_one_energy_right_differential(self):
@@ -324,12 +324,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a0_one_energy_left_differential(self):
         num_diff = clgrad(self.a0a0, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.a0a0.left_energy_gradient(self.f)
+        ana_diff = self.a0a0.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b0_one_energy_left_differential(self):
         num_diff = clgrad(self.b0b0, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.b0b0.left_energy_gradient(self.f)
+        ana_diff = self.b0b0.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 ###
 
@@ -351,12 +351,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a1_one_energy_left_differential(self):
         num_diff = clgrad(self.a0a1, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.a0a1.left_energy_gradient(self.f)
+        ana_diff = self.a0a1.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b0b1_one_energy_left_differential(self):
         num_diff = clgrad(self.b0b1, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.b0b1.left_energy_gradient(self.f)
+        ana_diff = self.b0b1.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
 ###
@@ -379,12 +379,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a0_one_energy_left_differential(self):
         num_diff = clgrad(self.a1a0, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.a1a0.left_energy_gradient(self.f)
+        ana_diff = self.a1a0.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b0_one_energy_left_differential(self):
         num_diff = clgrad(self.b1b0, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.b1b0.left_energy_gradient(self.f)
+        ana_diff = self.b1b0.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 ###
 
@@ -406,12 +406,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a1_one_energy_left_differential(self):
         num_diff = clgrad(self.a1a1, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.a1a1.left_energy_gradient(self.f)
+        ana_diff = self.a1a1.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_b1b1_one_energy_left_differential(self):
         num_diff = clgrad(self.b1b1, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.b1b1.left_energy_gradient(self.f)
+        ana_diff = self.b1b1.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
 ### (0|0)
@@ -461,7 +461,7 @@ class BraKetTest(unittest.TestCase):
 
     def test_K00_L00_one_energy_left_gradient(self):
         num_diff = clgrad(self.K00_L00, '__mul__', 'K.C', )(self.f)
-        ana_diff = self.K00_L00.left_energy_gradient(self.f)
+        ana_diff = self.K00_L00.left_1el_energy_gradient(self.f)
         np.testing.assert_allclose(ana_diff, num_diff)
 
     def test_K00_L00_2el_energy_right_gradient(self):
@@ -1058,112 +1058,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_h_00(self):
         np.testing.assert_allclose(
-            self.B00K00.left_energy_gradient(self.f),
+            self.B00K00.left_1el_energy_gradient(self.f),
             clgrad(self.B00K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_01(self):
         np.testing.assert_allclose(
-            self.B00K01.left_energy_gradient(self.f),
+            self.B00K01.left_1el_energy_gradient(self.f),
             clgrad(self.B00K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_10(self):
         np.testing.assert_allclose(
-            self.B00K10.left_energy_gradient(self.f),
+            self.B00K10.left_1el_energy_gradient(self.f),
             clgrad(self.B00K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_11(self):
         np.testing.assert_allclose(
-            self.B00K11.left_energy_gradient(self.f),
+            self.B00K11.left_1el_energy_gradient(self.f),
             clgrad(self.B00K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_00(self):
         np.testing.assert_allclose(
-            self.B01K00.left_energy_gradient(self.f),
+            self.B01K00.left_1el_energy_gradient(self.f),
             clgrad(self.B01K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_01(self):
         np.testing.assert_allclose(
-            self.B01K01.left_energy_gradient(self.f),
+            self.B01K01.left_1el_energy_gradient(self.f),
             clgrad(self.B01K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_10(self):
         np.testing.assert_allclose(
-            self.B01K10.left_energy_gradient(self.f),
+            self.B01K10.left_1el_energy_gradient(self.f),
             clgrad(self.B01K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_11(self):
         np.testing.assert_allclose(
-            self.B01K11.left_energy_gradient(self.f),
+            self.B01K11.left_1el_energy_gradient(self.f),
             clgrad(self.B01K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_00(self):
         np.testing.assert_allclose(
-            self.B10K00.left_energy_gradient(self.f),
+            self.B10K00.left_1el_energy_gradient(self.f),
             clgrad(self.B10K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_01(self):
         np.testing.assert_allclose(
-            self.B10K01.left_energy_gradient(self.f),
+            self.B10K01.left_1el_energy_gradient(self.f),
             clgrad(self.B10K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_10(self):
         np.testing.assert_allclose(
-            self.B10K10.left_energy_gradient(self.f),
+            self.B10K10.left_1el_energy_gradient(self.f),
             clgrad(self.B10K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_11(self):
         np.testing.assert_allclose(
-            self.B10K11.left_energy_gradient(self.f),
+            self.B10K11.left_1el_energy_gradient(self.f),
             clgrad(self.B10K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_00(self):
         np.testing.assert_allclose(
-            self.B11K00.left_energy_gradient(self.f),
+            self.B11K00.left_1el_energy_gradient(self.f),
             clgrad(self.B11K00, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_01(self):
         np.testing.assert_allclose(
-            self.B11K01.left_energy_gradient(self.f),
+            self.B11K01.left_1el_energy_gradient(self.f),
             clgrad(self.B11K01, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_10(self):
         np.testing.assert_allclose(
-            self.B11K10.left_energy_gradient(self.f),
+            self.B11K10.left_1el_energy_gradient(self.f),
             clgrad(self.B11K10, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_11(self):
         np.testing.assert_allclose(
-            self.B11K11.left_energy_gradient(self.f),
+            self.B11K11.left_1el_energy_gradient(self.f),
             clgrad(self.B11K11, '__mul__', 'K.C')(self.f),
             rtol=DELTA, atol=DELTA
             )

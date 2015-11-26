@@ -229,10 +229,10 @@ class BraKet(object):
         return K_h_dL
 
 
-    def left_energy_gradient(self, h1):
-        return sum(self.left_energy_gradient_ab(h1))
+    def left_1el_energy_gradient(self, h1):
+        return sum(self.left_1el_energy_gradient_ab(h1))
 
-    def left_energy_gradient_ab(self, h1):
+    def left_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.left_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_occupied_virtual(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
