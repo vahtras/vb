@@ -38,10 +38,6 @@ class BraKet(object):
     def overlap(self):
         return self.K*self.L
 
-    def energy(self, h):
-        dao = self.transition_ao_density
-        ha, hb = h
-        return (ha&dao[0]) + (hb&dao[1])
 
 ### Densities
 
@@ -205,14 +201,47 @@ class BraKet(object):
 
 ### Energy differentiation
 
+    def energy(self, h):
+        """<K|h|L>/<K|L>"""
+
+        dao = self.transition_ao_density
+        ha, hb = h
+        return (ha&dao[0]) + (hb&dao[1])
+
+    def twoel_energy(self):
+        """<K|g|L>/<K|L>"""
+
+        DKL = self.transition_ao_density
+        FKL = self.transition_ao_fock
+        return .5*((FKL[0]&DKL[0]) + (FKL[1]&DKL[1]))
+
+    def twoel_tme(self):
+        """<K|g|L>"""
+
+        return self.twoel_energy()*self.overlap()
+
     def right_1el_energy_gradient(self, h1):
         return sum(self.right_1el_energy_gradient_ab(h1))
+
+    def right_2el_energy_gradient(self):
+        return sum(self.right_2el_energy_gradient_ab())
 
     def right_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.right_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_virtual_occupied(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
+
+    def right_2el_energy_gradient_ab(self):
+        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.right_overlap_gradient_ab())
+        eg2_a, eg2_b = self.project_virtual_occupied(self.transition_ao_fock)
+        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
+        return eg_ab
+
+    def right_2el_energy_gradient_ab2(self):
+        """Rhs derivative <K|g|dL/dC(mu, m)>"""
+        Fao = self.transition_ao_fock
+        return self.project_virtual_occupied(Fao)
 
     def project_virtual_occupied(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
@@ -232,9 +261,18 @@ class BraKet(object):
     def left_1el_energy_gradient(self, h1):
         return sum(self.left_1el_energy_gradient_ab(h1))
 
+    def left_2el_energy_gradient(self):
+        return sum(self.left_2el_energy_gradient_ab())
+
     def left_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.left_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_occupied_virtual(h1)
+        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
+        return eg_ab
+
+    def left_2el_energy_gradient_ab(self):
+        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.left_overlap_gradient_ab())
+        eg2_a, eg2_b = self.project_occupied_virtual(self.transition_ao_fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
@@ -254,53 +292,6 @@ class BraKet(object):
             dK_h_Lb[self.K(1), :] += Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
         
         return dK_h_La.T, dK_h_Lb.T
-
-    def twoel_energy(self):
-        DKL = self.transition_ao_density
-        FKL = self.transition_ao_fock
-        return .5*((FKL[0]&DKL[0]) + (FKL[1]&DKL[1]))
-
-    def twoel_tme(self):
-        """<K|g|L>"""
-        return self.twoel_energy()*self.overlap()
-
-    def right_2el_energy_gradient(self):
-        return sum(self.right_2el_energy_gradient_ab())
-
-    def right_2el_energy_gradient_ab(self):
-        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.right_overlap_gradient_ab())
-        eg2_a, eg2_b = self.project_virtual_occupied(self.transition_ao_fock)
-        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
-        return eg_ab
-
-    def right_2el_energy_gradient_ab2(self):
-        """Rhs derivative <K|g|dL/dC(mu, m)>"""
-        Fao = self.transition_ao_fock
-        return self.project_virtual_occupied(Fao)
-
-    def left_2el_energy_gradient(self):
-        return sum(self.left_2el_energy_gradient_ab())
-
-    def left_2el_energy_gradient_ab(self):
-        eg1_a, eg1_b = self.left_2el_energy_gradient_ab1()
-        eg2_a, eg2_b = self.left_2el_energy_gradient_ab2()
-        eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
-        return eg_ab
-
-    def left_2el_energy_gradient_ab1(self):
-        fab = self.transition_ao_fock
-        dK_h_La, dK_h_Lb = (
-            0.5*self.energy(fab)*g 
-            for g in self.left_overlap_gradient_ab()
-            )
-        return dK_h_La, dK_h_Lb 
-
-    def left_2el_energy_gradient_ab2(self):
-        """Rhs derivative <dK/dC(mu, m)|g|L>"""
-        Fao = self.transition_ao_fock
-        return self.project_occupied_virtual(Fao)
-
-    
 
     def right_1el_energy_hessian(self, h1):
         K_h_d2L = self.right_energy_hessian(
