@@ -208,7 +208,7 @@ class BraKet(object):
         ha, hb = h
         return (ha&dao[0]) + (hb&dao[1])
 
-    def twoel_energy(self):
+    def twoel_energy(self, *args):
         """<K|g|L>/<K|L>"""
 
         DKL = self.transition_ao_density
@@ -223,8 +223,8 @@ class BraKet(object):
     def right_1el_energy_gradient(self, h1):
         return sum(self.right_1el_energy_gradient_ab(h1))
 
-    def right_2el_energy_gradient(self):
-        return sum(self.right_2el_energy_gradient_ab())
+    def right_2el_energy_gradient(self, *args):
+        return sum(self.right_2el_energy_gradient_ab(*args))
 
     def right_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.right_overlap_gradient_ab())
@@ -232,9 +232,14 @@ class BraKet(object):
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
-    def right_2el_energy_gradient_ab(self):
+    def right_2el_energy_gradient_ab(self, *args):
+        try:
+            fock, = args
+        except ValueError:
+            fock = self.transition_ao_fock
+
         eg1_a, eg1_b = (self.twoel_energy()*g for g in self.right_overlap_gradient_ab())
-        eg2_a, eg2_b = self.project_virtual_occupied(self.transition_ao_fock)
+        eg2_a, eg2_b = self.project_virtual_occupied(fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
@@ -261,8 +266,8 @@ class BraKet(object):
     def left_1el_energy_gradient(self, h1):
         return sum(self.left_1el_energy_gradient_ab(h1))
 
-    def left_2el_energy_gradient(self):
-        return sum(self.left_2el_energy_gradient_ab())
+    def left_2el_energy_gradient(self, *args):
+        return sum(self.left_2el_energy_gradient_ab(*args))
 
     def left_1el_energy_gradient_ab(self, h1):
         eg1_a, eg1_b = (self.energy(h1)*g for g in self.left_overlap_gradient_ab())
@@ -270,9 +275,13 @@ class BraKet(object):
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
-    def left_2el_energy_gradient_ab(self):
+    def left_2el_energy_gradient_ab(self, *args):
+        try:
+            fock, = args
+        except ValueError:
+            fock = self.transition_ao_fock
         eg1_a, eg1_b = (self.twoel_energy()*g for g in self.left_overlap_gradient_ab())
-        eg2_a, eg2_b = self.project_occupied_virtual(self.transition_ao_fock)
+        eg2_a, eg2_b = self.project_occupied_virtual(fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
 
@@ -344,10 +353,10 @@ class BraKet(object):
 
     def mixed_2el_energy_hessian(self):
         dK_g_dL = self.mixed_gen_hessian(
-            self.transition_ao_fock,
-            self.twoel_energy(),
+            self.twoel_energy,
             self.left_2el_energy_gradient,
-            self.right_2el_energy_gradient
+            self.right_2el_energy_gradient,
+            self.transition_ao_fock
             )
 
 
@@ -355,7 +364,7 @@ class BraKet(object):
             self.contravariant_transition_density_mo_ao,
             self.contravariant_transition_density_ao_mo,
             self.contra_covariant_transition_delta,
-            self.co_contravariant_transition_delta
+            self.co_contravariant_transition_delta,
             )
         return dK_g_dL
 
