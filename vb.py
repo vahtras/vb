@@ -338,6 +338,18 @@ class BraKet(object):
             )
         return K_h_d2L
 
+    def right_2el_energy_hessian(self):
+        K_h_d2L = self.right_energy_hessian(
+            self.twoel_energy,
+            self.right_2el_energy_gradient_ab2
+            )
+
+        Dam = self.contravariant_transition_density_ao_mo
+        Delta = self.co_contravariant_transition_delta()
+        K_h_d2L += two.vb_transform(Dam, Delta)*self.overlap()
+
+        return K_h_d2L
+
     def right_energy_hessian(self, energy, right_gradient, *args):
         """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
 
@@ -357,17 +369,6 @@ class BraKet(object):
             
         return K_h_d2L
 
-    def right_2el_energy_hessian(self):
-        K_h_d2L = self.right_energy_hessian(
-            self.twoel_energy,
-            self.right_2el_energy_gradient_ab2
-            )
-
-        Dam = self.contravariant_transition_density_ao_mo
-        Delta = self.co_contravariant_transition_delta()
-        K_h_d2L += two.vb_transform(Dam, Delta)*self.overlap()
-
-        return K_h_d2L
 
     def mixed_1el_energy_hessian(self, h1):
         dK_h_dL = self.mixed_gen_hessian(
