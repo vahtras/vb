@@ -167,12 +167,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a0_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.a0a0, '__mul__', 'L.C', 'K.C')(self.f)
-        ana_diff = self.a0a0.mixed_energy_hessian(self.f)
+        ana_diff = self.a0a0.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b0b0_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.b0b0, '__mul__', 'L.C', 'K.C')(self.f)
-        ana_diff = self.b0b0.mixed_energy_hessian(self.f)
+        ana_diff = self.b0b0.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_a0a0_2el_energy(self):
@@ -220,12 +220,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a0a1_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.a0a1, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.a0a1.mixed_energy_hessian(self.f)
+        ana_diff = self.a0a1.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b0b1_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.b0b1, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.b0b1.mixed_energy_hessian(self.f)
+        ana_diff = self.b0b1.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -258,12 +258,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a0_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.a1a0, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.a1a0.mixed_energy_hessian(self.f)
+        ana_diff = self.a1a0.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b1b0_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.b1b0, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.b1b0.mixed_energy_hessian(self.f)
+        ana_diff = self.b1b0.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -296,12 +296,12 @@ class BraKetTest(unittest.TestCase):
 
     def test_a1a1_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.a1a1, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.a1a1.mixed_energy_hessian(self.f)
+        ana_diff = self.a1a1.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
     def test_b1b1_one_energy_mixed_differential(self):
         num_diff = clmixhess(self.b1b1, '__mul__', 'K.C', 'L.C')(self.f)
-        ana_diff = self.b1b1.mixed_energy_hessian(self.f)
+        ana_diff = self.b1b1.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
 ###
@@ -476,82 +476,82 @@ class BraKetTest(unittest.TestCase):
 
     def test_K00_L00_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K00_L00, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K00_L00.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K00_L00.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L01_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K00_L01, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K00_L01.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K00_L01.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L10_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K00_L10, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K00_L10.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K00_L10.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L11_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K00_L11, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K00_L11.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K00_L11.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L00_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K01_L00, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K01_L00.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K01_L00.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L01_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K01_L01, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K01_L01.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K01_L01.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L10_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K01_L10, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K01_L10.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K01_L10.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K01_L11_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K01_L11, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K01_L11.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K01_L11.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L00_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K10_L00, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K10_L00.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K10_L00.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L01_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K10_L01, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K10_L01.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K10_L01.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L10_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K10_L10, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K10_L10.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K10_L10.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K10_L11_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K10_L11, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K10_L11.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K10_L11.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L00_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K11_L00, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K11_L00.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K11_L00.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L01_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K11_L01, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K11_L01.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K11_L01.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L10_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K11_L10, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K11_L10.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K11_L10.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K11_L11_left_right_one_energy_hessian(self):
         dKdL_num = clmixhess(self.K11_L11, '__mul__', 'K.C', 'L.C')(self.f)
-        dKdL_ana = self.K11_L11.mixed_energy_hessian(self.f)
+        dKdL_ana = self.K11_L11.mixed_1el_energy_hessian(self.f)
         np.testing.assert_allclose(dKdL_num, dKdL_ana, rtol=DELTA, atol=DELTA)
 
     def test_K00_L00_right_2el_energy_hessian(self):
@@ -1743,112 +1743,112 @@ class BraKetTest2(unittest.TestCase):
 
     def test_d00_h_d00(self):
         np.testing.assert_allclose(
-            self.B00K00.mixed_energy_hessian(self.f),
+            self.B00K00.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B00K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d01(self):
         np.testing.assert_allclose(
-            self.B00K01.mixed_energy_hessian(self.f),
+            self.B00K01.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B00K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d10(self):
         np.testing.assert_allclose(
-            self.B00K10.mixed_energy_hessian(self.f),
+            self.B00K10.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B00K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d00_h_d11(self):
         np.testing.assert_allclose(
-            self.B00K11.mixed_energy_hessian(self.f),
+            self.B00K11.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B00K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d00(self):
         np.testing.assert_allclose(
-            self.B01K00.mixed_energy_hessian(self.f),
+            self.B01K00.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B01K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d01(self):
         np.testing.assert_allclose(
-            self.B01K01.mixed_energy_hessian(self.f),
+            self.B01K01.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B01K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d10(self):
         np.testing.assert_allclose(
-            self.B01K10.mixed_energy_hessian(self.f),
+            self.B01K10.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B01K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d01_h_d11(self):
         np.testing.assert_allclose(
-            self.B01K11.mixed_energy_hessian(self.f),
+            self.B01K11.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B01K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d00(self):
         np.testing.assert_allclose(
-            self.B10K00.mixed_energy_hessian(self.f),
+            self.B10K00.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B10K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d01(self):
         np.testing.assert_allclose(
-            self.B10K01.mixed_energy_hessian(self.f),
+            self.B10K01.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B10K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d10(self):
         np.testing.assert_allclose(
-            self.B10K10.mixed_energy_hessian(self.f),
+            self.B10K10.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B10K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d10_h_d11(self):
         np.testing.assert_allclose(
-            self.B10K11.mixed_energy_hessian(self.f),
+            self.B10K11.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B10K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d00(self):
         np.testing.assert_allclose(
-            self.B11K00.mixed_energy_hessian(self.f),
+            self.B11K00.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B11K00, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d01(self):
         np.testing.assert_allclose(
-            self.B11K01.mixed_energy_hessian(self.f),
+            self.B11K01.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B11K01, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d10(self):
         np.testing.assert_allclose(
-            self.B11K10.mixed_energy_hessian(self.f),
+            self.B11K10.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B11K10, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )
 
     def test_d11_h_d11(self):
         np.testing.assert_allclose(
-            self.B11K11.mixed_energy_hessian(self.f),
+            self.B11K11.mixed_1el_energy_hessian(self.f),
             clmixhess(self.B11K11, '__mul__', 'K.C', 'L.C')(self.f),
             rtol=DELTA, atol=DELTA
             )

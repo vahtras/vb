@@ -370,7 +370,16 @@ class BraKet(object):
             
         return K_h_d2L
 
-    def mixed_energy_hessian(self, h1):
+    def mixed_1el_energy_hessian(self, h1):
+        dK_h_dL = self.mixed_gen_hessian(
+            h1, 
+            self.energy(h1), 
+            self.left_energy_gradient_ab2,
+            self.right_energy_gradient_ab2
+            )
+        return dK_h_dL
+
+    def mixed_gen_hessian(self, h1, e1, left_gradient, right_gradient):
         """
         L-R derivative <dK/dC(mu,m)|h|dL/dC(nu,n)>
 
@@ -382,7 +391,6 @@ class BraKet(object):
         D_KL = self.transition_density
 
         # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
-        e1 = self.energy(h1)
         dK_dL = self.mixed_overlap_hessian()
 
         dK_h_dL = e1*dK_dL
@@ -390,8 +398,8 @@ class BraKet(object):
         # D^m_mu<K|H|dL/dC^nu_n> + <dK/dC^mu_m|h|L>D_nu^n
         dK_L = self.left_overlap_gradient()
         K_dL = self.right_overlap_gradient()
-        K_h_dL = sum(self.right_energy_gradient_ab2(h1))
-        dK_h_L = sum(self.left_energy_gradient_ab2(h1))
+        K_h_dL = sum(right_gradient(h1))
+        dK_h_L = sum(left_gradient(h1))
         
         dK_h_dL += (dK_L.x(K_h_dL) + dK_h_L.x(K_dL))/KL
 
@@ -427,61 +435,13 @@ class BraKet(object):
         return dK_h_dL
 
     def mixed_2el_energy_hessian(self):
-        """
-        L-R derivative <dK/dC(mu,m)|h|dL/dC(nu,n)>
-
-        <K|a^m+ a_\mu h a\nu+ a^n|L>
-        """
-
-        S = Nod.S
-        KL = self.overlap()
-        D_KL = self.transition_density
-
-        # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
-        e2 = self.twoel_energy()
-        dK_dL = self.mixed_overlap_hessian()
-
-        dK_g_dL = e2*dK_dL 
-
-        # D^m_mu<K|H|dL/dC^nu_n> + <dK/dC^mu_m|h|L>D_nu^n
-        dK_L = self.left_overlap_gradient()
-        K_dL = self.right_overlap_gradient()
-        K_g_dL = self.right_2el_energy_gradient()
-        dK_g_L = self.left_2el_energy_gradient()
-        dK_g_dL += (dK_L.x(K_g_dL) + dK_g_L.x(K_dL))/KL
-
-        # D^{mn}Delta^xi_mu F_{xi,rho}Delta_nu^rho
-        ao, mo = Nod.C.shape
-        Dmm = self.full_mo_transition_density
-        Delta1 = self.co_contravariant_transition_delta()
-        Delta2 = self.contra_covariant_transition_delta()
-
-
-        Fao = self.transition_ao_fock
-
-
-        dK_g_dL += (
-            Dmm[0].x(Delta1[0]*Fao[0].T*Delta2[0])*KL + \
-            Dmm[1].x(Delta1[1]*Fao[1].T*Delta2[1])*KL
-            ).transpose(3, 0, 2, 1)
-
-        # Delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
-        CK = self.K.orbitals()
-        CL = self.L.orbitals()
-
-        Fmm = (full.matrix((mo, mo)), full.matrix((mo, mo)))
-        if self.K(0) and self.L(0):
-            (D_KL[0]*CL[0].T*Fao[0].T*CK[0]*D_KL[0]).scatter(
-            Fmm[0], rows=self.K(0), columns=self.L(0)
+        dK_g_dL = self.mixed_gen_hessian(
+            self.transition_ao_fock,
+            self.twoel_energy(),
+            self.left_2el_energy_gradient,
+            self.right_2el_energy_gradient
             )
-        if self.K(1) and self.L(1):
-            (D_KL[1]*CL[1].T*Fao[1].T*CK[1]*D_KL[1]).scatter(
-            Fmm[1], rows=self.K(1), columns=self.L(1)
-            )
-        Delta = self.covariant_transition_delta()
-        dK_g_dL -= (
-            Delta[0].x(Fmm[0])*KL + Delta[1].x(Fmm[1])*KL
-            ).transpose(1, 2, 0, 3)
+
 
         dK_g_dL += two.vb_transform2(
             self.contravariant_transition_density_mo_ao,
