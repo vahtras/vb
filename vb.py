@@ -354,8 +354,8 @@ class BraKet(object):
     def mixed_2el_energy_hessian(self):
         dK_g_dL = self.mixed_gen_hessian(
             self.twoel_energy,
-            self.left_2el_energy_gradient,
-            self.right_2el_energy_gradient,
+            self.project_occupied_virtual,
+            self.project_virtual_occupied,
             self.transition_ao_fock
             )
 
@@ -363,8 +363,8 @@ class BraKet(object):
         dK_g_dL += two.vb_transform2(
             self.contravariant_transition_density_mo_ao,
             self.contravariant_transition_density_ao_mo,
-            self.contra_covariant_transition_delta,
-            self.co_contravariant_transition_delta,
+            self.contra_covariant_transition_delta(),
+            self.co_contravariant_transition_delta(),
             )
         return dK_g_dL
 
