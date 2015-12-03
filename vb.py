@@ -124,6 +124,9 @@ class BraKet(object):
 
 ### Overlap differentiation
 
+    def overlap_gradient(self):
+        return self.left_overlap_gradient() + self.right_overlap_gradient()
+
     def left_overlap_gradient(self):
         """
         Lhs derivative <dK/dC(^mu, _m)|L>
@@ -157,6 +160,13 @@ class BraKet(object):
         KdL = (d*ol for d in self.co_contravariant_transition_density_ao_mo())
         return tuple(KdL)
 
+    def overlap_hessian(self):
+        return self.left_overlap_hessian() + self.right_overlap_hessian() +\
+            2*self.mixed_overlap_hessian()
+
+    def left_overlap_hessian(self):
+        return BraKet(self.L, self.K).right_overlap_hessian()
+   
     def right_overlap_hessian(self):
         """
         Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
@@ -358,7 +368,6 @@ class BraKet(object):
             self.project_virtual_occupied,
             self.transition_ao_fock
             )
-        for f in self.transition_ao_fock:  print f
 
 
         dK_g_dL += two.vb_transform2(
@@ -638,21 +647,20 @@ class WaveFunction(object):
         return retstr
 
     def nel(self):
-        Nel = 0
+        return self.ao_density() & Nod.S
+
+    def ao_density(self):
+        """Electron number check"""
+        Dao = full.matrix(Nod.S.shape)
         N = 0
         for S, CS in zip(self.structs, self.coef):
             for T, CT in zip(self.structs, self.coef):
                 for K, CK in zip(S.nods, S.coef):
                     for L, CL in zip(T.nods, T.coef):
                         KL = BraKet(K, L)
-                        D12 = KL.transition_ao_density
-                        S12 = KL.overlap()
-                        Na = (D12[0]&Nod.S)
-                        Nb = (D12[1]&Nod.S)
-                        C12 = CS*CT*CK*CL
-                        Nel += (Na+Nb)*C12
-                        N += C12
-        return Nel/N
+                        DKL = KL.transition_ao_density
+                        Dao += sum(DKL)*CS*CT*CK*CL*KL.overlap()
+        return Dao/self.norm()
 
     def StructureHamiltonian(self):
         SH = []
@@ -829,10 +837,10 @@ class WaveFunction(object):
                         #
                         Nstructhess[s1, s2] += (Cd1*Cd2)*bk12.overlap()
                         Norbstructhess[:, :, s1] += Cd1*C2*bk12.overlap_gradient()
-                        Norbhess += C1*C2*bk12.norm_overlap_hessian()
+                        Norbhess += C1*C2*bk12.overlap_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
-        Norbhess *= 2
+        Norbhess
         return Nstructhess, Norbstructhess, Norbhess
 
     def vb_metric(self):
@@ -1147,10 +1155,22 @@ class WaveFunction(object):
         return self.numgrad(self.energy, delta)
 
     def energyhess(self):
-        #
-        #  N = <0|0>
-        # dN = 2<d0|0>
-        #
+        """Energy full Hessian
+
+        Relations:
+        E = H/N 
+        H = <0|H|0>
+        N = <0|0>
+
+        dE = (dH - E dN)/N
+        dH = 2*<0|H|d0>
+        dN = 2*<0|d0>
+
+        d2E = (d2H - dE dN - E d2N)/N  - (dH - EdN)/N^2 dN
+        d2H = 2*<d0|H|d0> + 2*<0|H|d20>
+        d2N = 2*<d0|d0> + 2*<0|d20>
+        """
+        
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(ls)
@@ -1211,6 +1231,7 @@ class WaveFunction(object):
                         # Determinant overlap
                         #
                         S12 = det1*det2
+                        det12 = BraKet(det1, det2)
                         #
                         # Fock and density
                         #
@@ -1288,9 +1309,6 @@ class WaveFunction(object):
                             Horbstructhess[:, det1(s), s1] += Nd12*Hog12[s].T
                             Horbstructhess[:, det2(s), s1] += Nd12*Hog21[s].T
 
-                        #print "Dmm", Dmm[0], Dmm[1]
-                        #print "Dam", Dam[0], Dam[1]
-                        #print "Dma", Dma[0], Dma[1]
                         ##
                         # Orbital-orbital hessian
                         #
@@ -1298,103 +1316,16 @@ class WaveFunction(object):
                         #
                         # Norm
                         #
-                        for s in range(2):
-                            #print "Dog12[%d]"%s, Dog12[s]
-                            for t in range(2):
-                                #print "Dog21[%d]"%t, Dog21[t]
-                                Norbhess += C12*Dm_a[s].x(Dm_a[t]+D_am[t].T)
-                            Norbhess -= C12*Dm_a[s].x(Dm_a[s]).transpose(
-                                (0, 3, 2, 1)
-                                )
-                            Norbhess += C12*Dmm[s].x(Delta[s]).transpose(
-                                (0, 3, 1, 2)
-                                )
+                        Norbhess += C12*det12.overlap_hessian()
                         #
                         # Hamiltonian
                         #
-                        for s in range(2):
-                            for t in range(2):
-                                #1
-                                Horbhess += H12*C12*Dm_a[s].x(
-                                    Dm_a[t]+D_am[t].T
-                                    )
-                                #3
-                                Horbhess += C12*(
-                                    Dma[s]*(h+F12[s].T)*Delta1[s]
-                                    ).x(Dm_a[t]+D_am[t].T)
-                                #5
-                                Horbhess += C12*Dm_a[s].x(
-                                    Dma[t]*(h+F12[t].T)*Delta1[t]
-                                    )
-                                Horbhess += C12*Dm_a[s].x(
-                                    (Delta2[t]*(h+F12[t].T)*Dam[t]).T
-                                    )
-                                #
-                                #non-Fock contributions
-                                #
-                                # <Kmn/pq|g|L>
-                                #
-                                Htmp = two.semitransform(
-                                    Dma[s], Dma[t], same=False,
-                                    file=self.tmp('AOTWOINT')
-                                    ).view(full.matrix) # returns (m, m, a, a)
-                                # transpose due to numpy feature
-                                left = (1, 2, 0, 3)
-                                Htmp = (
-                                    Delta1[s].T*Htmp
-                                    ).transpose(left)*Delta1[t]
-                                if s == t:
-                                    # add Exchange
-                                    Htmp = Htmp - Htmp.transpose(
-                                        (0, 1, 3, 2)
-                                        )
-                                #
-                                # <Km/p|g|Lm/n>
-                                #
-                                Htmp += (
-                                    Delta1[s].T*two.semitransform(
-                                        Dma[s], Dam[t].T,
-                                        same=False, file=self.tmp('AOTWOINT')
-                                        ).view(full.matrix)
-                                    ).transpose(left)*Delta2[t].T
-                                if s == t:
-                                    Htmp = Htmp - (
-                                        Delta1[s].T*two.semitransform(
-                                            Dma[s], Dam[s].T,
-                                            same=True,
-                                            file=self.tmp('AOTWOINT')
-                                            ).view(full.matrix)).transpose(
-                                                left
-                                                )*Delta2[s].T
-                                #
-                                # semitransformed in form (m, m, a, a)
-                                # add to hessian (m, a, m, a)
-                                #
-                                Horbhess += C12*Htmp.transpose((0, 2, 1, 3))
-
-                            #2
-                            Horbhess -= H12*C12*Dm_a[s].x(
-                                Dm_a[s]
-                                ).transpose((0, 3, 2, 1))
-                            Horbhess += H12*C12*Dmm[s].x(
-                                Delta[s]).transpose((0, 3, 1, 2))
-                            #4
-                            #m,nu x n mu
-                            Horbhess -= C12*Dm_a[s].x(
-                                Dma[s]*(h+F12[s].T)*Delta1[s]
-                                ).transpose((0, 3, 2, 1))
-                            Horbhess += C12*Dmm[s].x(
-                                Delta2[s]*(
-                                    h+F12[s].T)*Delta1[s]
-                                ).transpose((0, 3, 1, 2))
-                            #6
-                            #n, mu x m nu
-                            Horbhess -= C12*Dm_a[s].x(
-                                Dma[s]*(h+F12[s].T)*Delta1[s]
-                                ).transpose((2, 1, 0, 3))
-                            Horbhess -= C12*(
-                                Dma[s]*(h+F12[s].T)*Dam[s]
-                                ).x(Delta[s]).transpose((0, 3, 1, 2))
+                        Horbhess += C12*(
+                            det12.right_1el_energy_hessian((self.h, self.h)) + 
+                            det12.mixed_1el_energy_hessian((self.h, self.h)) +
+                            det12.right_2el_energy_hessian() +
+                            det12.mixed_2el_energy_hessian()
+                            )
                         #
         Hstructgrad *= 2
         Horbgrad *= 2
@@ -1406,7 +1337,7 @@ class WaveFunction(object):
         Nstructhess *= 2
         Nstructorbhess *= 2
         Norbstructhess *= 2
-        Norbhess *= 2
+        Norbhess
         E = H/N
         Estructgrad = (Hstructgrad-E*Nstructgrad)/N
         Eorbgrad = (Horbgrad-E*Norbgrad)/N
