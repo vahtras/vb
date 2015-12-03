@@ -358,6 +358,7 @@ class BraKet(object):
             self.project_virtual_occupied,
             self.transition_ao_fock
             )
+        for f in self.transition_ao_fock:  print f
 
 
         dK_g_dL += two.vb_transform2(
@@ -365,7 +366,7 @@ class BraKet(object):
             self.contravariant_transition_density_ao_mo,
             self.contra_covariant_transition_delta(),
             self.co_contravariant_transition_delta(),
-            )
+            )*self.overlap()
         return dK_g_dL
 
     def mixed_gen_hessian(self, energy, left_gradient, right_gradient, *args):
