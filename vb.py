@@ -742,35 +742,14 @@ class WaveFunction(object):
         r, c = Nod.C.shape
         Norbgrad = full.matrix((r, c))
         #
-        # Structures left
-        #
         for S, CS in zip(self.structs, self.coef):
             GS = 0
-            #
-            #Structures right
-            #
             for T, CT in zip(self.structs, self.coef):
-                #
-                #Determinants in left structure
-                #
-                for K, CKS in zip(S.nods, S.coef):
-                    #
-                    #Determinants in right structure
-                    #
-                    for L, CLT in zip(T.nods, T.coef):
-                        K_L = BraKet(K, L)
-                        #
-                        # Structure gradient terms
-                        #
-                        KL = K_L.overlap()
-                        #
-                        # Structure gradient terms
-                        #
-                        GS += CKS*CT*CLT*KL
-                        #
-                        # Orbital gradient terms
-                        #
-                        Norbgrad += CS*CT*CKS*CLT*K_L.right_overlap_gradient()
+                GS += (S*T)*CT
+                for K, CK in zip(S.nods, S.coef):
+                    for L, CL in zip(T.nods, T.coef):
+                        Norbgrad += (CS*CT*CK*CL) * \
+                            BraKet(K, L).right_overlap_gradient()
             NGS.append(GS)
 
         Nstructgrad = full.init(NGS)
