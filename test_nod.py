@@ -1853,6 +1853,120 @@ class BraKetTest2(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# Mixed two-electron energy Hessian
+
+    def test_d00_g_d00(self):
+        np.testing.assert_allclose(
+            self.B00K00.mixed_2el_energy_hessian(),
+            clmixhess(self.B00K00, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_d01(self):
+        np.testing.assert_allclose(
+            self.B00K01.mixed_2el_energy_hessian(),
+            clmixhess(self.B00K01, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_d10(self):
+        np.testing.assert_allclose(
+            self.B00K10.mixed_2el_energy_hessian(),
+            clmixhess(self.B00K10, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d00_g_d11(self):
+        np.testing.assert_allclose(
+            self.B00K11.mixed_2el_energy_hessian(),
+            clmixhess(self.B00K11, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_d00(self):
+        np.testing.assert_allclose(
+            self.B01K00.mixed_2el_energy_hessian(),
+            clmixhess(self.B01K00, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_d01(self):
+        np.testing.assert_allclose(
+            self.B01K01.mixed_2el_energy_hessian(),
+            clmixhess(self.B01K01, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_d10(self):
+        np.testing.assert_allclose(
+            self.B01K10.mixed_2el_energy_hessian(),
+            clmixhess(self.B01K10, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d01_g_d11(self):
+        np.testing.assert_allclose(
+            self.B01K11.mixed_2el_energy_hessian(),
+            clmixhess(self.B01K11, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_d00(self):
+        np.testing.assert_allclose(
+            self.B10K00.mixed_2el_energy_hessian(),
+            clmixhess(self.B10K00, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_d01(self):
+        np.testing.assert_allclose(
+            self.B10K01.mixed_2el_energy_hessian(),
+            clmixhess(self.B10K01, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_d10(self):
+        np.testing.assert_allclose(
+            self.B10K10.mixed_2el_energy_hessian(),
+            clmixhess(self.B10K10, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d10_g_d11(self):
+        np.testing.assert_allclose(
+            self.B10K11.mixed_2el_energy_hessian(),
+            clmixhess(self.B10K11, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_d00(self):
+        np.testing.assert_allclose(
+            self.B11K00.mixed_2el_energy_hessian(),
+            clmixhess(self.B11K00, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_d01(self):
+        np.testing.assert_allclose(
+            self.B11K01.mixed_2el_energy_hessian(),
+            clmixhess(self.B11K01, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_d10(self):
+        np.testing.assert_allclose(
+            self.B11K10.mixed_2el_energy_hessian(),
+            clmixhess(self.B11K10, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d11_g_d11(self):
+        np.testing.assert_allclose(
+            self.B11K11.mixed_2el_energy_hessian(),
+            clmixhess(self.B11K11, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
 ####
 class BraKetTest3(unittest.TestCase):
 
@@ -1866,6 +1980,8 @@ class BraKetTest3(unittest.TestCase):
         self.B010K011 = BraKet(Nod([0, 1], [0]), Nod([0, 1], [1]))
         self.B011K010 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [0]))
         self.B011K011 = BraKet(Nod([0, 1], [1]), Nod([0, 1], [1]))
+
+# right overlap hessian
 
     def test_010_dd010(self):
         np.testing.assert_allclose(
@@ -1895,6 +2011,8 @@ class BraKetTest3(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+# right 1el hessian
+
     def test_010_h_dd010(self):
         np.testing.assert_allclose(
             self.B010K010.right_1el_energy_hessian(self.f),
@@ -1923,8 +2041,37 @@ class BraKetTest3(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
 
+### right 2el hessian
 
-###
+    def test_010_g_dd010(self):
+        np.testing.assert_allclose(
+            self.B010K010.right_2el_energy_hessian(),
+            clhess(self.B010K010, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_010_g_dd011(self):
+        np.testing.assert_allclose(
+            self.B010K011.right_2el_energy_hessian(),
+            clhess(self.B010K011, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_g_dd010(self):
+        np.testing.assert_allclose(
+            self.B011K010.right_2el_energy_hessian(),
+            clhess(self.B011K010, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_011_g_dd011(self):
+        np.testing.assert_allclose(
+            self.B011K011.right_2el_energy_hessian(),
+            clhess(self.B011K011, 'twoel_tme', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+### mixed overlap hessian
 
     def test_d010_d010(self):
         np.testing.assert_allclose(
@@ -1951,6 +2098,66 @@ class BraKetTest3(unittest.TestCase):
         np.testing.assert_allclose(
             self.B011K011.mixed_overlap_hessian(),
             clmixhess(self.B011K011, 'overlap', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+### mixed 1el hessian
+
+    def test_d010_h_d010(self):
+        np.testing.assert_allclose(
+            self.B010K010.mixed_1el_energy_hessian(self.f),
+            clmixhess(self.B010K010, '__mul__', 'K.C', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d010_h_d011(self):
+        np.testing.assert_allclose(
+            self.B010K011.mixed_1el_energy_hessian(self.f),
+            clmixhess(self.B010K011, '__mul__', 'K.C', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d011_h_d010(self):
+        np.testing.assert_allclose(
+            self.B011K010.mixed_1el_energy_hessian(self.f),
+            clmixhess(self.B011K010, '__mul__', 'K.C', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d011_h_d011(self):
+        np.testing.assert_allclose(
+            self.B011K011.mixed_1el_energy_hessian(self.f),
+            clmixhess(self.B011K011, '__mul__', 'K.C', 'L.C')(self.f),
+            rtol=DELTA, atol=DELTA
+            )
+
+### mixed 2el hessian
+
+    def test_d010_h_d010(self):
+        np.testing.assert_allclose(
+            self.B010K010.mixed_2el_energy_hessian(),
+            clmixhess(self.B010K010, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d010_h_d011(self):
+        np.testing.assert_allclose(
+            self.B010K011.mixed_2el_energy_hessian(),
+            clmixhess(self.B010K011, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d011_h_d010(self):
+        np.testing.assert_allclose(
+            self.B011K010.mixed_2el_energy_hessian(),
+            clmixhess(self.B011K010, 'twoel_tme', 'K.C', 'L.C')(),
+            rtol=DELTA, atol=DELTA
+            )
+
+    def test_d011_h_d011(self):
+        np.testing.assert_allclose(
+            self.B011K011.mixed_2el_energy_hessian(),
+            clmixhess(self.B011K011, 'twoel_tme', 'K.C', 'L.C')(),
             rtol=DELTA, atol=DELTA
             )
             
