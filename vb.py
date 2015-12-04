@@ -233,6 +233,9 @@ class BraKet(object):
 
         return self.twoel_energy()*self.overlap()
 
+    def energy_gradient(self, h1):
+        return self.right_energy_gradient(h1) + self.left_energy_gradient(h1)
+
     def right_energy_gradient(self, h1):
         return self.right_1el_energy_gradient(h1) + self.right_2el_energy_gradient()
 
@@ -1059,7 +1062,6 @@ class WaveFunction(object):
         Horbgrad = full.matrix((ao, mo))
         H = 0
         I = full.unit(ao)
-        #d12 = full.matrix((mo, mo))
         #
         # Structures left
         #
@@ -1131,52 +1133,18 @@ class WaveFunction(object):
         Horbhess = full.matrix((ao, mo, ao, mo))
         N = 0
         H = 0
-        dm_a = [None, None]
-        d_am = [None, None]
-        Hog12 = [None, None]
-        Hog21 = [None, None]
-        dma = [None, None]
-        dam = [None, None]
-        Dm_a = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-        D_am = [full.matrix((ao, mo)), full.matrix((ao, mo))]
-        Dog21 = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-        I = full.unit(ao)
-        h = self.h
-        S = Nod.S
+        hab = (self.h, self.h)
         #
-        # Structures left
-        #
-        for s1 in range(len(self.structs)):
-            str1 = self.structs[s1]
-            #
-            #Structures right
-            #
-            for s2 in range(len(self.structs)):
-                str2 = self.structs[s2]
-                #
-                #Determinants in left structure
-                #
-                for d1 in range(len(str1.nods)):
-                    det1 = str1.nods[d1]
-                    #
-                    #Determinants in right structure
-                    #
-                    for d2 in range(len(str2.nods)):
-                        det2 = str2.nods[d2]
+        for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
+            for s2, (str2, Cs2) in enumerate(zip(self.structs, self.coef)):
+                for det1, Cd1 in zip(str1.nods, str1.coef):
+                    for det2, Cd2 in zip(str2.nods, str2.coef):
                         #
-                        # Coefficients
-                        #
-                        Cs1 = self.coef[s1]
-                        Cs2 = self.coef[s2]
-                        Cd1 = str1.coef[d1]
-                        Cd2 = str2.coef[d2]
                         C1 = Cs1*Cd1
                         C2 = Cs2*Cd2
                         #
-                        # Determinant overlap
-                        #
-                        S12 = det1*det2
                         det12 = BraKet(det1, det2)
+                        S12 = det12.overlap()
                         #
                         # Structure gradient terms
                         #
@@ -1186,8 +1154,7 @@ class WaveFunction(object):
                         #
                         # Orbital-structure hessian terms
                         #
-                        Horbstructhess[:, :, s1] += Cd1*C2*det12.right_energy_gradient((self.h, self.h))
-                        Horbstructhess[:, :, s1] += Cd1*C2*det12.left_energy_gradient((self.h, self.h))
+                        Horbstructhess[:, :, s1] += Cd1*C2*det12.energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
                         #
@@ -1200,32 +1167,31 @@ class WaveFunction(object):
                             det12.mixed_2el_energy_hessian()
                             )
                         #
+
+        N = self.norm()
+        E = self.energy()
+
+        Nstructgrad, Norbgrad = self.normgrad()
+        Estructgrad, Eorbgrad = self.energygrad()
+
+        Nstructhess, Norbstructhess, Norbhess = self.normhess()
         Hstructhess *= 2
         Horbstructhess *= 2
         Horbhess *= 2
-        #Nstructgrad *= 2
-        #Norbgrad *= 2
-        Nstructgrad, Norbgrad = self.normgrad()
-        #Nstructhess *= 2
-        #Nstructorbhess *= 2
-        #Norbstructhess *= 2
-        #Norbhess
-        Nstructhess, Norbstructhess, Norbhess = self.normhess()
-        E = self.energy()
-        N = self.norm()
-        #Estructgrad = (Hstructgrad-E*Nstructgrad)/N
-        #Eorbgrad = (Horbgrad-E*Norbgrad)/N
-        Estructgrad, Eorbgrad = self.energygrad()
+
         Estructhess = (
             Hstructhess - E*Nstructhess -
             Estructgrad.x(Nstructgrad) - Nstructgrad.x(Estructgrad)
             )/N
+
         Eorbstructhess = (
             Horbstructhess - E*Norbstructhess - \
             Eorbgrad.x(Nstructgrad) - Norbgrad.x(Estructgrad)
             )/N
+
         Eorbhess = (
             Horbhess - E*Norbhess - Eorbgrad.x(Norbgrad)-Norbgrad.x(Eorbgrad))/N
+
         return (
             Estructhess,
             Eorbstructhess,
