@@ -279,6 +279,9 @@ class BraKet(object):
         return K_h_dL
 
 
+    def left_energy_gradient(self, h1):
+        return self.left_1el_energy_gradient(h1) + self.left_2el_energy_gradient()
+
     def left_1el_energy_gradient(self, h1):
         return sum(self.left_1el_energy_gradient_ab(h1))
 
@@ -319,7 +322,7 @@ class BraKet(object):
         return dK_h_La.T, dK_h_Lb.T
 
     def right_1el_energy_hessian(self, h1):
-        K_h_d2L = self.right_energy_hessian(
+        K_h_d2L = self.right_gen_energy_hessian(
             self.oneel_energy,
             self.project_virtual_occupied,
             h1
@@ -327,7 +330,7 @@ class BraKet(object):
         return K_h_d2L
 
     def right_2el_energy_hessian(self):
-        K_h_d2L = self.right_energy_hessian(
+        K_h_d2L = self.right_gen_energy_hessian(
             self.twoel_energy,
             self.right_2el_energy_gradient_ab2
             )
@@ -338,7 +341,7 @@ class BraKet(object):
 
         return K_h_d2L
 
-    def right_energy_hessian(self, energy, right_gradient, *args):
+    def right_gen_energy_hessian(self, energy, right_gradient, *args):
         """Rhs derivative <K|h|d2L/dC(mu, m)dC(nu, n)>"""
 
         KL = self.overlap()
@@ -1175,114 +1178,44 @@ class WaveFunction(object):
                         S12 = det1*det2
                         det12 = BraKet(det1, det2)
                         #
-                        # Fock and density
-                        #
-                        D12 = Dao(det1, det2)
-                        F12 = Fao(D12, filename=self.tmp('AOTWOINT'))
-                        #
-                        # Energy and norm
-                        #
-                        C12 = (C1*C2)*S12
-                        hKL = self.h&(D12[0]+D12[1])
-                        H12 = hKL+HKL(F12, D12)
-                        N += C12
-                        H += C12*H12
-                        #
                         # Structure gradient terms
                         #
-                        N12 = (Cd1*C2)*S12
-                        Nstructgrad[s1] += N12
-                        Hstructgrad[s1] += N12*H12
-                        #
-                        # Orbital gradient terms
-                        #
-                        CK = det1.orbitals()
-                        CL = det2.orbitals()
-                        dmm = Dmo(det1, det2)
-                        for s in range(2):
-                            dm_a[s] = dmm[s]*CL[s].T*S
-                            d_am[s] = S*CK[s]*dmm[s]
-                            Hog12[s] = dmm[s]*CL[s].T*(
-                                (h+F12[s]).T*(I-D12[s]*S)
-                                ) + dm_a[s]*H12
-                            Hog21[s] = dmm[s].T*CK[s].T*(
-                                (h+F12[s])*(I-D12[s].T*S)
-                                ) + d_am[s].T*H12
-                            Norbgrad[:, det1(s)] += (C1*C2*S12)*dm_a[s].T
-                            Horbgrad[:, det1(s)] += (C1*C2*S12)*Hog12[s].T
-                        #
-                        # Structure hessian terms
-                        #
                         N12 = (Cd1*Cd2)*S12
-                        Nstructhess[s1, s2] += N12
+                        H12 = det12.energy((self.h, self.h))
                         Hstructhess[s1, s2] += N12*H12
                         #
                         # Orbital-structure hessian terms
                         #
-                        Dmm = [full.matrix((mo, mo)), full.matrix((mo, mo))]
-                        Dma = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-                        Dam = [full.matrix((ao, mo)), full.matrix((ao, mo))]
-                        Delta = [full.matrix((ao, ao)), full.matrix((ao, ao))]
-                        Delta1 = [full.matrix((ao, ao)), full.matrix((ao, ao))]
-                        Delta2 = [full.matrix((ao, ao)), full.matrix((ao, ao))]
-                        for s in range(2):
-                            #D^m_\mu
-                            Dm_a[s].clear()
-                            D_am[s].clear()
-                            Dm_a[s][det1(s), :] = dm_a[s]
-                            D_am[s][:, det2(s)] = d_am[s]
-                            #Dmm[s][det1(s), det2(s)]=dmm[s] numpy bug
-                            dmm[s].scatter(
-                                Dmm[s], rows=det1(s), columns=det2(s)
-                                )
-                            Delta1[s] = I-CK[s]*dmm[s]*CL[s].T*S
-                            Delta2[s] = I-S*CK[s]*dmm[s]*CL[s].T
-                            Delta[s] = S*Delta1[s]
-                            dma[s] = dmm[s]*CL[s].T
-                            dam[s] = CK[s]*dmm[s]
-                            Dma[s][det1(s), :] = dma[s]
-                            Dam[s][:, det2(s)] = dam[s]
-                        #
-                        # Scatter
-                        #
-                            Nd12 = Cd1*C2*S12
-                            Norbstructhess[:, det1(s), s1] += Nd12*dm_a[s].T
-                            Norbstructhess[:, det2(s), s1] += Nd12*d_am[s]
-                            Horbstructhess[:, det1(s), s1] += Nd12*Hog12[s].T
-                            Horbstructhess[:, det2(s), s1] += Nd12*Hog21[s].T
-
+                        Horbstructhess[:, :, s1] += Cd1*C2*det12.right_energy_gradient((self.h, self.h))
+                        Horbstructhess[:, :, s1] += Cd1*C2*det12.left_energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
                         #
                         C12 = C1*C2*S12
                         #
-                        # Norm
-                        #
-                        Norbhess += C12*det12.overlap_hessian()
-                        #
-                        # Hamiltonian
-                        #
-                        Horbhess += C12*(
+                        Horbhess += C1*C2*(
                             det12.right_1el_energy_hessian((self.h, self.h)) + 
                             det12.mixed_1el_energy_hessian((self.h, self.h)) +
                             det12.right_2el_energy_hessian() +
                             det12.mixed_2el_energy_hessian()
                             )
                         #
-        Hstructgrad *= 2
-        Horbgrad *= 2
         Hstructhess *= 2
         Horbstructhess *= 2
         Horbhess *= 2
-        Nstructgrad *= 2
-        Norbgrad *= 2
-        Nstructhess *= 2
-        Nstructorbhess *= 2
-        Norbstructhess *= 2
-        Norbhess
-        E = H/N
-        Estructgrad = (Hstructgrad-E*Nstructgrad)/N
-        Eorbgrad = (Horbgrad-E*Norbgrad)/N
+        #Nstructgrad *= 2
+        #Norbgrad *= 2
+        Nstructgrad, Norbgrad = self.normgrad()
+        #Nstructhess *= 2
+        #Nstructorbhess *= 2
+        #Norbstructhess *= 2
+        #Norbhess
+        Nstructhess, Norbstructhess, Norbhess = self.normhess()
+        E = self.energy()
+        N = self.norm()
+        #Estructgrad = (Hstructgrad-E*Nstructgrad)/N
+        #Eorbgrad = (Horbgrad-E*Norbgrad)/N
+        Estructgrad, Eorbgrad = self.energygrad()
         Estructhess = (
             Hstructhess - E*Nstructhess -
             Estructgrad.x(Nstructgrad) - Nstructgrad.x(Estructgrad)

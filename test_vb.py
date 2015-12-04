@@ -7,7 +7,7 @@ from daltools.util import full, timing
 import vb
 from num_diff import findif as fd
 
-class test_vb(unittest.TestCase):
+class VBTest(unittest.TestCase):
    def setUp(self):
       """
        Model the fci result as a wb wave function
@@ -87,7 +87,6 @@ B   0.0  0.0  0.7428
       self.delta=1e-4
       self.t_setup.stop()
 
-   @unittest.skip('not working')
    def test_energy_orb_hessian(self):
       """Energy orbital Hessian"""
       _, _, numorbhess = self.WF.numenergyhess()
