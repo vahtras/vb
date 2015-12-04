@@ -1023,27 +1023,21 @@ class WaveFunction(object):
         Eone = 0
         Etwo = 0
         N = 0
+        H = 0
         # Structures left
-        for str1, cs1 in zip(self.structs, self.coef):
+        for str1, cstr1 in zip(self.structs, self.coef):
             #Structures right
-            for str2, cs2 in zip(self.structs, self.coef):
+            for str2, cstr2 in zip(self.structs, self.coef):
                 #Determinants in left structure
-                for det1, cd1 in zip(str1.nods, str1.coef):
+                for det1, cdet1 in zip(str1.nods, str1.coef):
                     #Determinants in right structure
-                    for det2, cd2 in zip(str2.nods, str2.coef):
-                        BK12 = BraKet(det1, det2)
-                        D12 = BK12.transition_ao_density
-                        S12 = BK12.overlap()
-                        F12 = BK12.transition_ao_fock
-                        h12 = self.h&(D12[0]+D12[1])
-                        #h12 = Braket(det1, det2).trace(self.h1)
-                        g12 = HKL(F12, D12)
-                        C12 = cs1*cs2*cd1*cd2*S12
-                        Eone += h12*C12
-                        Etwo += g12*C12
+                    for det2, cdet2 in zip(str2.nods, str2.coef):
+                        det12 = BraKet(det1, det2)
+                        C12 = cstr1*cstr2*cdet1*cdet2*det12.overlap()
                         N += C12
+                        H += C12*det12.energy((self.h, self.h))
 
-        H = Eone+Etwo
+        #H = Eone+Etwo
         E = H/N
         return E
 
