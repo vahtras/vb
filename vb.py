@@ -732,7 +732,9 @@ class WaveFunction(object):
         self.coef *= 1/math.sqrt(self.norm())
 
     def norm(self):
-        """Calculate norm square of VB wave function"""
+        """
+        Calculate norm square of VB wave function: N=<0|0>
+        """
         N = 0
         for S, CS in zip(self.structs, self.coef):
             for T, CT in zip(self.structs, self.coef):
@@ -811,17 +813,17 @@ class WaveFunction(object):
         Norbhess = full.matrix((ao, mo, ao, mo))
         d12 = full.matrix((mo, mo))
         #
-        for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
-            for s2, (str2, Cs2) in enumerate(zip(self.structs, self.coef)):
-                for d1, (det1, Cd1) in enumerate(zip(str1.nods, str1.coef)):
-                    for d2, (det2, Cd2) in enumerate(zip(str2.nods, str2.coef)):
+        for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
+            for s2, (str2, cstr2) in enumerate(zip(self.structs, self.coef)):
+                for det1, cdet1 in zip(str1.nods, str1.coef):
+                    for det2, cdet2 in zip(str2.nods, str2.coef):
                         #
                         bk12 = BraKet(det1, det2)
-                        C1 = Cs1*Cd1
-                        C2 = Cs2*Cd2
+                        C1 = cstr1*cdet1
+                        C2 = cstr2*cdet2
                         #
-                        Nstructhess[s1, s2] += (Cd1*Cd2)*bk12.overlap()
-                        Norbstructhess[:, :, s1] += Cd1*C2*bk12.overlap_gradient()
+                        Nstructhess[s1, s2] += (cdet1*cdet2)*bk12.overlap()
+                        Norbstructhess[:, :, s1] += cdet1*C2*bk12.overlap_gradient()
                         Norbhess += C1*C2*bk12.overlap_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
