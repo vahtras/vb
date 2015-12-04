@@ -421,7 +421,7 @@ class BraKetTest(unittest.TestCase):
         self.assertAlmostEqual(NKL, 0.872356)
 
     def test_K00_L00_energy(self):
-        HKL = self.K00_L00.energy(self.f)
+        HKL = self.K00_L00.oneel_energy(self.f)
         self.assertAlmostEqual(HKL, -0.5374732)
 
     def notest_K00_L00_overlap_numerical_right_gradient(self):

@@ -29,7 +29,7 @@ class BraKet(object):
 
     def __mul__(self, h):
         if is_one_electron(h):
-            return self.energy(h)*self.overlap()
+            return self.oneel_energy(h)*self.overlap()
         elif is_two_electron(h):
             raise Exception("Not implemented")
         else:
@@ -212,6 +212,9 @@ class BraKet(object):
 ### Energy differentiation
 
     def energy(self, h):
+        return self.oneel_energy(h) + self.twoel_energy()
+
+    def oneel_energy(self, h):
         """<K|h|L>/<K|L>"""
 
         dao = self.transition_ao_density
@@ -230,6 +233,9 @@ class BraKet(object):
 
         return self.twoel_energy()*self.overlap()
 
+    def right_energy_gradient(self, h1):
+        return self.right_1el_energy_gradient(h1) + self.right_2el_energy_gradient()
+
     def right_1el_energy_gradient(self, h1):
         return sum(self.right_1el_energy_gradient_ab(h1))
 
@@ -237,7 +243,7 @@ class BraKet(object):
         return sum(self.right_2el_energy_gradient_ab(*args))
 
     def right_1el_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = (self.energy(h1)*g for g in self.right_overlap_gradient_ab())
+        eg1_a, eg1_b = (self.oneel_energy(h1)*g for g in self.right_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_virtual_occupied(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -280,7 +286,7 @@ class BraKet(object):
         return sum(self.left_2el_energy_gradient_ab(*args))
 
     def left_1el_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = (self.energy(h1)*g for g in self.left_overlap_gradient_ab())
+        eg1_a, eg1_b = (self.oneel_energy(h1)*g for g in self.left_overlap_gradient_ab())
         eg2_a, eg2_b = self.project_occupied_virtual(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -314,7 +320,7 @@ class BraKet(object):
 
     def right_1el_energy_hessian(self, h1):
         K_h_d2L = self.right_energy_hessian(
-            self.energy,
+            self.oneel_energy,
             self.project_virtual_occupied,
             h1
             )
@@ -354,7 +360,7 @@ class BraKet(object):
 
     def mixed_1el_energy_hessian(self, h1):
         dK_h_dL = self.mixed_gen_hessian(
-            self.energy, 
+            self.oneel_energy, 
             self.project_occupied_virtual,
             self.project_virtual_occupied,
             h1
@@ -1058,74 +1064,35 @@ class WaveFunction(object):
         #
         # Structures left
         #
-        for s1 in range(len(self.structs)):
-            str1 = self.structs[s1]
-            #
-            #Structures right
-            #
-            for s2 in range(len(self.structs)):
-                str2 = self.structs[s2]
-                #
-                #Determinants in left structure
-                #
-                for d1 in range(len(str1.nods)):
-                    det1 = str1.nods[d1]
-                    #
-                    #Determinants in right structure
-                    #
-                    for d2 in range(len(str2.nods)):
-                        det2 = str2.nods[d2]
-                        #
-                        # Structure gradient terms
-                        #
+        for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
+            for str2, cstr2 in zip(self.structs, self.coef):
+                for det1, cdet1 in zip(str1.nods, str1.coef):
+                    for det2, cdet2 in zip(str2.nods, str2.coef):
+                        det12 = BraKet(det1, det2)
                         S12 = det1*det2
-                        Cs1 = self.coef[s1]
-                        Cs2 = self.coef[s2]
-                        Cd1 = str1.coef[d1]
-                        Cd2 = str2.coef[d2]
-                        C1 = Cs1*Cd1
-                        C2 = Cs2*Cd2
+                        C1 = cstr1*cdet1
+                        C2 = cstr2*cdet2
                         #
                         # Structure gradient terms
                         #
-                        N12 = (Cd1*C2)*S12
+                        N12 = (cdet1*C2)*S12
                         Nstructgrad[s1] += N12
-                        D12 = Dao(det1, det2)
-                        F12 = Fao(D12, filename=self.tmp('AOTWOINT'))
                         #
-                        H12 = self.h&(D12[0]+D12[1])
-                        H12 += 0.5*((F12[0]&D12[0]) + (F12[1]&D12[1]))
+                        H12 = det12.energy((self.h, self.h))
                         Hstructgrad[s1] += N12*H12
                         C12 = (C1*C2)*S12
-                        N += C12
-                        H += C12*H12
-
                         #
                         # Orbital gradient terms
                         #
-                        CK = det1.orbitals()
-                        CL = det2.orbitals()
-                        Dmo12 = Dmo(det1, det2)
+                        Norbgrad += C1*C2*det12.right_overlap_gradient()
+                        Horbgrad += C1*C2*det12.right_energy_gradient((self.h, self.h))
                         #
-                        Sog12 = [None, None]
-                        Sog21 = [None, None]
-                        Hog12 = [None, None]
-                        Hog21 = [None, None]
-                        for s in range(2):
-                            Sog12[s] = Dmo12[s]*CL[s].T*Nod.S
-                            Hog12[s] = Dmo12[s]*CL[s].T*(
-                                (self.h+F12[s]).T*(I-D12[s]*Nod.S)
-                                ) + Sog12[s]*H12
+                        # Energy and norm contributions
                         #
-                        # Scatter to orbitals
-                        #
-                            ((C1*C2*S12)*Sog12[s]).T.scatteradd(Norbgrad, columns=det1(s))
-                            ((C1*C2*S12)*Hog12[s]).T.scatteradd(Horbgrad, columns=det1(s))
-                        #
-                        #   F12[s].T*(I-D12[s]*S/S12)+H12*S/S12
-                        #
+                        N += C12
+                        H += C12*det12.energy((self.h, self.h))
+
         E = H/N # only electronic
-        #print "energygrad:E, H, N", E, H, N
         structgrad = (2/N)*(Hstructgrad-E*Nstructgrad)
         orbgrad = (2/N)*(Horbgrad-E*Norbgrad)
         return (structgrad, orbgrad[:, :])
