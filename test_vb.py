@@ -21,14 +21,11 @@ class VBTest(unittest.TestCase):
 	  = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
 	  + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
       """
-      self.t_setup=timing.timing("setUp")
-      #
-      # Dalton setup
-      #
-      self.dalexe="dalton.x"
-      self.tmp="/tmp/"
+
+      self.tmp="test_data"
       def tmp(fil):
-	 return os.path.join(self.tmp, fil)
+          return os.path.join(self.tmp, fil)
+
       self.molinp=tmp("MOLECULE.INP")
       self.dalinp=tmp("DALTON.INP")
       self.one=tmp("AOONEINT")
@@ -57,14 +54,6 @@ B   0.0  0.0  0.7428
 """)
       molinp.close()
 #
-# Run dalton
-#
-      from subprocess import call
-      cmd="cd %s; BASDIR=$(dirname $(which %s))/basis %s" % (self.tmp, self.dalexe, self.dalexe)
-      print "COMMAND", cmd
-      returncode = call(cmd, stdout=open('/dev/null'), shell=True)
-      assert returncode == 0, "returncode=%d" % returncode
-#
 # Setup VB wave function
 #
       vb.Nod.C=full.matrix((2,2)).random()
@@ -85,7 +74,6 @@ B   0.0  0.0  0.7428
       # Threshold for numerical differentiation
       #
       self.delta=1e-4
-      self.t_setup.stop()
 
    def test_energy_orb_hessian(self):
       """Energy orbital Hessian"""
