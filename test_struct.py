@@ -1,5 +1,5 @@
 import unittest
-from util.full import init
+from daltools.util.full import init
 from vb import *
 
 class StructTest(unittest.TestCase):

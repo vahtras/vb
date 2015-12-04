@@ -1,3 +1,9 @@
 [submodule "daltools"]
 	path = daltools
 	url = https://github.com/vahtras/daltools.git
+[submodule "two_electron"]
+	path = two_electron
+	url = https://github.com/vahtras/two_electron.git
+[submodule "num_diff"]
+	path = num_diff
+	url = git@github.com:vahtras/num_diff
