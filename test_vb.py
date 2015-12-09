@@ -69,7 +69,10 @@ B   0.0  0.0  0.7428
       Nu2=1/(2*(1-Sab))
       cion=cg*Ng2+cu*Nu2
       ccov=cg*Ng2-cu*Nu2
-      self.WF=vb.WaveFunction([ion,cov],[cion,ccov],tmpdir='/tmp')
+      self.WF=vb.WaveFunction(
+        [ion,cov],[cion,ccov],
+        tmpdir=os.path.abspath('test_data')
+        )
       #
       # Threshold for numerical differentiation
       #

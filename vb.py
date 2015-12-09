@@ -13,13 +13,16 @@ DELTA = 1e-4
 class BraKet(object):
     """Non-orthogonal determinant pairs"""
 
-    def __init__(self, K, L):
+    tmpdir='/tmp'
+
+    def __init__(self, K, L, tmpdir=None):
         self.K = K
         self.L = L
         self._td = None
         self._ftd = None
         self._aotd = None
-        self.tmpdir = '/tmp'
+        if tmpdir is not None:
+            self.tmpdir = tmpdir
 
     def __str__(self):
         return "<%s|...|%s>" % (self.K, self.L)
@@ -340,7 +343,10 @@ class BraKet(object):
 
         Dam = self.contravariant_transition_density_ao_mo
         Delta = self.co_contravariant_transition_delta()
-        K_h_d2L += two.vb_transform(Dam, Delta)*self.overlap()
+        K_h_d2L += two.vb_transform(
+            Dam, Delta, 
+            filename=os.path.join(self.tmpdir, 'AOTWOINT')
+            )*self.overlap()
 
         return K_h_d2L
 
@@ -387,6 +393,7 @@ class BraKet(object):
             self.contravariant_transition_density_ao_mo,
             self.contra_covariant_transition_delta(),
             self.co_contravariant_transition_delta(),
+            filename=os.path.join(self.tmpdir, 'AOTWOINT')
             )*self.overlap()
         return dK_g_dL
 
@@ -633,12 +640,17 @@ class StructError(Exception):
 
 class WaveFunction(object):
 
-    def __init__(self, structs, coef, VBSCF=True, tmpdir='/tmp', frozen=[]):
+    tmpdir='/tmp'
+
+    def __init__(self, structs, coef, VBSCF=True, tmpdir=None, frozen=[]):
         self.structs = structs
         self.coef = full.init(coef)
         self.tmpdir = tmpdir
         self.Z = one.readhead(tmpdir+"/AOONEINT")["potnuc"]
         self.h = one.read("ONEHAMIL", tmpdir+"/AOONEINT").unpack().unblock()
+        if tmpdir is not None:
+            self.tmpdir = tmpdir
+        BraKet.tmpdir = self.tmpdir
         self.frozen = frozen
         #
         # For VBSCF all structures share orbitals
