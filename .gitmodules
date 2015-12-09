@@ -6,4 +6,4 @@
 	url = https://github.com/vahtras/two_electron.git
 [submodule "num_diff"]
 	path = num_diff
-	url = git@github.com:vahtras/num_diff
+	url = https://github.com/vahtras/num_diff
