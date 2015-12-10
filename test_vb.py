@@ -22,7 +22,7 @@ class VBTest(unittest.TestCase):
 	  + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
       """
 
-      self.tmp="test_data"
+      self.tmp=os.path.abspath("test_data")
       def tmp(fil):
           return os.path.join(self.tmp, fil)
 
