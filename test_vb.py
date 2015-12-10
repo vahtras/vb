@@ -22,7 +22,7 @@ class VBTest(unittest.TestCase):
 	  + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
       """
 
-      self.tmp=os.path.abspath("test_data")
+      self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
       def tmp(fil):
           return os.path.join(self.tmp, fil)
 
@@ -71,7 +71,7 @@ B   0.0  0.0  0.7428
       ccov=cg*Ng2-cu*Nu2
       self.WF=vb.WaveFunction(
         [ion,cov],[cion,ccov],
-        tmpdir=os.path.abspath('test_data')
+        tmpdir=self.tmp
         )
       #
       # Threshold for numerical differentiation
