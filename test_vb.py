@@ -78,6 +78,10 @@ B   0.0  0.0  0.7428
       #
       self.delta=1e-4
 
+   def test_str(self):
+      import re
+      self.assertTrue("(1)" in str(self.WF) and "(2)" in str(self.WF))
+
    def test_energy_orb_hessian(self):
       """Energy orbital Hessian"""
       _, _, numorbhess = self.WF.numenergyhess()

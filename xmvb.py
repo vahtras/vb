@@ -2,7 +2,7 @@
 """Process and execute an XMVB input file"""
 import sys, re
 from util import full
-from dalton import hf
+#from dalton import hf
 import vb
 
 def ProcessXMVB(f):
@@ -63,6 +63,34 @@ def ProcessXMVB(f):
     # Initial structure coefficients?
     #
     return structs
+
+def process_ctrl(lines):
+    ctrl={}
+    collect = False
+    entries = []
+    for line in lines:
+        if line == '$end':
+            break
+        if line == '$ctrl':
+            collect = True
+            continue
+        if collect:
+            entries += line.split()    
+    pairs = [word.split('=') for word  in entries if '=' in word]
+    singles = {word:True  for word  in entries if '=' not in word}
+
+    keywords = { k: w for k, w in pairs }
+    keywords.update(singles)
+
+    for k in keywords:
+        try:
+            iw = int(keywords[k])
+            keywords[k] = iw
+        except ValueError:
+            pass
+
+    return keywords 
+            
 
 def ProcessStruct(seq):
     """ Process structure from XMVB input - list of ints """

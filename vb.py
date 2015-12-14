@@ -91,6 +91,8 @@ class BraKet(object):
 
     @property
     def transition_ao_density(self):
+        if self.overlap() == 0: 
+            raise Exception("Density not implemented for singular overlap")
         return Dao(self.K, self.L)
 
     def covariant_density_ao(self):
@@ -645,11 +647,10 @@ class WaveFunction(object):
     def __init__(self, structs, coef, VBSCF=True, tmpdir=None, frozen=[]):
         self.structs = structs
         self.coef = full.init(coef)
-        self.tmpdir = tmpdir
-        self.Z = one.readhead(tmpdir+"/AOONEINT")["potnuc"]
-        self.h = one.read("ONEHAMIL", tmpdir+"/AOONEINT").unpack().unblock()
         if tmpdir is not None:
             self.tmpdir = tmpdir
+        self.Z = one.readhead(self.tmp("AOONEINT"))["potnuc"]
+        self.h = one.read("ONEHAMIL", self.tmp("AOONEINT")).unpack().unblock()
         BraKet.tmpdir = self.tmpdir
         self.frozen = frozen
         #
@@ -666,8 +667,8 @@ class WaveFunction(object):
 
     def __str__(self):
         retstr = "\n"
-        for i, coef in enumerate(self.structs):
-            retstr += self.coef.fmt%coef + "   " + "(%d)\n"%i
+        for i, coef in enumerate(self.coef):
+            retstr += "%10.4f (%d)\n" % (coef, i+1)
         return retstr
 
     def nel(self):
