@@ -548,12 +548,13 @@ class Nod(object):
             #
 
     def electrons(self):
+        """Return number of electrons in determinant"""
         return len(self.a + self.b)
 
     def __call__(self, s):
-        #
+        """
         # Returns alpha (s=0) or beta (s=1) string
-        #
+        """
         if s == 0:
             return self.a
         elif s == 1:
@@ -568,20 +569,22 @@ class Nod(object):
         return retstr
 
     def orbitals(self):
+        """Extract mo coefficients for current determinant"""
         CUa = None
         CUb = None
-        if self.a: CUa = self.C[:, self.a]
-        if self.b: CUb = self.C[:, self.b]
+        if self.a:
+            CUa = self.C[:, self.a]
+        if self.b:
+            CUb = self.C[:, self.b]
         return (CUa, CUb)
 
     def __mul__(self, other):
-        #
+        """
         # Return overlap of two Slater determinants <K|L>
         # calculated as matrix determinant of overlap
         # of orbitals in determinants
         # det(S) = det S(alpha)*det S(beta)
-        #
-        #
+        """
         if len(self.a) != len(other.a) or len(self.b) != len(other.b):
             return 0
 
@@ -606,9 +609,11 @@ class Nod(object):
         return Det
 
     def ao_density(self):
+        """Return ao density"""
         return Dao(self, self)
 
     def mo_density(self):
+        """Return reduced mo density"""
         return Dmo(self, self)
 
 
@@ -661,13 +666,18 @@ def Dmo(K, L):
     return D
 
 
-
 def HKL(F, D):
+    """Returns two-electron energy given 2el-Fock/Density matrix"""
     E = 0.5*((F[0]&D[0]) + (F[1]&D[1]))
     return E
 
 class Structure(object):
+    """
+    VB Structure type
 
+    nods: Non-orthogonal determinants
+    coef: fix coupling coefficients
+    """
     def __init__(self, nods, coef):
         if len(nods) != len(coef):
             raise StructError
@@ -705,10 +715,16 @@ class StructError(Exception):
 
 
 class WaveFunction(object):
+    """
+    VB wave function
+
+    structs: list of structures
+    coef: structure coefficients
+    """
 
     tmpdir = '/tmp'
 
-    def __init__(self, structs, coef, VBSCF=True, tmpdir=None, frozen=[]):
+    def __init__(self, structs, coef, VBSCF=True, tmpdir=None):
         self.structs = structs
         self.coef = full.init(coef)
         if tmpdir is not None:
@@ -716,17 +732,16 @@ class WaveFunction(object):
         self.Z = one.readhead(self.tmp("AOONEINT"))["potnuc"]
         self.h = one.read("ONEHAMIL", self.tmp("AOONEINT")).unpack().unblock()
         BraKet.tmpdir = self.tmpdir
-        self.frozen = frozen
         #
         # For VBSCF all structures share orbitals
         #
         if VBSCF:
             self.C = Nod.C
-            nao, nmo = self.C.shape
         else:
             raise Exception("not implemented")
 
     def tmp(self, filename):
+        """Return full path of file in tmpdir"""
         return os.path.join(self.tmpdir, filename)
 
     def __str__(self):
@@ -736,20 +751,20 @@ class WaveFunction(object):
         return retstr
 
     def nel(self):
+        """Return number of electrons from ao density"""
         return self.ao_density() & Nod.S
 
     def ao_density(self):
         """Electron number check"""
-        Dao = full.matrix(Nod.S.shape)
-        N = 0
+        D_ao = full.matrix(Nod.S.shape)
         for S, CS in zip(self.structs, self.coef):
             for T, CT in zip(self.structs, self.coef):
                 for K, CK in zip(S.nods, S.coef):
                     for L, CL in zip(T.nods, T.coef):
                         KL = BraKet(K, L)
                         DKL = KL.transition_ao_density
-                        Dao += sum(DKL)*CS*CT*CK*CL*KL.overlap()
-        return Dao/self.norm()
+                        D_ao += sum(DKL)*CS*CT*CK*CL*KL.overlap()
+        return D_ao/self.norm()
 
     def StructureHamiltonian(self):
         SH = []
