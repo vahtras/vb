@@ -316,13 +316,12 @@ class BraKet(object):
 
     def right_2el_energy_gradient_ab2(self):
         """Rhs derivative <K|g|dL/dC(mu, m)>"""
-        Fao = self.transition_ao_fock
-        return self.project_virtual_occupied(Fao)
+        return self.project_virtual_occupied(self.transition_ao_fock)
 
     def project_virtual_occupied(self, h1):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
 
-        Dmo = self.transition_density
+        D_mo = self.transition_density
         Delta = self.co_contravariant_transition_delta()
 
         K_h_dL = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
@@ -331,7 +330,7 @@ class BraKet(object):
         for s in (0, 1):
             if self.K(s) and self.L(s):
                 K_h_dL[s][:, self.L(s)] += \
-                    Delta[s]*h1[s].T*CK[s]*Dmo[s]*self.overlap()
+                    Delta[s]*h1[s].T*CK[s]*D_mo[s]*self.overlap()
         return K_h_dL
 
 
@@ -373,7 +372,7 @@ class BraKet(object):
     def project_occupied_virtual(self, h1):
         """Lhs derivative <dK/dC(mu,m)|h|L>"""
 
-        Dmo = self.transition_density
+        D_mo = self.transition_density
         Delta = self.contra_covariant_transition_delta()
 
         dK_h_La = full.matrix(Nod.C.shape[::-1])
@@ -382,14 +381,15 @@ class BraKet(object):
         CL = self.L.orbitals()
         if self.L(0):
             dK_h_La[self.K(0), :] += \
-                Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
+                D_mo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
         if self.L(1):
             dK_h_Lb[self.K(1), :] += \
-                Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
+                D_mo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
 
         return dK_h_La.T, dK_h_Lb.T
 
     def right_1el_energy_hessian(self, h1):
+        """Right 1el energy Hessian <K|h|d2L>"""
         K_h_d2L = self.right_gen_energy_hessian(
             self.oneel_energy,
             self.project_virtual_occupied,
@@ -398,6 +398,7 @@ class BraKet(object):
         return K_h_d2L
 
     def right_2el_energy_hessian(self):
+        """Right 2el energy Hessian <K|g|d2L>"""
         K_h_d2L = self.right_gen_energy_hessian(
             self.twoel_energy,
             self.right_2el_energy_gradient_ab2
@@ -433,6 +434,7 @@ class BraKet(object):
 
 
     def mixed_1el_energy_hessian(self, h1):
+        """Mixed 1el energy Hessian <dK|h|dL>"""
         dK_h_dL = self.mixed_gen_hessian(
             self.oneel_energy,
             self.project_occupied_virtual,
@@ -442,6 +444,7 @@ class BraKet(object):
         return dK_h_dL
 
     def mixed_2el_energy_hessian(self):
+        """Mixed 2el energy Hessian <dK|g|dL>"""
         dK_g_dL = self.mixed_gen_hessian(
             self.twoel_energy,
             self.project_occupied_virtual,
@@ -465,18 +468,11 @@ class BraKet(object):
 
         <K|a^m+ a_\mu h a\nu+ a^n|L>
         """
-
-        S = Nod.S
-        KL = self.overlap()
-        D_KL = self.transition_density
-
         # <h><K|a^m+ a_\mu h a_nu+ a^n|L>
-        dK_dL = self.mixed_overlap_hessian()
-
-        e1 = energy(*args)
-        dK_h_dL = e1*dK_dL
+        dK_h_dL = energy(*args)*self.mixed_overlap_hessian()
 
         # D^m_mu<K|H|dL/dC^nu_n> + <dK/dC^mu_m|h|L>D_nu^n
+        KL = self.overlap()
         dK_L = self.left_overlap_gradient()
         K_dL = self.right_overlap_gradient()
         K_h_dL = sum(right_gradient(*args))
@@ -502,20 +498,23 @@ class BraKet(object):
         return dK_h_dL
 
     def project_virtual_virtual(self, op):
+        """Project virtual-virtual"""
         Delta1 = self.co_contravariant_transition_delta()
         Delta2 = self.contra_covariant_transition_delta()
         return tuple(d1*h.T*d2 for d1, h, d2 in zip(Delta1, op, Delta2))
 
     def project_occupied_occupied(self, op):
+        """Project occupied-occupied"""
         Dma = self.contravariant_transition_density_mo_ao
         Dam = self.contravariant_transition_density_ao_mo
         h1mm = (Dma[0]*op[0].T*Dam[0], Dma[1]*op[1].T*Dam[1])
         return h1mm
-#
-# Class of non-orthogonal determinants
-#
+
+
 class Nod(object):
-    #
+    """
+    # Class of non-orthogonal determinants
+    """
     #
     # Class global variables
     #
