@@ -13,7 +13,7 @@ DELTA = 1e-4
 class BraKet(object):
     """Non-orthogonal determinant pairs"""
 
-    tmpdir='/tmp'
+    tmpdir = '/tmp'
 
     def __init__(self, K, L, tmpdir=None):
         self.K = K
@@ -69,10 +69,14 @@ class BraKet(object):
         return Dma
 
     def co_contravariant_transition_density_ao_mo(self):
-        return tuple(Nod.S*d for d in self.contravariant_transition_density_ao_mo)
+        return tuple(
+            Nod.S*d for d in self.contravariant_transition_density_ao_mo
+            )
 
     def contra_covariant_transition_density_mo_ao(self):
-        return tuple(d*Nod.S for d in self.contravariant_transition_density_mo_ao)
+        return tuple(
+            d*Nod.S for d in self.contravariant_transition_density_mo_ao
+            )
 
 
     @property
@@ -86,12 +90,11 @@ class BraKet(object):
                     D_KL[s].scatter(
                         self._ftd[s], rows=self.K(s), columns=self.L(s)
                         )
-            
         return self._ftd
 
     @property
     def transition_ao_density(self):
-        if self.overlap() == 0: 
+        if self.overlap() == 0:
             raise Exception("Density not implemented for singular overlap")
         return Dao(self.K, self.L)
 
@@ -120,11 +123,11 @@ class BraKet(object):
 
     @property
     def transition_ao_fock(self):
-        FKL = tuple(f.view(full.matrix) 
-            for f in Fao(
+        FKL = tuple(
+            f.view(full.matrix) for f in Fao(
                 self.transition_ao_density, filename=self.tmp('AOTWOINT')
-                )
             )
+        )
         return FKL
 
 ### Overlap differentiation
@@ -135,7 +138,7 @@ class BraKet(object):
     def left_overlap_gradient(self):
         """
         Lhs derivative <dK/dC(^mu, _m)|L>
-        
+
         D(^m,_mu)<K|L>
         """
         return sum(self.left_overlap_gradient_ab())
@@ -143,14 +146,14 @@ class BraKet(object):
     def right_overlap_gradient(self):
         """
         Rhs derivative <K|dL/dC(^mu, _m)>
-        
+
         D(_mu,^m)<K|L>
         """
         return sum(self.right_overlap_gradient_ab())
 
     def left_overlap_gradient_ab(self):
         """
-        Lhs alpha,beta derivative 
+        Lhs alpha,beta derivative
         <dKa/dC(mu, m) Kb|L> ,<Ka dKb/dC(mu,m)|La dLb>
         """
 
@@ -171,7 +174,7 @@ class BraKet(object):
 
     def left_overlap_hessian(self):
         return BraKet(self.L, self.K).right_overlap_hessian()
-   
+
     def right_overlap_hessian(self):
         """
         Rhs derivative <K|d2/dC(mu, m)dC(nu, n)|L>
@@ -187,8 +190,8 @@ class BraKet(object):
 
         Kd2L = (
             D_am.x(D_am)
-          - (aD_am.x(aD_am) + bD_am.x(bD_am)).transpose((2, 1, 0, 3))
-            )*self.overlap()
+            - (aD_am.x(aD_am) + bD_am.x(bD_am)).transpose((2, 1, 0, 3))
+        )*self.overlap()
 
         return Kd2L
 
@@ -242,7 +245,8 @@ class BraKet(object):
         return self.right_energy_gradient(h1) + self.left_energy_gradient(h1)
 
     def right_energy_gradient(self, h1):
-        return self.right_1el_energy_gradient(h1) + self.right_2el_energy_gradient()
+        return self.right_1el_energy_gradient(h1) + \
+            self.right_2el_energy_gradient()
 
     def right_1el_energy_gradient(self, h1):
         return sum(self.right_1el_energy_gradient_ab(h1))
@@ -251,7 +255,9 @@ class BraKet(object):
         return sum(self.right_2el_energy_gradient_ab(*args))
 
     def right_1el_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = (self.oneel_energy(h1)*g for g in self.right_overlap_gradient_ab())
+        eg1_a, eg1_b = (
+            self.oneel_energy(h1)*g for g in self.right_overlap_gradient_ab()
+        )
         eg2_a, eg2_b = self.project_virtual_occupied(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -262,7 +268,9 @@ class BraKet(object):
         except ValueError:
             fock = self.transition_ao_fock
 
-        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.right_overlap_gradient_ab())
+        eg1_a, eg1_b = (
+            self.twoel_energy()*g for g in self.right_overlap_gradient_ab()
+        )
         eg2_a, eg2_b = self.project_virtual_occupied(fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -283,12 +291,14 @@ class BraKet(object):
         CK = self.K.orbitals()
         for s in (0, 1):
             if self.K(s) and self.L(s):
-                K_h_dL[s][:, self.L(s)] += Delta[s]*h1[s].T*CK[s]*Dmo[s]*self.overlap()
+                K_h_dL[s][:, self.L(s)] += \
+                    Delta[s]*h1[s].T*CK[s]*Dmo[s]*self.overlap()
         return K_h_dL
 
 
     def left_energy_gradient(self, h1):
-        return self.left_1el_energy_gradient(h1) + self.left_2el_energy_gradient()
+        return self.left_1el_energy_gradient(h1) + \
+            self.left_2el_energy_gradient()
 
     def left_1el_energy_gradient(self, h1):
         return sum(self.left_1el_energy_gradient_ab(h1))
@@ -297,7 +307,9 @@ class BraKet(object):
         return sum(self.left_2el_energy_gradient_ab(*args))
 
     def left_1el_energy_gradient_ab(self, h1):
-        eg1_a, eg1_b = (self.oneel_energy(h1)*g for g in self.left_overlap_gradient_ab())
+        eg1_a, eg1_b = (
+            self.oneel_energy(h1)*g for g in self.left_overlap_gradient_ab()
+        )
         eg2_a, eg2_b = self.project_occupied_virtual(h1)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -307,7 +319,9 @@ class BraKet(object):
             fock, = args
         except ValueError:
             fock = self.transition_ao_fock
-        eg1_a, eg1_b = (self.twoel_energy()*g for g in self.left_overlap_gradient_ab())
+        eg1_a, eg1_b = (
+            self.twoel_energy()*g for g in self.left_overlap_gradient_ab()
+        )
         eg2_a, eg2_b = self.project_occupied_virtual(fock)
         eg_ab = (eg1_a + eg2_a, eg1_b + eg2_b)
         return eg_ab
@@ -323,10 +337,12 @@ class BraKet(object):
 
         CL = self.L.orbitals()
         if self.L(0):
-            dK_h_La[self.K(0), :] += Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
+            dK_h_La[self.K(0), :] += \
+                Dmo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
         if self.L(1):
-            dK_h_Lb[self.K(1), :] += Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
-        
+            dK_h_Lb[self.K(1), :] += \
+                Dmo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
+
         return dK_h_La.T, dK_h_Lb.T
 
     def right_1el_energy_hessian(self, h1):
@@ -346,7 +362,7 @@ class BraKet(object):
         Dam = self.contravariant_transition_density_ao_mo
         Delta = self.co_contravariant_transition_delta()
         K_h_d2L += two.vb_transform(
-            Dam, Delta, 
+            Dam, Delta,
             filename=os.path.join(self.tmpdir, 'AOTWOINT')
             )*self.overlap()
 
@@ -368,13 +384,13 @@ class BraKet(object):
         ha, hb = right_gradient(*args)
         nh = na.x(ha) + nb.x(hb)
         K_h_d2L -= (nh.transpose(0, 3, 2, 1) + nh.transpose(2, 1, 0, 3))/KL
-            
+
         return K_h_d2L
 
 
     def mixed_1el_energy_hessian(self, h1):
         dK_h_dL = self.mixed_gen_hessian(
-            self.oneel_energy, 
+            self.oneel_energy,
             self.project_occupied_virtual,
             self.project_virtual_occupied,
             h1
@@ -421,7 +437,7 @@ class BraKet(object):
         K_dL = self.right_overlap_gradient()
         K_h_dL = sum(right_gradient(*args))
         dK_h_L = sum(left_gradient(*args))
-        
+
         dK_h_dL += (dK_L.x(K_h_dL) + dK_h_L.x(K_dL))/KL
 
         # D^{mn}Delta^xi_mu h_{xi,rho}Delta_nu^rho
@@ -445,14 +461,12 @@ class BraKet(object):
         Delta1 = self.co_contravariant_transition_delta()
         Delta2 = self.contra_covariant_transition_delta()
         return tuple(d1*h.T*d2 for d1, h, d2 in zip(Delta1, op, Delta2))
-        
+
     def project_occupied_occupied(self, op):
         Dma = self.contravariant_transition_density_mo_ao
         Dam = self.contravariant_transition_density_ao_mo
         h1mm = (Dma[0]*op[0].T*Dam[0], Dma[1]*op[1].T*Dam[1])
         return h1mm
-
-        
 #
 # Class of non-orthogonal determinants
 #
@@ -463,8 +477,9 @@ class Nod(object):
     #
     S = None   #Overlap ao basis
     C = None   #VB orbital coefficients
+    tmpdir = '/tmp'
 
-    def __init__(self, astring, bstring, C=None, tmpdir='/tmp'):
+    def __init__(self, astring, bstring, C=None, tmpdir=None):
         super(Nod, self).__init__()
         #
         # Input: list of orbital indices for alpha and beta strings
@@ -476,10 +491,13 @@ class Nod(object):
             self.C = Nod.C
         else:
             self.C = C
+
+        if tmpdir is not None:
+            self.tmpdir = tmpdir
         #
         # Read overlap at first invocation of constructor
         #
-        aooneint = os.path.join(tmpdir, 'AOONEINT')
+        aooneint = os.path.join(self.tmpdir, 'AOONEINT')
         if Nod.S is None:
             Nod.S = one.read('OVERLAP', aooneint).unpack().unblock()
             #
@@ -631,7 +649,7 @@ class Structure(object):
             for ket, c_ket in zip(other.nods, other.coef):
                 N += bra*ket*c_bra*c_ket
         return N
-        
+
     def __str__(self):
         output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]
         return "\n".join(output)
@@ -642,7 +660,7 @@ class StructError(Exception):
 
 class WaveFunction(object):
 
-    tmpdir='/tmp'
+    tmpdir = '/tmp'
 
     def __init__(self, structs, coef, VBSCF=True, tmpdir=None, frozen=[]):
         self.structs = structs
@@ -842,7 +860,8 @@ class WaveFunction(object):
                         C2 = cstr2*cdet2
                         #
                         Nstructhess[s1, s2] += (cdet1*cdet2)*bk12.overlap()
-                        Norbstructhess[:, :, s1] += cdet1*C2*bk12.overlap_gradient()
+                        Norbstructhess[:, :, s1] += \
+                            cdet1*C2*bk12.overlap_gradient()
                         Norbhess += C1*C2*bk12.overlap_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
@@ -1099,7 +1118,8 @@ class WaveFunction(object):
                         # Orbital gradient terms
                         #
                         Norbgrad += C1*C2*det12.right_overlap_gradient()
-                        Horbgrad += C1*C2*det12.right_energy_gradient((self.h, self.h))
+                        Horbgrad += \
+                            C1*C2*det12.right_energy_gradient((self.h, self.h))
                         #
                         # Energy and norm contributions
                         #
@@ -1118,7 +1138,7 @@ class WaveFunction(object):
         """Energy full Hessian
 
         Relations:
-        E = H/N 
+        E = H/N
         H = <0|H|0>
         N = <0|0>
 
@@ -1130,7 +1150,7 @@ class WaveFunction(object):
         d2H = 2*<d0|H|d0> + 2*<0|H|d20>
         d2N = 2*<d0|d0> + 2*<0|d20>
         """
-        
+
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(ls)
@@ -1167,14 +1187,15 @@ class WaveFunction(object):
                         #
                         # Orbital-structure hessian terms
                         #
-                        Horbstructhess[:, :, s1] += Cd1*C2*det12.energy_gradient((self.h, self.h))
+                        Horbstructhess[:, :, s1] += \
+                            Cd1*C2*det12.energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
                         #
                         C12 = C1*C2*S12
                         #
                         Horbhess += C1*C2*(
-                            det12.right_1el_energy_hessian((self.h, self.h)) + 
+                            det12.right_1el_energy_hessian((self.h, self.h)) +
                             det12.mixed_1el_energy_hessian((self.h, self.h)) +
                             det12.right_2el_energy_hessian() +
                             det12.mixed_2el_energy_hessian()
