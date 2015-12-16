@@ -3,10 +3,10 @@
 import os
 import sys
 import math
-from daltools import one
-from two_electron import two
-from two_electron.two import fockab as Fao
-from daltools.util import full
+from .daltools import one
+from .two_electron import two
+from .two_electron.two import fockab as Fao
+from .daltools.util import full
 
 DELTA = 1e-4
 
@@ -28,6 +28,7 @@ class BraKet(object):
         return "<%s|...|%s>" % (self.K, self.L)
 
     def tmp(self, filename):
+        """Return full path name to file in tmpdir"""
         return os.path.join(self.tmpdir, filename)
 
     def __mul__(self, h):
@@ -39,19 +40,21 @@ class BraKet(object):
             raise Exception("Unknown multiplicator")
 
     def overlap(self):
+        """Returns determinant overlap <K|L>"""
         return self.K*self.L
-
 
 ### Densities
 
     @property
     def transition_density(self):
+        """Return mo transition density based on inversion formula"""
         if self._td is None:
             self._td = Dmo(self.K, self.L)
         return self._td
 
     @property
     def contravariant_transition_density_ao_mo(self):
+        """Return contravariant density matrix in mix ao,mo basis"""
         Dam = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
         CK = self.K.orbitals()
         for s in (0, 1):
@@ -61,6 +64,7 @@ class BraKet(object):
 
     @property
     def contravariant_transition_density_mo_ao(self):
+        """Return contravariant density matrix in mix mo,ao basis"""
         Dma = (full.matrix(Nod.C.shape[::-1]), full.matrix(Nod.C.shape[::-1]))
         CL = self.L.orbitals()
         for s in (0, 1):
@@ -69,20 +73,28 @@ class BraKet(object):
         return Dma
 
     def co_contravariant_transition_density_ao_mo(self):
+        """
+        Return mixed contravariant-covariant density matrix in mix ao,mo basis
+        """
         return tuple(
             Nod.S*d for d in self.contravariant_transition_density_ao_mo
             )
 
     def contra_covariant_transition_density_mo_ao(self):
+        """
+        Return mixed covariant-contravariant density matrix in mix mo,ao basis
+        """
         return tuple(
             d*Nod.S for d in self.contravariant_transition_density_mo_ao
             )
 
-
     @property
     def full_mo_transition_density(self):
+        """
+        Return mo transition density matrix in full mo basis
+        """
         if self._ftd is None:
-            ao, mo = Nod.C.shape
+            _, mo = Nod.C.shape
             D_KL = self.transition_density
             self._ftd = (full.matrix((mo, mo)), full.matrix((mo, mo)))
             for s in (0, 1):
@@ -94,26 +106,42 @@ class BraKet(object):
 
     @property
     def transition_ao_density(self):
+        """
+        Return ao transition density matrix
+        """
         if self.overlap() == 0:
             raise Exception("Density not implemented for singular overlap")
         return Dao(self.K, self.L)
 
     def covariant_density_ao(self):
+        """
+        Return covariant ao transition density matrix
+        """
         S = Nod.S
         return tuple(S*d*S for d in self.transition_ao_density)
 
     def covariant_transition_delta(self):
+        """
+        Return covariant ao delta matrix
+        """
         S = Nod.S
         Delta_aa = (S - d for d in self.covariant_density_ao())
         return tuple(Delta_aa)
 
     def co_contravariant_transition_delta(self):
+        """
+        Return mixed covariant-contravariant ao delta matrix
+        """
         S = Nod.S
         I = full.unit(S.shape[0])
         Delta_aa = (I - S*d for d in self.transition_ao_density)
         return tuple(Delta_aa)
 
     def contra_covariant_transition_delta(self):
+        """
+        Return mixed contravariant-covariant ao delta matrix
+        """
+        S = Nod.S
         S = Nod.S
         I = full.unit(S.shape[0])
         Delta_aa = (I - d*S for d in self.transition_ao_density)
@@ -123,6 +151,7 @@ class BraKet(object):
 
     @property
     def transition_ao_fock(self):
+        """Return AO fock matrix F(DKL) for transition density"""
         FKL = tuple(
             f.view(full.matrix) for f in Fao(
                 self.transition_ao_density, filename=self.tmp('AOTWOINT')
@@ -133,6 +162,7 @@ class BraKet(object):
 ### Overlap differentiation
 
     def overlap_gradient(self):
+        """Return total overlap gradient d/dC <K|L>"""
         return self.left_overlap_gradient() + self.right_overlap_gradient()
 
     def left_overlap_gradient(self):
@@ -169,10 +199,12 @@ class BraKet(object):
         return tuple(KdL)
 
     def overlap_hessian(self):
+        """Return total overlap Hessian d2/dC2 <K|L>"""
         return self.left_overlap_hessian() + self.right_overlap_hessian() +\
             2*self.mixed_overlap_hessian()
 
     def left_overlap_hessian(self):
+        """Return left overlap Hessian <d2K|L>"""
         return BraKet(self.L, self.K).right_overlap_hessian()
 
     def right_overlap_hessian(self):
@@ -220,6 +252,7 @@ class BraKet(object):
 ### Energy differentiation
 
     def energy(self, h):
+        """Return total energy"""
         return self.oneel_energy(h) + self.twoel_energy()
 
     def oneel_energy(self, h):
@@ -242,19 +275,24 @@ class BraKet(object):
         return self.twoel_energy()*self.overlap()
 
     def energy_gradient(self, h1):
+        """Return gradient of transition matrix element d<K|H|L>"""
         return self.right_energy_gradient(h1) + self.left_energy_gradient(h1)
 
     def right_energy_gradient(self, h1):
+        """Return right gradient of transition matrix element <K|H|dL>"""
         return self.right_1el_energy_gradient(h1) + \
             self.right_2el_energy_gradient()
 
     def right_1el_energy_gradient(self, h1):
+        """Return right gradient of 1el transition matrix element <K|H|dL>"""
         return sum(self.right_1el_energy_gradient_ab(h1))
 
     def right_2el_energy_gradient(self, *args):
+        """Return right gradient of 2el transition matrix element <K|H|dL>"""
         return sum(self.right_2el_energy_gradient_ab(*args))
 
     def right_1el_energy_gradient_ab(self, h1):
+        """Return alpha/beta right 1el gradient <K|H|dL>"""
         eg1_a, eg1_b = (
             self.oneel_energy(h1)*g for g in self.right_overlap_gradient_ab()
         )
@@ -263,6 +301,7 @@ class BraKet(object):
         return eg_ab
 
     def right_2el_energy_gradient_ab(self, *args):
+        """Return alpha/beta right 2el gradient <K|H|dL>"""
         try:
             fock, = args
         except ValueError:
@@ -297,16 +336,20 @@ class BraKet(object):
 
 
     def left_energy_gradient(self, h1):
+        """Return left gradient of transition matrix element <dK|H|L>"""
         return self.left_1el_energy_gradient(h1) + \
             self.left_2el_energy_gradient()
 
     def left_1el_energy_gradient(self, h1):
+        """Return left gradient of 1el transition matrix element <dK|H|L>"""
         return sum(self.left_1el_energy_gradient_ab(h1))
 
     def left_2el_energy_gradient(self, *args):
+        """Return left gradient of 2el transition matrix element <dK|H|L>"""
         return sum(self.left_2el_energy_gradient_ab(*args))
 
     def left_1el_energy_gradient_ab(self, h1):
+        """Return alpha/beta left 1el gradient <dK|H|L>"""
         eg1_a, eg1_b = (
             self.oneel_energy(h1)*g for g in self.left_overlap_gradient_ab()
         )
@@ -315,6 +358,7 @@ class BraKet(object):
         return eg_ab
 
     def left_2el_energy_gradient_ab(self, *args):
+        """Return alpha/beta left 2el gradient <dK|H|L>"""
         try:
             fock, = args
         except ValueError:
@@ -416,7 +460,7 @@ class BraKet(object):
         return dK_g_dL
 
     def mixed_gen_hessian(self, energy, left_gradient, right_gradient, *args):
-        """
+        r"""
         L-R derivative <dK/dC(mu,m)|h|dL/dC(nu,n)>
 
         <K|a^m+ a_\mu h a\nu+ a^n|L>
