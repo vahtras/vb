@@ -607,31 +607,21 @@ class Nod(object):
         return Det
 
     def ao_density(self):
-        return DKL(self, self, mo=0)
+        return Dao(self, self)
 
     def mo_density(self):
-        return DKL(self, self, mo=1)
+        return Dmo(self, self)
 
 
 #
 # Calculate transition density from unnormalized molecular orbitals
 #
 def Dao(K, L):
-    return DKL(K, L, mo=0)
-
-def Dmo(K, L):
-    return DKL(K, L, mo=1)
-
-def DKL(K, L, mo=0):
-    #
-    # Return intermediate normalized transition density matrix given
+    """
+    # Return intermediate normalized ao transition density matrix given
     # determinants K and L
     # as [Dalpha, Dbeta]
-    # default: ao basis
-    # optional: mo non-zero, gives in terms of included orbitals
-    #           i.e. compact form which has to be scattered to a
-    #           general mo basis
-    #
+    """
 
     CK = K.orbitals()
     CL = L.orbitals()
@@ -643,21 +633,34 @@ def DKL(K, L, mo=0):
             #
             # if None orbitals set atomic density to zero matrix
             #
-            if mo:
-                D.append(None)
-            else:
-                D.append(full.matrix(Nod.S.shape))
+            D.append(full.matrix(Nod.S.shape))
         else:
             SLK = CL[s].T*Nod.S*CK[s]
-            #
-            # Density is inverse transpose
-            #
-            if mo:
-                D.append(SLK.inv())
-            else:
-                D.append(CK[s]*(CL[s].T/SLK))
+            D.append(CK[s]*(CL[s].T/SLK))
 
     return D
+
+def Dmo(K, L):
+    """
+    # Return intermediate normalized mo transition density matrix given
+    # determinants K and L
+    # as [Dalpha, Dbeta]
+    """
+
+    CK = K.orbitals()
+    CL = L.orbitals()
+    #
+    D = []
+
+    for s in range(2):
+        if CK[s] is None or CL[s] is None:
+            D.append(None)
+        else:
+            SLK = CL[s].T*Nod.S*CK[s]
+            D.append(SLK.inv())
+
+    return D
+
 
 
 def HKL(F, D):

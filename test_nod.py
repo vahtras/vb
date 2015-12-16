@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import os
-from vb import Nod, DKL, BraKet
+from vb import Nod, Dao, Dmo, BraKet
 from vb import Structure, StructError
 from daltools.util.full import init, matrix
 from num_diff.findif import clgrad, clhess, clmixhess, DELTA
@@ -80,12 +80,12 @@ class NodTest(unittest.TestCase):
 
     def test_alpha_mo_density(self):
         alpha = Nod([0], [])
-        DKL_a, _ = DKL(alpha, alpha, mo=1)
+        DKL_a, _ = Dmo(alpha, alpha)
         np.testing.assert_allclose(DKL_a, [[1./1.078]])
 
     def test_alpha_ao_density(self):
         alpha = Nod([0], [])
-        DKL_a, _ = DKL(alpha, alpha, mo=0)
+        DKL_a, _ = Dao(alpha, alpha)
         d_a = 0.49/1.078
         np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
 
