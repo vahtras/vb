@@ -922,13 +922,8 @@ class WaveFunction(object):
         #  E = <0|H|0>/<0|0>
         # dE = 2<d0|H-E|0>/<0|0>
         """
-        ao, mo = Nod.C.shape
-        Nstructgrad = full.matrix(len(self.structs))
-        Norbgrad = full.matrix((ao, mo))
-        N = 0
         Hstructgrad = full.matrix(len(self.structs))
-        Horbgrad = full.matrix((ao, mo))
-        H = 0
+        Horbgrad = full.matrix(Nod.C.shape)
         #
         # Structures left
         #
@@ -937,33 +932,29 @@ class WaveFunction(object):
                 for det1, cdet1 in zip(str1.nods, str1.coef):
                     for det2, cdet2 in zip(str2.nods, str2.coef):
                         det12 = BraKet(det1, det2)
-                        S12 = det1*det2
-                        C1 = cstr1*cdet1
-                        C2 = cstr2*cdet2
                         #
                         # Structure gradient terms
                         #
-                        N12 = (cdet1*C2)*S12
-                        Nstructgrad[s1] += N12
-                        #
-                        H12 = det12.energy((self.h, self.h))
-                        Hstructgrad[s1] += N12*H12
-                        C12 = (C1*C2)*S12
+                        Hstructgrad[s1] += \
+                            2*(cdet1*cstr2*cdet2)*\
+                            det12.overlap()*\
+                            det12.energy((self.h, self.h))
                         #
                         # Orbital gradient terms
                         #
-                        Norbgrad += C1*C2*det12.right_overlap_gradient()
                         Horbgrad += \
-                            C1*C2*det12.right_energy_gradient((self.h, self.h))
-                        #
-                        # Energy and norm contributions
-                        #
-                        N += C12
-                        H += C12*det12.energy((self.h, self.h))
+                            cstr1*cdet1*cstr2*cdet2*\
+                            det12.energy_gradient((self.h, self.h))
 
-        E = H/N # only electronic
-        structgrad = (2/N)*(Hstructgrad-E*Nstructgrad)
-        orbgrad = (2/N)*(Horbgrad-E*Norbgrad)
+        #E = H/N # only electronic
+
+        N = self.norm()
+        E = self.energy()
+
+        Nstructgrad, Norbgrad = self.normgrad()
+
+        structgrad = (1/N)*(Hstructgrad - E*Nstructgrad)
+        orbgrad = (1/N)*(Horbgrad - E*Norbgrad)
         return (structgrad, orbgrad[:, :])
 
 
@@ -984,16 +975,9 @@ class WaveFunction(object):
         d2N = 2*<d0|d0> + 2*<0|d20>
         """
 
-        ls = len(self.structs)
-        ao, mo = Nod.C.shape
-        Nstructgrad = full.matrix(ls)
-        Norbgrad = full.matrix((ao, mo))
-        Nstructhess = full.matrix((ls, ls))
-        Norbstructhess = full.matrix((ao, mo, ls))
-        Norbhess = full.matrix((ao, mo, ao, mo))
-        Hstructhess = full.matrix((ls, ls))
-        Horbstructhess = full.matrix((ao, mo, ls))
-        Horbhess = full.matrix((ao, mo, ao, mo))
+        Hstructhess = full.matrix(self.coef.shape*2)
+        Horbstructhess = full.matrix(Nod.C.shape + self.coef.shape)
+        Horbhess = full.matrix(Nod.C.shape*2)
         N = 0
         #
         for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
@@ -1002,13 +986,12 @@ class WaveFunction(object):
                     for det2, Cd2 in zip(str2.nods, str2.coef):
                         #
                         det12 = BraKet(det1, det2)
-                        S12 = det12.overlap()
                         #
                         # Structure gradient terms
                         #
-                        N12 = (Cd1*Cd2)*S12
-                        H12 = det12.energy((self.h, self.h))
-                        Hstructhess[s1, s2] += N12*H12
+                        Hstructhess[s1, s2] += \
+                            (Cd1*Cd2)*det12.overlap()*\
+                            det12.energy((self.h, self.h))
                         #
                         # Orbital-structure hessian terms
                         #
