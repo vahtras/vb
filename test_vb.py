@@ -291,7 +291,7 @@ B   0.0  0.0  0.7428
       self.failUnlessAlmostEqual(nel,2.0,6,'Wrong electron number %g != %g'%(nel,2))
 
    def test_verify_not_implemented_exception(self):
-      with self.assertRaises(vb.NotImplemented):
+      with self.assertRaises(NotImplementedError):
          vb.is_two_electron()
 
 
