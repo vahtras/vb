@@ -34,7 +34,7 @@ class BraKet(object):
         if is_one_electron(h):
             return self.oneel_energy(h)*self.overlap()
         elif is_two_electron(h):
-            raise Exception("Not implemented")
+            raise NotImplemented
         else:
             raise Exception("Unknown multiplicator")
 
@@ -1224,8 +1224,12 @@ def is_one_array(h):
            len(h.shape) == 2 and \
            h.shape[0] == h.shape[1]
 
-def is_two_electron(h):
+class NotImplemented(Exception):
+    """Not implmemented exception"""
     pass
+
+def is_two_electron(*args):
+    raise NotImplemented
 
 if __name__ == "__main__":
     pass
