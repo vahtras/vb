@@ -299,28 +299,65 @@ B   0.0  0.0  0.7428
         pass
 
 
-class VBTest2(VBTest):
+class VBTest2(unittest.TestCase):
     
     def setUp(self):
-        VBTest.setUp(self)
-        ion0=vb.Structure([vb.Nod([0],[0])], [1])
-        ion1=vb.Structure([vb.Nod([1],[1])], [1])
-        cov=vb.Structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
-        nod.Nod.C = full.unit(2)
-        cg=0.99358231
-        cu=-0.11311140
-        Sab=0.13533528
+        """
+         Model the fci result as a wb wave function
+      
+         WF = cg(1sg|1sg) + cu(1su|1su)
+      
+         1sg=Ng(a+b)  norm Ng=1/sqrt(2(1+Sab))
+         1su=Nu(a-b)  norm Nu=1/sqrt(2(1-Sab))
+      
+         WF = cg*Ng**2(a+b|a+b) + cu*Nu**2(a-b|a-b)
+                                                                                           = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
+                                                                                           + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
+        """
+      
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
+        def tmp(fil):
+            return os.path.join(self.tmp, fil)
+      
+        self.one=tmp("AOONEINT")
+        self.two=tmp("AOTWOINT")
+#
+# Setup VB wave function
+#
+        Nod.C=full.unit(2)
+        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
+        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
+        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+        ion_a = Structure( [Nod([0],[0])], [1.0])
+        ion_b = Structure( [Nod([1],[1])], [1.0])
+        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
+        cg = 0.99364675
+        cu = -0.11254389
+        Sab = 0.65987313
         Ng2=1/(2*(1+Sab))
         Nu2=1/(2*(1-Sab))
-        cion=cg*Ng2+cu*Nu2
-        ccov=cg*Ng2-cu*Nu2
+        cion = cg*Ng2 + cu*Nu2
+        ccov = cg*Ng2 - cu*Nu2
         self.WF=WaveFunction(
-          [ion0, ion1, cov],[cion, cion, ccov],
-          tmpdir='test_data'
+          [cov, ion_a, ion_b],[ccov, cion, cion],
+          tmpdir=self.tmp
           )
+        #
 
     def test_final_energy(self):
-        self.assertAlmostEqual(self.WF.energy() + vb.Nod.Z, -1.1372533)
+        self.assertAlmostEqual(self.WF.energy() + Nod.Z, -1.137283835)
+
+    def test_norm(self):
+        self.assertAlmostEqual(self.WF.norm(), 1.0)
+
+    def test_structure_overlap(self):
+        self.WF.Normalize()
+        np.testing.assert_allclose(
+            self.WF.StructureOverlap(), 
+            [[1.00000000, 0.77890423, 0.77890423],
+             [0.77890423, 1.00000000, 0.43543258],
+             [0.77890423, 0.43543258, 1.00000000]]
+        )
 
 
 if __name__ == "__main__":
