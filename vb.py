@@ -873,11 +873,9 @@ class WaveFunction(object):
         #  N = <0|0>
         # d2<0|0> = <d20|0> + <0|d20> + 2<d0|d0> = 2<0|d20> + 2<d0|d0>
         """
-        ls = len(self.structs)
-        ao, mo = Nod.C.shape
-        Nstructhess = full.matrix((ls, ls))
-        Norbstructhess = full.matrix((ao, mo, ls))
-        Norbhess = full.matrix((ao, mo, ao, mo))
+        Nstructhess = full.matrix(self.coef.shape*2)
+        Norbstructhess = full.matrix(Nod.C.shape + self.coef.shape)
+        Norbhess = full.matrix(Nod.C.shape*2)
         #
         for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
             for s2, (str2, cstr2) in enumerate(zip(self.structs, self.coef)):
@@ -896,102 +894,6 @@ class WaveFunction(object):
         #Norbhess
         return Nstructhess, Norbstructhess, Norbhess
 
-    def vb_metric(self):
-        """
-        # Based on part of norm hessian <dF|dF>
-        """
-        ls = len(self.structs)
-        ao, mo = Nod.C.shape
-        Nstructhess = full.matrix((ls, ls))
-        Nstructorbhess = full.matrix((ls, mo, ao))
-        Norbstructhess = full.matrix((mo, ao, ls))
-        Norbhess = full.matrix((mo, ao, mo, ao))
-        Dm_mu = [full.matrix((mo, ao)), full.matrix((mo, ao))]
-        Dmu_m = [full.matrix((ao, mo)), full.matrix((ao, mo))]
-        Dmn = [full.matrix((mo, mo)), full.matrix((mo, mo))]
-        Delta = [None, None]
-        #
-        # Structures left
-        #
-        for s1 in range(len(self.structs)):
-            S = self.structs[s1]
-            CS = self.coef[s1]
-            #
-            #Structures right
-            #
-            for s2 in range(len(self.structs)):
-                T = self.structs[s2]
-                CT = self.coef[s2]
-                #
-                #Determinants in left structure
-                #
-                for K, CKS in zip(S.nods, S.coef):
-                    #
-                    #Determinants in right structure
-                    #
-                    for L, CLT in zip(T.nods, T.coef):
-                        #
-                        # Structure Hessian terms
-                        #
-                        KL = K*L
-                        Nstructhess[s1, s2] += KL*CKS*CLT
-                        #
-                        # Orbital-structure Hessian terms
-                        #
-                        #
-                        CK = K.orbitals()
-                        CL = L.orbitals()
-                        DmoKL = Dmo(K, L)
-                        #
-                        # <0m_mu|T>: D^m_mu = D^{ml}C(L)S
-                        #
-                        for s in range(2):
-                            #
-                            # D\mu_m =  Smu. C.k Dkm
-                            # Dm_\mu = Dml C.l S.mu
-                            #
-                            Dm_mu[s][:, :] = 0
-                            Dm_mu[s][K(s), :] = DmoKL[s]*CL[s].T*Nod.S
-                            Dmu_m[s][:, :] = 0
-                            Dmu_m[s][:, L(s)] = Nod.S*CK[s]*DmoKL[s]
-
-                            Dmn[s][:, :] = 0
-                            #
-                            # Probably not working but this is what we want
-                            #
-                            # Dmn[s][K(s), L(s)] = DmoKL[s]
-                            #
-                            # instead two steps
-                            #
-                            tmp = full.matrix((mo, CL[s].shape[1]))
-                            tmp[K(s), :] = DmoKL[s]
-                            Dmn[s][:, L(s)] = tmp
-
-                            Delta[s] = Nod.S-Nod.S*CK[s]*DmoKL[s]*CL[s].T*Nod.S
-                            #
-                            # Add to mixed hessian
-                            #
-                            Norbstructhess[:, :, s2] += CS*CKS*CLT*KL*Dm_mu[s]
-                            Nstructorbhess[s1, :, :] += CT*CKS*CLT*KL*Dmu_m[s]
-                            #
-                            # Orbital-orbital hessian
-                            #
-                        for s in range(2):
-                            for t in range(2):
-                                Norbhess += \
-                                CS*CKS*CT*CLT*KL*Dm_mu[s].x(Dmu_m[t].T)
-                            Norbhess += \
-                            CS*CKS*CT*CLT*KL*Dmn[s].x(Delta[s]).transpose(
-                                (0, 3, 1, 2)
-                                )
-                        #
-        tmp = Norbhess[:, :, :, :]
-        Norbhess = tmp[:, :, :, :]
-        return (
-            Nstructhess,
-            Norbstructhess[:, :, :],
-            Nstructorbhess[:, :, :], Norbhess
-            )
 
     def energy(self):
         """Returns total electronic energy"""
@@ -1099,9 +1001,6 @@ class WaveFunction(object):
                 for det1, Cd1 in zip(str1.nods, str1.coef):
                     for det2, Cd2 in zip(str2.nods, str2.coef):
                         #
-                        C1 = Cs1*Cd1
-                        C2 = Cs2*Cd2
-                        #
                         det12 = BraKet(det1, det2)
                         S12 = det12.overlap()
                         #
@@ -1114,11 +1013,11 @@ class WaveFunction(object):
                         # Orbital-structure hessian terms
                         #
                         Horbstructhess[:, :, s1] += \
-                            Cd1*C2*det12.energy_gradient((self.h, self.h))
+                            Cd1*Cs2*Cd2*det12.energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
                         #
-                        Horbhess += C1*C2*(
+                        Horbhess += Cs1*Cd1*Cs2*Cd2*(
                             det12.right_1el_energy_hessian((self.h, self.h)) +
                             det12.mixed_1el_energy_hessian((self.h, self.h)) +
                             det12.right_2el_energy_hessian() +
@@ -1225,6 +1124,7 @@ def is_one_array(h):
            h.shape[0] == h.shape[1]
 
 def is_two_electron(*args):
+    """To be implmeneted"""
     raise NotImplementedError
 
 if __name__ == "__main__":
