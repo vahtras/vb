@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Valence Bond energies, gradients, Hessian"""
 import os
-import sys
 import math
 from .daltools import one
 from .two_electron import two
@@ -694,6 +693,7 @@ class Structure(object):
         self.C = nods[0].C
 
     def assert_consistent_electron_number(self):
+        """Verify that determinants in structure are consistent"""
         n0 = self.nods[0]
         for n in self.nods[1:]:
             if len(n.a) != len(n0.a) or len(n.b) != len(n0.b):
@@ -711,6 +711,7 @@ class Structure(object):
         return "\n".join(output)
 
 class StructError(Exception):
+    """General structure exception"""
     pass
 
 
@@ -767,10 +768,8 @@ class WaveFunction(object):
         return D_ao/self.norm()
 
     def StructureHamiltonian(self):
+        """Returns Hamiltonian matrix in basis of structures"""
         SH = []
-        Eone = 0
-        Etwo = 0
-        N = 0
         # Structures left
         for S in self.structs:
             for T in self.structs:
@@ -798,6 +797,10 @@ class WaveFunction(object):
         return full.init(OV).reshape((LS, LS))
 
     def StructureWeights(self):
+        """
+        Returns structure weights
+        w_S = C(S) sum(T) <S|T>C(T)
+        """
         SO = self.StructureOverlap()
         W = full.matrix(len(self.structs))
         C = full.init(self.coef)
@@ -809,10 +812,10 @@ class WaveFunction(object):
         return W
 
     def Normalize(self):
-        #
-        # Orbitals
-        #
-        ao, mo = self.C.shape
+        """
+        Normalize state
+        """
+        _, mo = self.C.shape
         for i in range(mo):
             cmo = self.C[:, i]
             nmo = 1/math.sqrt(cmo.T*Nod.S*cmo)
@@ -840,10 +843,10 @@ class WaveFunction(object):
         return N
 
     def normgrad(self):
-        #
+        """
         #  N = <0|0>
         # dN = 2<d0|0>
-        #
+        """
         NGS = []
         r, c = Nod.C.shape
         Norbgrad = full.matrix((r, c))
@@ -864,8 +867,9 @@ class WaveFunction(object):
         return (Nstructgrad, Norbgrad[:, :])
 
     def numgrad(self, func, delta=1e-3):
-        #
+        """
         # Numerical gradient
+        """
         deltah = delta/2
         #
         # structure coefficients
@@ -874,7 +878,6 @@ class WaveFunction(object):
         #
         #
         for s in range(structgrad.shape[0]):
-            e0 = func()
             self.coef[s] += deltah
             ep = func()
             self.coef[s] -= delta
@@ -897,19 +900,20 @@ class WaveFunction(object):
         return (structgrad, orbgrad[:, :])
 
     def numnormgrad(self, delta=1e-3):
+        """Numerical norm gradient"""
         return self.numgrad(self.norm, delta)
 
     def normhess(self):
-        #
+        """
+        Numerical norm Hessian
         #  N = <0|0>
         # d2<0|0> = <d20|0> + <0|d20> + 2<d0|d0> = 2<0|d20> + 2<d0|d0>
-        #
+        """
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
         Norbstructhess = full.matrix((ao, mo, ls))
         Norbhess = full.matrix((ao, mo, ao, mo))
-        d12 = full.matrix((mo, mo))
         #
         for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
             for s2, (str2, cstr2) in enumerate(zip(self.structs, self.coef)):
@@ -917,29 +921,27 @@ class WaveFunction(object):
                     for det2, cdet2 in zip(str2.nods, str2.coef):
                         #
                         bk12 = BraKet(det1, det2)
-                        C1 = cstr1*cdet1
-                        C2 = cstr2*cdet2
                         #
                         Nstructhess[s1, s2] += (cdet1*cdet2)*bk12.overlap()
                         Norbstructhess[:, :, s1] += \
-                            cdet1*C2*bk12.overlap_gradient()
-                        Norbhess += C1*C2*bk12.overlap_hessian()
+                            cdet1*cstr2*cdet2*bk12.overlap_gradient()
+                        Norbhess += \
+                            cstr1*cdet1*cstr2*cdet2*bk12.overlap_hessian()
         Nstructhess *= 2
         Norbstructhess *= 2
-        Norbhess
+        #Norbhess
         return Nstructhess, Norbstructhess, Norbhess
 
     def vb_metric(self):
-        #
+        """
         # Based on part of norm hessian <dF|dF>
-        #
+        """
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         Nstructhess = full.matrix((ls, ls))
         Nstructorbhess = full.matrix((ls, mo, ao))
         Norbstructhess = full.matrix((mo, ao, ls))
         Norbhess = full.matrix((mo, ao, mo, ao))
-        d12 = full.matrix((mo, mo))
         Dm_mu = [full.matrix((mo, ao)), full.matrix((mo, ao))]
         Dmu_m = [full.matrix((ao, mo)), full.matrix((ao, mo))]
         Dmn = [full.matrix((mo, mo)), full.matrix((mo, mo))]
@@ -1028,9 +1030,11 @@ class WaveFunction(object):
             )
 
     def numnormhess(self, delta=1e-3):
+        """Numerical norm Hessian"""
         return self.numhess(self.norm, delta)
 
     def numhess(self, func, delta=1e-3):
+        """Generic numerical Hessian of input function func"""
         #
         # Numerical norm of Hessian for chosen elements
         #
@@ -1043,7 +1047,6 @@ class WaveFunction(object):
         ls = len(self.structs)
         ao, mo = Nod.C.shape
         strstrhess = full.matrix((ls, ls))
-        strorbhess = full.matrix((ls, ao, mo))
         orbstrhess = full.matrix((ao, mo, ls))
         orborbhess = full.matrix((ao, mo, ao, mo))
         #
@@ -1119,8 +1122,7 @@ class WaveFunction(object):
             )
 
     def energy(self):
-        Eone = 0
-        Etwo = 0
+        """Returns total electronic energy"""
         N = 0
         H = 0
         # Structures left
@@ -1136,17 +1138,16 @@ class WaveFunction(object):
                         N += C12
                         H += C12*det12.energy((self.h, self.h))
 
-        #H = Eone+Etwo
         E = H/N
         return E
 
     def energygrad(self):
-        #
+        """
         #  N = <0|0>
         # dN = 2<d0|0>
         #  E = <0|H|0>/<0|0>
         # dE = 2<d0|H-E|0>/<0|0>
-        #
+        """
         ao, mo = Nod.C.shape
         Nstructgrad = full.matrix(len(self.structs))
         Norbgrad = full.matrix((ao, mo))
@@ -1154,7 +1155,6 @@ class WaveFunction(object):
         Hstructgrad = full.matrix(len(self.structs))
         Horbgrad = full.matrix((ao, mo))
         H = 0
-        I = full.unit(ao)
         #
         # Structures left
         #
@@ -1193,6 +1193,7 @@ class WaveFunction(object):
         return (structgrad, orbgrad[:, :])
 
     def numenergygrad(self, delta=1e-3):
+        """Return energy numerical gradient"""
         return self.numgrad(self.energy, delta)
 
     def energyhess(self):
@@ -1217,17 +1218,12 @@ class WaveFunction(object):
         Nstructgrad = full.matrix(ls)
         Norbgrad = full.matrix((ao, mo))
         Nstructhess = full.matrix((ls, ls))
-        Nstructorbhess = full.matrix((ls, ao, mo))
         Norbstructhess = full.matrix((ao, mo, ls))
         Norbhess = full.matrix((ao, mo, ao, mo))
-        Hstructgrad = full.matrix(ls)
-        Horbgrad = full.matrix((ao, mo))
         Hstructhess = full.matrix((ls, ls))
         Horbstructhess = full.matrix((ao, mo, ls))
         Horbhess = full.matrix((ao, mo, ao, mo))
         N = 0
-        H = 0
-        hab = (self.h, self.h)
         #
         for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
             for s2, (str2, Cs2) in enumerate(zip(self.structs, self.coef)):
@@ -1252,8 +1248,6 @@ class WaveFunction(object):
                             Cd1*C2*det12.energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
-                        #
-                        C12 = C1*C2*S12
                         #
                         Horbhess += C1*C2*(
                             det12.right_1el_energy_hessian((self.h, self.h)) +
@@ -1294,9 +1288,11 @@ class WaveFunction(object):
             )
 
     def numenergyhess(self, delta=1e-3):
+        """Numerical energy Hessian"""
         return self.numhess(self.energy, delta)
 
     def gradientvector(self):
+        """Full energy gradient as vector"""
         sg, og = self.energygrad()
         mo, ao = og.shape
         lc = mo*ao
@@ -1309,11 +1305,13 @@ class WaveFunction(object):
         return g
 
     def gradient_norm(self):
+        """Gradient norm"""
         gv = self.gradientvector()
         G = self.vb_metric_matrix()
         return gv*G.I*gv
 
     def hessianmatrix(self):
+        """Energy Hessian as matrix"""
         sh, mh, oh = self.energyhess()
         mo, ao, ls = mh.shape
         lc = mo*ao
@@ -1328,6 +1326,7 @@ class WaveFunction(object):
         return h
 
     def vb_metric_matrix(self):
+        """VB metric?"""
         sh, mh, mhT, oh = self.vb_metric()
         mo, ao, ls = mh.shape
         lc = mo*ao
@@ -1343,15 +1342,18 @@ class WaveFunction(object):
         return h
 
 def is_one_electron(h):
+    """True if arg one-electron operator type"""
     return is_one_tuple(h) or is_one_array(h)
 
 def is_one_tuple(h):
+    """True if arg one-electron operator tuple"""
     return isinstance(h, tuple) and \
         len(h) == 2 and \
         is_one_array(h[0]) and \
         is_one_array(h[1])
 
 def is_one_array(h):
+    """True if arg one-electron operator array"""
     import numpy
     return isinstance(h, numpy.ndarray) and \
            len(h.shape) == 2 and \
