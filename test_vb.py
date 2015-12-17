@@ -2,13 +2,14 @@
 import os
 import numpy as np
 import random, unittest
-from daltools import one
-from daltools.util import full, timing
-import vb
+from .daltools import one
+from .daltools.util import full, timing
+from .vb import WaveFunction, Structure, is_two_electron
+from .nod import Nod
 from num_diff import findif as fd
 
 
-class WaveFunction(vb.WaveFunction):
+class WaveFunction(WaveFunction):
     """Extended class with numerical derivatives"""
 
     def numnormgrad(self, delta=1e-3):
@@ -40,16 +41,16 @@ class WaveFunction(vb.WaveFunction):
         #
         # orbital gradient
         #
-        r, c = vb.Nod.C.shape
+        r, c = Nod.C.shape
         orbgrad = full.matrix((r, c))
         for m in range(c):
             for t in range(r):
-                vb.Nod.C[t, m] += deltah
+                Nod.C[t, m] += deltah
                 ep = func()
-                vb.Nod.C[t, m] -= delta
+                Nod.C[t, m] -= delta
                 em = func()
                 orbgrad[t, m] = (ep - em)/delta
-                vb.Nod.C[t, m] += deltah
+                Nod.C[t, m] += deltah
         return (structgrad, orbgrad[:, :])
 
     def numnormhess(self, delta=1e-3):
@@ -72,7 +73,7 @@ class WaveFunction(vb.WaveFunction):
         # structure coefficients
         #
         ls = len(self.structs)
-        ao, mo = vb.Nod.C.shape
+        ao, mo = Nod.C.shape
         strstrhess = full.matrix((ls, ls))
         orbstrhess = full.matrix((ao, mo, ls))
         orborbhess = full.matrix((ao, mo, ao, mo))
@@ -103,20 +104,20 @@ class WaveFunction(vb.WaveFunction):
             for mu in range(ao):
                 for m in range(mo):
                     self.coef[p] += deltah
-                    vb.Nod.C[mu, m] += deltah
+                    Nod.C[mu, m] += deltah
                     epp = func()
-                    vb.Nod.C[mu, m] -= delta
+                    Nod.C[mu, m] -= delta
                     epm = func()
                     self.coef[p] -= delta
                     emm = func()
-                    vb.Nod.C[mu, m] += delta
+                    Nod.C[mu, m] += delta
                     emp = func()
                     orbstrhess[mu, m, p] = (epp + emm - epm - emp)/delta2
                     #
                     # Reset
                     #
                     self.coef[p] += deltah
-                    vb.Nod.C[mu, m] -= deltah
+                    Nod.C[mu, m] -= deltah
 
         #
         # Orbital-orbital
@@ -125,22 +126,22 @@ class WaveFunction(vb.WaveFunction):
             for m in range(mo):
                 for nu in range(ao):
                     for n in range(mo):
-                        vb.Nod.C[mu, m] += deltah
-                        vb.Nod.C[nu, n] += deltah
+                        Nod.C[mu, m] += deltah
+                        Nod.C[nu, n] += deltah
                         epp = func()
-                        vb.Nod.C[nu, n] -= delta
+                        Nod.C[nu, n] -= delta
                         epm = func()
-                        vb.Nod.C[mu, m] -= delta
+                        Nod.C[mu, m] -= delta
                         emm = func()
-                        vb.Nod.C[nu, n] += delta
+                        Nod.C[nu, n] += delta
                         emp = func()
                         orborbhess[mu, m, nu, n] = \
                             (epp + emm - epm - emp)/delta2
                         #
                         # Reset
                         #
-                        vb.Nod.C[mu, m] += deltah
-                        vb.Nod.C[nu, n] -= deltah
+                        Nod.C[mu, m] += deltah
+                        Nod.C[nu, n] -= deltah
 
         return (
             strstrhess,
@@ -199,12 +200,12 @@ B   0.0  0.0  0.7428
 #
 # Setup VB wave function
 #
-        vb.Nod.C=full.matrix((2,2)).random()
-        vb.Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-        vb.Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-        vb.Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
-        ion=vb.Structure( [vb.Nod([0],[0]),vb.Nod([1],[1])], [1,1] )
-        cov=vb.Structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
+        Nod.C=full.matrix((2,2)).random()
+        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
+        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
+        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+        ion=Structure( [Nod([0],[0]),Nod([1],[1])], [1,1] )
+        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1,1] )
         cg=random.random()
         cu=random.random()
         Sab=0.13533528
@@ -292,7 +293,7 @@ B   0.0  0.0  0.7428
 
     def test_verify_not_implemented_exception(self):
         with self.assertRaises(NotImplementedError):
-            vb.is_two_electron()
+            is_two_electron()
 
 
 
