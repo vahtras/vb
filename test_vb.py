@@ -295,6 +295,32 @@ B   0.0  0.0  0.7428
         with self.assertRaises(NotImplementedError):
             is_two_electron()
 
+    def test_struct_overlap(self):
+        pass
+
+
+class VBTest2(VBTest):
+    
+    def setUp(self):
+        VBTest.setUp(self)
+        ion0=vb.Structure([vb.Nod([0],[0])], [1])
+        ion1=vb.Structure([vb.Nod([1],[1])], [1])
+        cov=vb.Structure( [vb.Nod([0],[1]),vb.Nod([1],[0])], [1,1] )
+        nod.Nod.C = full.unit(2)
+        cg=0.99358231
+        cu=-0.11311140
+        Sab=0.13533528
+        Ng2=1/(2*(1+Sab))
+        Nu2=1/(2*(1-Sab))
+        cion=cg*Ng2+cu*Nu2
+        ccov=cg*Ng2-cu*Nu2
+        self.WF=WaveFunction(
+          [ion0, ion1, cov],[cion, cion, ccov],
+          tmpdir='test_data'
+          )
+
+    def test_final_energy(self):
+        self.assertAlmostEqual(self.WF.energy() + vb.Nod.Z, -1.1372533)
 
 
 if __name__ == "__main__":
