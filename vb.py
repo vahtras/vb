@@ -866,42 +866,6 @@ class WaveFunction(object):
         Norbgrad *= 2
         return (Nstructgrad, Norbgrad[:, :])
 
-    def numgrad(self, func, delta=1e-3):
-        """
-        # Numerical gradient
-        """
-        deltah = delta/2
-        #
-        # structure coefficients
-        #
-        structgrad = full.matrix(len(self.structs))
-        #
-        #
-        for s in range(structgrad.shape[0]):
-            self.coef[s] += deltah
-            ep = func()
-            self.coef[s] -= delta
-            em = func()
-            self.coef[s] += deltah
-            structgrad[s] = (ep - em)/delta
-        #
-        # orbital gradient
-        #
-        r, c = Nod.C.shape
-        orbgrad = full.matrix((r, c))
-        for m in range(c):
-            for t in range(r):
-                Nod.C[t, m] += deltah
-                ep = func()
-                Nod.C[t, m] -= delta
-                em = func()
-                orbgrad[t, m] = (ep - em)/delta
-                Nod.C[t, m] += deltah
-        return (structgrad, orbgrad[:, :])
-
-    def numnormgrad(self, delta=1e-3):
-        """Numerical norm gradient"""
-        return self.numgrad(self.norm, delta)
 
     def normhess(self):
         """
@@ -1029,98 +993,6 @@ class WaveFunction(object):
             Nstructorbhess[:, :, :], Norbhess
             )
 
-    def numnormhess(self, delta=1e-3):
-        """Numerical norm Hessian"""
-        return self.numhess(self.norm, delta)
-
-    def numhess(self, func, delta=1e-3):
-        """Generic numerical Hessian of input function func"""
-        #
-        # Numerical norm of Hessian for chosen elements
-        #
-        # Numerical gradient
-        deltah = delta/2
-        delta2 = delta*delta
-        #
-        # structure coefficients
-        #
-        ls = len(self.structs)
-        ao, mo = Nod.C.shape
-        strstrhess = full.matrix((ls, ls))
-        orbstrhess = full.matrix((ao, mo, ls))
-        orborbhess = full.matrix((ao, mo, ao, mo))
-        #
-        # Structure-structure
-        #
-        for p in range(ls):
-            for q in range(ls):
-                self.coef[p] += deltah
-                self.coef[q] += deltah
-                epp = func()
-                self.coef[q] -= delta
-                epm = func()
-                self.coef[p] -= delta
-                emm = func()
-                self.coef[q] += delta
-                emp = func()
-                strstrhess[p, q] = (epp + emm - epm - emp)/delta2
-                #
-                # Reset
-                #
-                self.coef[p] += deltah
-                self.coef[q] -= deltah
-        #
-        # Orbital-structure
-        #
-        for p in range(ls):
-            for mu in range(ao):
-                for m in range(mo):
-                    self.coef[p] += deltah
-                    Nod.C[mu, m] += deltah
-                    epp = func()
-                    Nod.C[mu, m] -= delta
-                    epm = func()
-                    self.coef[p] -= delta
-                    emm = func()
-                    Nod.C[mu, m] += delta
-                    emp = func()
-                    orbstrhess[mu, m, p] = (epp + emm - epm - emp)/delta2
-                    #
-                    # Reset
-                    #
-                    self.coef[p] += deltah
-                    Nod.C[mu, m] -= deltah
-
-        #
-        # Orbital-orbital
-        #
-        for mu in range(ao):
-            for m in range(mo):
-                for nu in range(ao):
-                    for n in range(mo):
-                        Nod.C[mu, m] += deltah
-                        Nod.C[nu, n] += deltah
-                        epp = func()
-                        Nod.C[nu, n] -= delta
-                        epm = func()
-                        Nod.C[mu, m] -= delta
-                        emm = func()
-                        Nod.C[nu, n] += delta
-                        emp = func()
-                        orborbhess[mu, m, nu, n] = \
-                            (epp + emm - epm - emp)/delta2
-                        #
-                        # Reset
-                        #
-                        Nod.C[mu, m] += deltah
-                        Nod.C[nu, n] -= deltah
-
-        return (
-            strstrhess,
-            orbstrhess,
-            orborbhess
-            )
-
     def energy(self):
         """Returns total electronic energy"""
         N = 0
@@ -1192,9 +1064,6 @@ class WaveFunction(object):
         orbgrad = (2/N)*(Horbgrad-E*Norbgrad)
         return (structgrad, orbgrad[:, :])
 
-    def numenergygrad(self, delta=1e-3):
-        """Return energy numerical gradient"""
-        return self.numgrad(self.energy, delta)
 
     def energyhess(self):
         """Energy full Hessian
@@ -1286,10 +1155,6 @@ class WaveFunction(object):
             Eorbstructhess,
             Eorbhess,
             )
-
-    def numenergyhess(self, delta=1e-3):
-        """Numerical energy Hessian"""
-        return self.numhess(self.energy, delta)
 
     def gradientvector(self):
         """Full energy gradient as vector"""

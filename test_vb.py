@@ -7,6 +7,149 @@ from daltools.util import full, timing
 import vb
 from num_diff import findif as fd
 
+
+class WaveFunction(vb.WaveFunction):
+    """Extended class with numerical derivatives"""
+
+    def numnormgrad(self, delta=1e-3):
+        """Numerical norm gradient"""
+        return self.numgrad(self.norm, delta)
+
+    def numenergygrad(self, delta=1e-3):
+        """Return energy numerical gradient"""
+        return self.numgrad(self.energy, delta)
+
+    def numgrad(self, func, delta=1e-3):
+        """
+        # Numerical gradient
+        """
+        deltah = delta/2
+        #
+        # structure coefficients
+        #
+        structgrad = full.matrix(len(self.structs))
+        #
+        #
+        for s in range(structgrad.shape[0]):
+            self.coef[s] += deltah
+            ep = func()
+            self.coef[s] -= delta
+            em = func()
+            self.coef[s] += deltah
+            structgrad[s] = (ep - em)/delta
+        #
+        # orbital gradient
+        #
+        r, c = vb.Nod.C.shape
+        orbgrad = full.matrix((r, c))
+        for m in range(c):
+            for t in range(r):
+                vb.Nod.C[t, m] += deltah
+                ep = func()
+                vb.Nod.C[t, m] -= delta
+                em = func()
+                orbgrad[t, m] = (ep - em)/delta
+                vb.Nod.C[t, m] += deltah
+        return (structgrad, orbgrad[:, :])
+
+    def numnormhess(self, delta=1e-3):
+        """Numerical norm Hessian"""
+        return self.numhess(self.norm, delta)
+
+    def numenergyhess(self, delta=1e-3):
+        """Numerical energy Hessian"""
+        return self.numhess(self.energy, delta)
+
+    def numhess(self, func, delta=1e-3):
+        """Generic numerical Hessian of input function func"""
+        #
+        # Numerical norm of Hessian for chosen elements
+        #
+        # Numerical gradient
+        deltah = delta/2
+        delta2 = delta*delta
+        #
+        # structure coefficients
+        #
+        ls = len(self.structs)
+        ao, mo = vb.Nod.C.shape
+        strstrhess = full.matrix((ls, ls))
+        orbstrhess = full.matrix((ao, mo, ls))
+        orborbhess = full.matrix((ao, mo, ao, mo))
+        #
+        # Structure-structure
+        #
+        for p in range(ls):
+            for q in range(ls):
+                self.coef[p] += deltah
+                self.coef[q] += deltah
+                epp = func()
+                self.coef[q] -= delta
+                epm = func()
+                self.coef[p] -= delta
+                emm = func()
+                self.coef[q] += delta
+                emp = func()
+                strstrhess[p, q] = (epp + emm - epm - emp)/delta2
+                #
+                # Reset
+                #
+                self.coef[p] += deltah
+                self.coef[q] -= deltah
+        #
+        # Orbital-structure
+        #
+        for p in range(ls):
+            for mu in range(ao):
+                for m in range(mo):
+                    self.coef[p] += deltah
+                    vb.Nod.C[mu, m] += deltah
+                    epp = func()
+                    vb.Nod.C[mu, m] -= delta
+                    epm = func()
+                    self.coef[p] -= delta
+                    emm = func()
+                    vb.Nod.C[mu, m] += delta
+                    emp = func()
+                    orbstrhess[mu, m, p] = (epp + emm - epm - emp)/delta2
+                    #
+                    # Reset
+                    #
+                    self.coef[p] += deltah
+                    vb.Nod.C[mu, m] -= deltah
+
+        #
+        # Orbital-orbital
+        #
+        for mu in range(ao):
+            for m in range(mo):
+                for nu in range(ao):
+                    for n in range(mo):
+                        vb.Nod.C[mu, m] += deltah
+                        vb.Nod.C[nu, n] += deltah
+                        epp = func()
+                        vb.Nod.C[nu, n] -= delta
+                        epm = func()
+                        vb.Nod.C[mu, m] -= delta
+                        emm = func()
+                        vb.Nod.C[nu, n] += delta
+                        emp = func()
+                        orborbhess[mu, m, nu, n] = \
+                            (epp + emm - epm - emp)/delta2
+                        #
+                        # Reset
+                        #
+                        vb.Nod.C[mu, m] += deltah
+                        vb.Nod.C[nu, n] -= deltah
+
+        return (
+            strstrhess,
+            orbstrhess,
+            orborbhess
+            )
+
+
+
 class VBTest(unittest.TestCase):
    def setUp(self):
       """
@@ -69,7 +212,7 @@ B   0.0  0.0  0.7428
       Nu2=1/(2*(1-Sab))
       cion=cg*Ng2+cu*Nu2
       ccov=cg*Ng2-cu*Nu2
-      self.WF=vb.WaveFunction(
+      self.WF=WaveFunction(
         [ion,cov],[cion,ccov],
         tmpdir=self.tmp
         )
