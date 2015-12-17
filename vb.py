@@ -665,11 +665,6 @@ def Dmo(K, L):
     return D
 
 
-def HKL(F, D):
-    """Returns two-electron energy given 2el-Fock/Density matrix"""
-    E = 0.5*((F[0]&D[0]) + (F[1]&D[1]))
-    return E
-
 class Structure(object):
     """
     VB Structure type
@@ -781,7 +776,7 @@ class WaveFunction(object):
                         D12 = KL.transition_ao_density
                         FKL = KL.transition_ao_fock
                         hKL = self.h&(D12[0]+D12[1])
-                        gKL = HKL(FKL, D12)
+                        gKL = 0.5*((FKL[0]&D12[0]) + (FKL[1]&D12[1]))
                         H += (hKL+gKL)*CKS*CLT*KL.overlap()
                 SH.append(H)
         LS = len(self.structs)
