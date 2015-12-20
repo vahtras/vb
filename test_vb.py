@@ -359,6 +359,15 @@ class VBTest2(unittest.TestCase):
              [0.77890423, 0.43543258, 1.00000000]]
         )
 
+    def test_structure_hamiltonian(self):
+        self.WF.Normalize()
+        np.testing.assert_allclose(
+            self.WF.StructureHamiltonian(),
+            [[-1.12438723, -0.92376625, -0.92376625],
+             [-0.92376625, -0.75220865, -0.65716238],
+             [-0.92376625, -0.65716238, -0.75220865]]
+        )
+
 
 if __name__ == "__main__":
    unittest.main()

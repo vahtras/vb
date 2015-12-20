@@ -623,7 +623,7 @@ class WaveFunction(object):
                         FKL = KL.transition_ao_fock
                         hKL = self.h&(D12[0]+D12[1])
                         gKL = 0.5*((FKL[0]&D12[0]) + (FKL[1]&D12[1]))
-                        H += (hKL+gKL)*CKS*CLT*KL.overlap()
+                        H += (hKL + gKL + self.Z)*CKS*CLT*KL.overlap()
                 SH.append(H)
         LS = len(self.structs)
         return full.init(SH).reshape((LS, LS))
