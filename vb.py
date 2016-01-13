@@ -643,13 +643,9 @@ class WaveFunction(object):
         w_S = C(S) sum(T) <S|T>C(T)
         """
         SO = self.StructureOverlap()
-        W = full.matrix(len(self.structs))
         C = full.init(self.coef)
         SOC = SO*C
-        i = 0
-        for c, sc in zip(C, SOC):
-            W[i] = c*sc
-            i += 1
+        W = [c*sc for c, sc in zip(C, SOC)]
         return W
 
     def Normalize(self):
