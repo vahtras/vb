@@ -299,7 +299,7 @@ B   0.0  0.0  0.7428
         pass
 
 
-class VBTest2(unittest.TestCase):
+class VBTestH2(unittest.TestCase):
     
     def setUp(self):
         """
@@ -349,6 +349,23 @@ class VBTest2(unittest.TestCase):
 
     def test_norm(self):
         self.assertAlmostEqual(self.WF.norm(), 1.0)
+
+    @unittest.skip('first component wrong')
+    def test_vb_vector(self):
+        #self.WF.Normalize()
+        np.testing.assert_allclose(
+            self.WF.coef,
+            (0.787469, 0.133870, 0.133870)
+            )
+
+    def test_weights(self):
+        #self.WF.Normalize()
+        np.testing.assert_allclose(
+            self.WF.StructureWeights(),
+            (0.784329, 0.107836, 0.107836),
+            rtol=5e-6
+            )
+            
 
     def test_structure_overlap(self):
         self.WF.Normalize()
