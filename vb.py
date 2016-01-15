@@ -628,21 +628,16 @@ class WaveFunction(object):
         LS = len(self.structs)
         return full.init(SH).reshape((LS, LS))
 
-    def StructureOverlap(self):
+    def structure_overlap(self):
         """Calculate structure overlap matrix"""
-        OV = []
-        for S in self.structs:
-            for T in self.structs:
-                OV.append(S*T)
-        LS = len(self.structs)
-        return full.init(OV).reshape((LS, LS))
+        return full.init([[s*t for t in self.structs] for s in self.structs])
 
     def StructureWeights(self):
         """
         Returns structure weights
         w_S = C(S) sum(T) <S|T>C(T)
         """
-        SO = self.StructureOverlap()
+        SO = self.structure_overlap()
         C = full.init(self.coef)
         SOC = SO*C
         W = [c*sc for c, sc in zip(C, SOC)]
@@ -660,7 +655,7 @@ class WaveFunction(object):
         #
         # Structures
         #
-        SO = self.StructureOverlap()
+        SO = self.structure_overlap()
         for i in range(len(self.structs)):
             N = 1/math.sqrt(SO[i, i])
             self.structs[i].coef *= N

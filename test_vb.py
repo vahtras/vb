@@ -372,7 +372,7 @@ class VBTestH2(unittest.TestCase):
     def test_structure_overlap(self):
         self.WF.Normalize()
         np.testing.assert_allclose(
-            self.WF.StructureOverlap(), 
+            self.WF.structure_overlap(), 
             [[1.00000000, 0.77890423, 0.77890423],
              [0.77890423, 1.00000000, 0.43543258],
              [0.77890423, 0.43543258, 1.00000000]]
