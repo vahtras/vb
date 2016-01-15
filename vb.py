@@ -669,6 +669,18 @@ class WaveFunction(object):
         #
         self.coef *= 1/math.sqrt(self.norm())
 
+    def normalize_structures(self):
+        """
+        Normalize structures and adjust coefficient so the
+        overall state is preserved
+        """
+
+        for i, s in enumerate(self.structs):
+            ns = math.sqrt(s*s)
+            s.coef /= ns
+            self.coef[i] *= ns
+        
+
     def norm(self):
         """
         Calculate norm square of VB wave function: N=<0|0>

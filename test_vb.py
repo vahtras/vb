@@ -330,14 +330,16 @@ class VBTestH2(unittest.TestCase):
         Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
         ion_a = Structure( [Nod([0],[0])], [1.0])
         ion_b = Structure( [Nod([1],[1])], [1.0])
-        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
+        import math
+        N = math.sqrt(0.5)
+        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [N, N] )
         cg = 0.99364675
         cu = -0.11254389
         Sab = 0.65987313
         Ng2=1/(2*(1+Sab))
         Nu2=1/(2*(1-Sab))
         cion = cg*Ng2 + cu*Nu2
-        ccov = cg*Ng2 - cu*Nu2
+        ccov = (cg*Ng2 - cu*Nu2)/N
         self.WF=WaveFunction(
           [cov, ion_a, ion_b],[ccov, cion, cion],
           tmpdir=self.tmp
@@ -350,16 +352,16 @@ class VBTestH2(unittest.TestCase):
     def test_norm(self):
         self.assertAlmostEqual(self.WF.norm(), 1.0)
 
-    @unittest.skip('first component wrong')
     def test_vb_vector(self):
-        #self.WF.Normalize()
+        self.WF.normalize_structures()
         np.testing.assert_allclose(
             self.WF.coef,
-            (0.787469, 0.133870, 0.133870)
+            (0.787469, 0.133870, 0.133870),
+            rtol=1e-5
             )
 
     def test_weights(self):
-        #self.WF.Normalize()
+        self.WF.normalize_structures()
         np.testing.assert_allclose(
             self.WF.StructureWeights(),
             (0.784329, 0.107836, 0.107836),
