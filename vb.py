@@ -54,22 +54,22 @@ class BraKet(object):
     @property
     def contravariant_transition_density_ao_mo(self):
         """Return contravariant density matrix in mix ao,mo basis"""
-        Dam = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
+        d_am = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
         CK = self.K.orbitals()
         for s in (0, 1):
             if self.K(s) and self.L(s):
-                Dam[s][:, self.L(s)] = CK[s]*self.transition_density[s]
-        return Dam
+                d_am[s][:, self.L(s)] = CK[s]*self.transition_density[s]
+        return d_am
 
     @property
     def contravariant_transition_density_mo_ao(self):
         """Return contravariant density matrix in mix mo,ao basis"""
-        Dma = (full.matrix(Nod.C.shape[::-1]), full.matrix(Nod.C.shape[::-1]))
+        d_ma = (full.matrix(Nod.C.shape[::-1]), full.matrix(Nod.C.shape[::-1]))
         CL = self.L.orbitals()
         for s in (0, 1):
             if self.K(s) and self.L(s):
-                Dma[s][self.K(s), :] = self.transition_density[s]*CL[s].T
-        return Dma
+                d_ma[s][self.K(s), :] = self.transition_density[s]*CL[s].T
+        return d_ma
 
     def co_contravariant_transition_density_ao_mo(self):
         """
@@ -124,8 +124,8 @@ class BraKet(object):
         Return covariant ao delta matrix
         """
         S = Nod.S
-        Delta_aa = (S - d for d in self.covariant_density_ao())
-        return tuple(Delta_aa)
+        delta_aa = (S - d for d in self.covariant_density_ao())
+        return tuple(delta_aa)
 
     def co_contravariant_transition_delta(self):
         """
@@ -133,8 +133,8 @@ class BraKet(object):
         """
         S = Nod.S
         I = full.unit(S.shape[0])
-        Delta_aa = (I - S*d for d in self.transition_ao_density)
-        return tuple(Delta_aa)
+        delta_aa = (I - S*d for d in self.transition_ao_density)
+        return tuple(delta_aa)
 
     def contra_covariant_transition_delta(self):
         """
@@ -143,8 +143,8 @@ class BraKet(object):
         S = Nod.S
         S = Nod.S
         I = full.unit(S.shape[0])
-        Delta_aa = (I - d*S for d in self.transition_ao_density)
-        return tuple(Delta_aa)
+        delta_aa = (I - d*S for d in self.transition_ao_density)
+        return tuple(delta_aa)
 
 ### Fock
 
@@ -231,19 +231,19 @@ class BraKet(object):
         L-R derivative <dK/dC(mu,m)|dL/dC(nu,n)>
 
         <K|a^m+ a_mu a_nu+ a^n |L>
-        (D(^m, _mu)D(_nu, ^n) + sum(s)D(s)(^m, ^n)Delta(s)(_nu,_mu))<K|L>
-        Delta = S - S*D*S
+        (D(^m, _mu)D(_nu, ^n) + sum(s)D(s)(^m, ^n)delta(s)(_nu,_mu))<K|L>
+        delta = S - S*D*S
         """
 
         D_am = sum(self.co_contravariant_transition_density_ao_mo())
         Dm_a = sum(self.contra_covariant_transition_density_mo_ao())
-        aDmm, bDmm = self.full_mo_transition_density
+        ad_mm, bd_mm = self.full_mo_transition_density
 
-        aDelta, bDelta = self.covariant_transition_delta()
+        adelta, bdelta = self.covariant_transition_delta()
 
         dKdL = (
             Dm_a.T.x(D_am)
-            + (aDelta.x(aDmm) + bDelta.x(bDmm)).transpose(1, 2, 0, 3)
+            + (adelta.x(ad_mm) + bdelta.x(bd_mm)).transpose(1, 2, 0, 3)
             )*self.overlap()
 
         return dKdL
@@ -321,7 +321,7 @@ class BraKet(object):
         """Rhs derivative <K|h|dL/dC(mu, m)>"""
 
         D_mo = self.transition_density
-        Delta = self.co_contravariant_transition_delta()
+        delta = self.co_contravariant_transition_delta()
 
         K_h_dL = (full.matrix(Nod.C.shape), full.matrix(Nod.C.shape))
 
@@ -329,7 +329,7 @@ class BraKet(object):
         for s in (0, 1):
             if self.K(s) and self.L(s):
                 K_h_dL[s][:, self.L(s)] += \
-                    Delta[s]*h1[s].T*CK[s]*D_mo[s]*self.overlap()
+                    delta[s]*h1[s].T*CK[s]*D_mo[s]*self.overlap()
         return K_h_dL
 
 
@@ -372,7 +372,7 @@ class BraKet(object):
         """Lhs derivative <dK/dC(mu,m)|h|L>"""
 
         D_mo = self.transition_density
-        Delta = self.contra_covariant_transition_delta()
+        delta = self.contra_covariant_transition_delta()
 
         dK_h_La = full.matrix(Nod.C.shape[::-1])
         dK_h_Lb = full.matrix(Nod.C.shape[::-1])
@@ -380,10 +380,10 @@ class BraKet(object):
         CL = self.L.orbitals()
         if self.L(0):
             dK_h_La[self.K(0), :] += \
-                D_mo[0]*CL[0].T*h1[0].T*Delta[0]*self.overlap()
+                D_mo[0]*CL[0].T*h1[0].T*delta[0]*self.overlap()
         if self.L(1):
             dK_h_Lb[self.K(1), :] += \
-                D_mo[1]*CL[1].T*h1[1].T*Delta[1]*self.overlap()
+                D_mo[1]*CL[1].T*h1[1].T*delta[1]*self.overlap()
 
         return dK_h_La.T, dK_h_Lb.T
 
@@ -403,10 +403,10 @@ class BraKet(object):
             self.right_2el_energy_gradient_ab2
             )
 
-        Dam = self.contravariant_transition_density_ao_mo
-        Delta = self.co_contravariant_transition_delta()
+        d_am = self.contravariant_transition_density_ao_mo
+        delta = self.co_contravariant_transition_delta()
         K_h_d2L += two.vb_transform(
-            Dam, Delta,
+            d_am, delta,
             filename=os.path.join(self.tmpdir, 'AOTWOINT')
             )*self.overlap()
 
@@ -479,34 +479,34 @@ class BraKet(object):
 
         dK_h_dL += (dK_L.x(K_h_dL) + dK_h_L.x(K_dL))/KL
 
-        # D^{mn}Delta^xi_mu h_{xi,rho}Delta_nu^rho
-        Dmm = self.full_mo_transition_density
+        # D^{mn}delta^xi_mu h_{xi,rho}delta_nu^rho
+        d_mm = self.full_mo_transition_density
         DhD = self.project_virtual_virtual(*args)
         dK_h_dL += (
-            Dmm[0].x(DhD[0])*KL +\
-            Dmm[1].x(DhD[1])*KL
+            d_mm[0].x(DhD[0])*KL +\
+            d_mm[1].x(DhD[1])*KL
             ).transpose(3, 0, 2, 1)
 
-        # Delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
+        # delta_{nu, mu} D^{m,rho}h_{xi, rho}D^{xi, n}
         Hmm = self.project_occupied_occupied(*args)
-        Delta = self.covariant_transition_delta()
+        delta = self.covariant_transition_delta()
         dK_h_dL -= (
-            Delta[0].x(Hmm[0])*KL + Delta[1].x(Hmm[1])*KL
+            delta[0].x(Hmm[0])*KL + delta[1].x(Hmm[1])*KL
             ).transpose(1, 2, 0, 3)
 
         return dK_h_dL
 
     def project_virtual_virtual(self, op):
         """Project virtual-virtual"""
-        Delta1 = self.co_contravariant_transition_delta()
-        Delta2 = self.contra_covariant_transition_delta()
-        return tuple(d1*h.T*d2 for d1, h, d2 in zip(Delta1, op, Delta2))
+        delta1 = self.co_contravariant_transition_delta()
+        delta2 = self.contra_covariant_transition_delta()
+        return tuple(d1*h.T*d2 for d1, h, d2 in zip(delta1, op, delta2))
 
     def project_occupied_occupied(self, op):
         """Project occupied-occupied"""
-        Dma = self.contravariant_transition_density_mo_ao
-        Dam = self.contravariant_transition_density_ao_mo
-        h1mm = (Dma[0]*op[0].T*Dam[0], Dma[1]*op[1].T*Dam[1])
+        d_ma = self.contravariant_transition_density_mo_ao
+        d_am = self.contravariant_transition_density_ao_mo
+        h1mm = (d_ma[0]*op[0].T*d_am[0], d_ma[1]*op[1].T*d_am[1])
         return h1mm
 
 
@@ -679,7 +679,6 @@ class WaveFunction(object):
             ns = math.sqrt(s*s)
             s.coef /= ns
             self.coef[i] *= ns
-        
 
     def norm(self):
         """
@@ -698,7 +697,7 @@ class WaveFunction(object):
         """
         NGS = []
         r, c = Nod.C.shape
-        Norbgrad = full.matrix((r, c))
+        n_orb_grad = full.matrix((r, c))
         #
         for S, CS in zip(self.structs, self.coef):
             GS = 0
@@ -706,14 +705,14 @@ class WaveFunction(object):
                 GS += (S*T)*CT
                 for K, CK in zip(S.nods, S.coef):
                     for L, CL in zip(T.nods, T.coef):
-                        Norbgrad += (CS*CT*CK*CL) * \
+                        n_orb_grad += (CS*CT*CK*CL) * \
                             BraKet(K, L).right_overlap_gradient()
             NGS.append(GS)
 
-        Nstructgrad = full.init(NGS)
-        Nstructgrad *= 2
-        Norbgrad *= 2
-        return (Nstructgrad, Norbgrad[:, :])
+        n_struct_grad = full.init(NGS)
+        n_struct_grad *= 2
+        n_orb_grad *= 2
+        return (n_struct_grad, n_orb_grad[:, :])
 
 
     def normhess(self):
@@ -722,9 +721,9 @@ class WaveFunction(object):
         #  N = <0|0>
         # d2<0|0> = <d20|0> + <0|d20> + 2<d0|d0> = 2<0|d20> + 2<d0|d0>
         """
-        Nstructhess = full.matrix(self.coef.shape*2)
-        Norbstructhess = full.matrix(Nod.C.shape + self.coef.shape)
-        Norbhess = full.matrix(Nod.C.shape*2)
+        n_struct_hess = full.matrix(self.coef.shape*2)
+        n_orb_structhess = full.matrix(Nod.C.shape + self.coef.shape)
+        n_orb_hess = full.matrix(Nod.C.shape*2)
         #
         for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
             for s2, (str2, cstr2) in enumerate(zip(self.structs, self.coef)):
@@ -733,15 +732,15 @@ class WaveFunction(object):
                         #
                         bk12 = BraKet(det1, det2)
                         #
-                        Nstructhess[s1, s2] += (cdet1*cdet2)*bk12.overlap()
-                        Norbstructhess[:, :, s1] += \
+                        n_struct_hess[s1, s2] += (cdet1*cdet2)*bk12.overlap()
+                        n_orb_structhess[:, :, s1] += \
                             cdet1*cstr2*cdet2*bk12.overlap_gradient()
-                        Norbhess += \
+                        n_orb_hess += \
                             cstr1*cdet1*cstr2*cdet2*bk12.overlap_hessian()
-        Nstructhess *= 2
-        Norbstructhess *= 2
-        #Norbhess
-        return Nstructhess, Norbstructhess, Norbhess
+        n_struct_hess *= 2
+        n_orb_structhess *= 2
+        #n_orb_hess
+        return n_struct_hess, n_orb_structhess, n_orb_hess
 
 
     def energy(self):
@@ -771,8 +770,8 @@ class WaveFunction(object):
         #  E = <0|H|0>/<0|0>
         # dE = 2<d0|H-E|0>/<0|0>
         """
-        Hstructgrad = full.matrix(len(self.structs))
-        Horbgrad = full.matrix(Nod.C.shape)
+        h_struct_grad = full.matrix(len(self.structs))
+        h_orb_grad = full.matrix(Nod.C.shape)
 
         for s1, (str1, cstr1) in enumerate(zip(self.structs, self.coef)):
             for str2, cstr2 in zip(self.structs, self.coef):
@@ -780,22 +779,22 @@ class WaveFunction(object):
                     for det2, cdet2 in zip(str2.nods, str2.coef):
                         det12 = BraKet(det1, det2)
 
-                        Hstructgrad[s1] += \
+                        h_struct_grad[s1] += \
                             2*(cdet1*cstr2*cdet2)*\
                             det12.overlap()*\
                             det12.energy((self.h, self.h))
 
-                        Horbgrad += \
+                        h_orb_grad += \
                             cstr1*cdet1*cstr2*cdet2*\
                             det12.energy_gradient((self.h, self.h))
 
         N = self.norm()
         E = self.energy()
 
-        Nstructgrad, Norbgrad = self.normgrad()
+        n_struct_grad, n_orb_grad = self.normgrad()
 
-        structgrad = (1/N)*(Hstructgrad - E*Nstructgrad)
-        orbgrad = (1/N)*(Horbgrad - E*Norbgrad)
+        structgrad = (1/N)*(h_struct_grad - E*n_struct_grad)
+        orbgrad = (1/N)*(h_orb_grad - E*n_orb_grad)
         return (structgrad, orbgrad[:, :])
 
 
@@ -816,9 +815,9 @@ class WaveFunction(object):
         d2N = 2*<d0|d0> + 2*<0|d20>
         """
 
-        Hstructhess = full.matrix(self.coef.shape*2)
-        Horbstructhess = full.matrix(Nod.C.shape + self.coef.shape)
-        Horbhess = full.matrix(Nod.C.shape*2)
+        h_struct_hess = full.matrix(self.coef.shape*2)
+        h_orb_structhess = full.matrix(Nod.C.shape + self.coef.shape)
+        h_orb_hess = full.matrix(Nod.C.shape*2)
         #
         for s1, (str1, Cs1) in enumerate(zip(self.structs, self.coef)):
             for s2, (str2, Cs2) in enumerate(zip(self.structs, self.coef)):
@@ -829,18 +828,18 @@ class WaveFunction(object):
                         #
                         # Structure gradient terms
                         #
-                        Hstructhess[s1, s2] += \
+                        h_struct_hess[s1, s2] += \
                             (Cd1*Cd2)*det12.overlap()*\
                             det12.energy((self.h, self.h))
                         #
                         # Orbital-structure hessian terms
                         #
-                        Horbstructhess[:, :, s1] += \
+                        h_orb_structhess[:, :, s1] += \
                             Cd1*Cs2*Cd2*det12.energy_gradient((self.h, self.h))
                         ##
                         # Orbital-orbital hessian
                         #
-                        Horbhess += Cs1*Cd1*Cs2*Cd2*(
+                        h_orb_hess += Cs1*Cd1*Cs2*Cd2*(
                             det12.right_1el_energy_hessian((self.h, self.h)) +
                             det12.mixed_1el_energy_hessian((self.h, self.h)) +
                             det12.right_2el_energy_hessian() +
@@ -851,31 +850,31 @@ class WaveFunction(object):
         N = self.norm()
         E = self.energy()
 
-        Nstructgrad, Norbgrad = self.normgrad()
-        Estructgrad, Eorbgrad = self.energygrad()
+        n_struct_grad, n_orb_grad = self.normgrad()
+        e_struct_grad, e_orb_grad = self.energygrad()
 
-        Nstructhess, Norbstructhess, Norbhess = self.normhess()
-        Hstructhess *= 2
-        Horbstructhess *= 2
-        Horbhess *= 2
+        n_struct_hess, n_orb_structhess, n_orb_hess = self.normhess()
+        h_struct_hess *= 2
+        h_orb_structhess *= 2
+        h_orb_hess *= 2
 
-        Estructhess = (
-            Hstructhess - E*Nstructhess -
-            Estructgrad.x(Nstructgrad) - Nstructgrad.x(Estructgrad)
+        e_struct_hess = (
+            h_struct_hess - E*n_struct_hess -
+            e_struct_grad.x(n_struct_grad) - n_struct_grad.x(e_struct_grad)
             )/N
 
-        Eorbstructhess = (
-            Horbstructhess - E*Norbstructhess - \
-            Eorbgrad.x(Nstructgrad) - Norbgrad.x(Estructgrad)
+        e_orb_structhess = (
+            h_orb_structhess - E*n_orb_structhess - \
+            e_orb_grad.x(n_struct_grad) - n_orb_grad.x(e_struct_grad)
             )/N
 
-        Eorbhess = (
-            Horbhess - E*Norbhess - Eorbgrad.x(Norbgrad)-Norbgrad.x(Eorbgrad))/N
+        e_orb_hess = (
+            h_orb_hess - E*n_orb_hess - e_orb_grad.x(n_orb_grad)-n_orb_grad.x(e_orb_grad))/N
 
         return (
-            Estructhess,
-            Eorbstructhess,
-            Eorbhess,
+            e_struct_hess,
+            e_orb_structhess,
+            e_orb_hess,
             )
 
     def gradientvector(self):
