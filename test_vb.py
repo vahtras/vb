@@ -363,7 +363,7 @@ class VBTestH2(unittest.TestCase):
     def test_weights(self):
         self.WF.normalize_structures()
         np.testing.assert_allclose(
-            self.WF.StructureWeights(),
+            self.WF.structure_weights(),
             (0.784329, 0.107836, 0.107836),
             rtol=5e-6
             )
@@ -381,7 +381,7 @@ class VBTestH2(unittest.TestCase):
     def test_structure_hamiltonian(self):
         self.WF.Normalize()
         np.testing.assert_allclose(
-            self.WF.StructureHamiltonian(),
+            self.WF.structure_hamiltonian(),
             [[-1.12438723, -0.92376625, -0.92376625],
              [-0.92376625, -0.75220865, -0.65716238],
              [-0.92376625, -0.65716238, -0.75220865]]

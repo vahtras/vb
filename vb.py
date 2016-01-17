@@ -608,7 +608,7 @@ class WaveFunction(object):
                         D_ao += sum(DKL)*CS*CT*CK*CL*KL.overlap()
         return D_ao/self.norm()
 
-    def StructureHamiltonian(self):
+    def structure_hamiltonian(self):
         """Returns Hamiltonian matrix in basis of structures"""
         SH = []
         # Structures left
@@ -619,11 +619,7 @@ class WaveFunction(object):
                 for K, CKS in zip(S.nods, S.coef):
                     for L, CLT in zip(T.nods, T.coef):
                         KL = BraKet(K, L)
-                        D12 = KL.transition_ao_density
-                        FKL = KL.transition_ao_fock
-                        hKL = self.h&(D12[0]+D12[1])
-                        gKL = 0.5*((FKL[0]&D12[0]) + (FKL[1]&D12[1]))
-                        H += (hKL + gKL + self.Z)*CKS*CLT*KL.overlap()
+                        H += CKS*CLT*(KL.energy((self.h, self.h)) + self.Z)*KL.overlap()
                 SH.append(H)
         LS = len(self.structs)
         return full.init(SH).reshape((LS, LS))
@@ -632,7 +628,7 @@ class WaveFunction(object):
         """Calculate structure overlap matrix"""
         return full.init([[s*t for t in self.structs] for s in self.structs])
 
-    def StructureWeights(self):
+    def structure_weights(self):
         """
         Returns structure weights
         w_S = C(S) sum(T) <S|T>C(T)
