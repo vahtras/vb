@@ -352,6 +352,11 @@ class VBTestH2(unittest.TestCase):
     def test_norm(self):
         self.assertAlmostEqual(self.WF.norm(), 1.0)
 
+    def test_normalize_mo(self):
+        self.WF.C = Nod.C*2
+        self.WF.normalize_mo()
+        np.testing.assert_allclose(self.WF.C, Nod.C)
+
     def test_vb_vector(self):
         self.WF.normalize_structures()
         np.testing.assert_allclose(
@@ -370,7 +375,7 @@ class VBTestH2(unittest.TestCase):
             
 
     def test_structure_overlap(self):
-        self.WF.Normalize()
+        self.WF.normalize()
         np.testing.assert_allclose(
             self.WF.structure_overlap(), 
             [[1.00000000, 0.77890423, 0.77890423],
@@ -379,7 +384,7 @@ class VBTestH2(unittest.TestCase):
         )
 
     def test_structure_hamiltonian(self):
-        self.WF.Normalize()
+        self.WF.normalize()
         np.testing.assert_allclose(
             self.WF.structure_hamiltonian(),
             [[-1.12438723, -0.92376625, -0.92376625],

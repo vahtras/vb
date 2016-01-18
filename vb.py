@@ -639,26 +639,23 @@ class WaveFunction(object):
         W = [c*sc for c, sc in zip(C, SOC)]
         return W
 
-    def Normalize(self):
+    def normalize(self):
         """
         Normalize state
+        """
+        self.normalize_mo()
+        self.normalize_structures()
+        self.coef *= 1/math.sqrt(self.norm())
+
+    def normalize_mo(self):
+        """
+        Normalize mo
         """
         _, mo = self.C.shape
         for i in range(mo):
             cmo = self.C[:, i]
             nmo = 1/math.sqrt(cmo.T*Nod.S*cmo)
             cmo *= nmo
-        #
-        # Structures
-        #
-        SO = self.structure_overlap()
-        for i in range(len(self.structs)):
-            N = 1/math.sqrt(SO[i, i])
-            self.structs[i].coef *= N
-        #
-        # Structure coefficients
-        #
-        self.coef *= 1/math.sqrt(self.norm())
 
     def normalize_structures(self):
         """
