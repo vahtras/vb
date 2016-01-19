@@ -397,7 +397,7 @@ class VBTestH2(unittest.TestCase):
         e, _ = self.WF.eigenvalues_vectors()
         np.testing.assert_allclose(
             e, [-1.137284, -0.168352, 0.483143],
-            rtol=1e-5
+            rtol=1e-5, atol=1e-5
         )
 
     def test_eigenvectors(self):
