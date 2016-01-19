@@ -392,6 +392,25 @@ class VBTestH2(unittest.TestCase):
              [-0.92376625, -0.65716238, -0.75220865]]
         )
 
+    def test_eigenvalues(self):
+        self.WF.normalize()
+        e, _ = self.WF.eigenvalues_vectors()
+        np.testing.assert_allclose(
+            e, [-1.137284, -0.168352, 0.483143],
+            rtol=1e-5
+        )
+
+    def test_eigenvectors(self):
+        _, v = self.WF.eigenvalues_vectors()
+        np.testing.assert_allclose(
+            v, [
+            [-0.787469, 0.000000, -2.417515],
+            [-0.133870, -0.941081, 1.494602],
+            [-0.133870, 0.941081, 1.494602]
+            ],
+            rtol=1e-5
+        )
+
 
 if __name__ == "__main__":
    unittest.main()

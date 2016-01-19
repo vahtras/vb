@@ -624,6 +624,15 @@ class WaveFunction(object):
         LS = len(self.structs)
         return full.init(SH).reshape((LS, LS))
 
+    def eigenvalues_vectors(self):
+        self.normalize()
+        S = self.structure_overlap()
+        H = self.structure_hamiltonian()
+        e, V = (H/S).eigvec()
+        for v in V.T:
+            v.normalize(S)
+        return e, V
+
     def structure_overlap(self):
         """Calculate structure overlap matrix"""
         return full.init([[s*t for t in self.structs] for s in self.structs])
