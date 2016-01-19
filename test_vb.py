@@ -402,11 +402,15 @@ class VBTestH2(unittest.TestCase):
 
     def test_eigenvectors(self):
         _, v = self.WF.eigenvalues_vectors()
+        # fix phase
+        if v[0, 0] < 0: v[:, 0] *= -1
+        if v[1, 1] > 0: v[:, 1] *= -1
+        if v[2, 2] > 0: v[:, 2] *= -1
         np.testing.assert_allclose(
             v, [
-            [-0.787469, 0.000000, -2.417515],
-            [-0.133870, -0.941081, 1.494602],
-            [-0.133870, 0.941081, 1.494602]
+            [0.787469, 0.000000, 2.417515],
+            [0.133870, -0.941081, -1.494602],
+            [0.133870, 0.941081, -1.494602]
             ],
             rtol=1e-5
         )
