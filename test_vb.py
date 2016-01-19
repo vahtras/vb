@@ -150,8 +150,11 @@ class WaveFunction(WaveFunction):
             )
 
 
-
 class VBTest(unittest.TestCase):
+    pass
+
+
+class VBTestH2A(VBTest):
     def setUp(self):
         """
          Model the fci result as a wb wave function
@@ -162,8 +165,8 @@ class VBTest(unittest.TestCase):
          1su=Nu(a-b)  norm Nu=1/sqrt(2(1-Sab))
       
          WF = cg*Ng**2(a+b|a+b) + cu*Nu**2(a-b|a-b)
-                                                                                           = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
-                                                                                           + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
+            = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
+            + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -299,7 +302,7 @@ B   0.0  0.0  0.7428
         pass
 
 
-class VBTestH2(unittest.TestCase):
+class VBTestH2B(VBTest):
     
     def setUp(self):
         """
@@ -397,7 +400,7 @@ class VBTestH2(unittest.TestCase):
         e, _ = self.WF.eigenvalues_vectors()
         np.testing.assert_allclose(
             e, [-1.137284, -0.168352, 0.483143],
-            rtol=1e-5, atol=1e-5
+            rtol=1e-5
         )
 
     def test_eigenvectors(self):
@@ -412,8 +415,15 @@ class VBTestH2(unittest.TestCase):
             [0.133870, -0.941081, -1.494602],
             [0.133870, 0.941081, -1.494602]
             ],
-            rtol=1e-4
+            rtol=1e-5, atol=1e-5
         )
+
+class VBTestFH(VBTest):
+
+    def setUp(self):
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_fh')
+        def tmp(fil):
+            return os.path.join(self.tmp, fil)
 
 
 if __name__ == "__main__":
