@@ -425,6 +425,38 @@ class VBTestFH(VBTest):
         def tmp(fil):
             return os.path.join(self.tmp, fil)
 
+        Nod.S = one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
+        Nod.h = one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
+        Nod.Z = one.readhead(tmp('AOONEINT'))['potnuc']
+        Nod.C = np.loadtxt('test_fh/orb').view(full.matrix)
+        print Nod.C
+
+        cov = Structure(
+            [Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 5]),
+             Nod([0, 1, 2, 3, 5],[0, 1, 2, 3, 4])],
+            [1.0, 1.0]
+            )
+        ion_a = Structure([Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 4])], [1.0])
+        ion_b = Structure([Nod([0, 1, 2, 3, 5],[0, 1, 2, 3, 5])], [1.0])
+
+        self.wf = WaveFunction([cov, ion_a, ion_b], [1.0, 0.0, 0.0], tmpdir=self.tmp)
+        self.wf.normalize()
+
+
+    def test_Z(self):
+        self.assertAlmostEqual(self.wf.Z, 5.193669438059)
+
+    def test_overlap(self):
+        for w,c in zip(self.wf.structs, self.wf.coef):
+            print w, c
+        np.testing.assert_allclose(
+            self.wf.structure_overlap(), [
+            [1.000000, -0.685108, -0.685108],
+            [-0.685108, 1.000000, 0.306654],
+            [-0.685108, 0.306654, 1.000000]
+            ]
+        )
+
 
 if __name__ == "__main__":
    unittest.main()
