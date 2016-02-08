@@ -428,7 +428,7 @@ class VBTestFH(VBTest):
         Nod.S = one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
         Nod.h = one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
         Nod.Z = one.readhead(tmp('AOONEINT'))['potnuc']
-        Nod.C = np.loadtxt('test_fh/orb').view(full.matrix)
+        Nod.C = np.loadtxt(tmp('orb')).view(full.matrix)
 
         cov = Structure(
             [Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 5]),
