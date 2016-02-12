@@ -547,6 +547,9 @@ class Structure(object):
                 N += bra*ket*c_bra*c_ket
         return N
 
+    def normalize(self):
+        self.coef *= 1.0/math.sqrt(self*self)
+
     def __str__(self):
         output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]
         return "\n".join(output)
