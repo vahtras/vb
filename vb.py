@@ -518,7 +518,7 @@ class Structure(object):
     nods: Non-orthogonal determinants
     coef: fix coupling coefficients
     """
-    def __init__(self, nods, coef):
+    def __init__(self, nods, coef, normalize=True):
         if len(nods) != len(coef):
             raise StructError
 
@@ -532,6 +532,9 @@ class Structure(object):
         # reference the first determinant MO
         #
         self.C = nods[0].C
+
+        if normalize:
+            self.normalize()
 
     def assert_consistent_electron_number(self):
         """Verify that determinants in structure are consistent"""

@@ -207,8 +207,8 @@ B   0.0  0.0  0.7428
         Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
         Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
         Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
-        ion=Structure( [Nod([0],[0]),Nod([1],[1])], [1,1] )
-        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1,1] )
+        ion=Structure( [Nod([0],[0]),Nod([1],[1])], [1.0, 1.0] )
+        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
         cg=random.random()
         cu=random.random()
         Sab=0.13533528
@@ -292,7 +292,7 @@ B   0.0  0.0  0.7428
     def test_nel(self):
         """Number of electrons"""
         nel=self.WF.nel()
-        self.failUnlessAlmostEqual(nel,2.0,6,'Wrong electron number %g != %g'%(nel,2))
+        self.assertAlmostEqual(nel, 2.0)
 
     def test_verify_not_implemented_exception(self):
         with self.assertRaises(NotImplementedError):
@@ -331,11 +331,11 @@ class VBTestH2B(VBTest):
         Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
         Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
         Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
-        ion_a = Structure( [Nod([0],[0])], [1.0])
-        ion_b = Structure( [Nod([1],[1])], [1.0])
+        ion_a = Structure([Nod([0],[0])], [1.0], normalize=False)
+        ion_b = Structure([Nod([1],[1])], [1.0], normalize=False)
         import math
         N = math.sqrt(0.5)
-        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [N, N] )
+        cov=Structure([Nod([0],[1]),Nod([1],[0])], [N, N], normalize=False)
         cg = 0.99364675
         cu = -0.11254389
         Sab = 0.65987313

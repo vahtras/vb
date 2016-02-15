@@ -21,17 +21,21 @@ class StructTest(unittest.TestCase):
             struct = Structure([Nod([0], [0])], [])
 
     def test_structure_output(self):
-        struct_a = Structure([self.alpha0], [1])
-        self.assertEqual(str(struct_a), "1.000000    (0|)")
+        struct_a = Structure([self.alpha0], [1.0])
+        self.assertEqual(str(struct_a), "0.963143    (0|)")
 
     def test_structure_ms(self):
         with self.assertRaises(StructError):
             struct = Structure([self.alpha0, self.beta0], [1, 1])
 
-    def test_normalize(self):
+    def test_normalized(self):
         ab = Structure([self.ab00], [1.0])
-        ab.normalize()
         self.assertAlmostEqual(ab*ab, 1.0)
+
+    def test_keep_unnormalized(self):
+        ab = Structure([self.ab00], [1.0], normalize=False)
+        self.assertAlmostEqual(ab*ab, 1.162084)
+
 
 if __name__ == "__main__":
     unittest.main()
