@@ -314,8 +314,8 @@ class VBTestH2B(VBTest):
          1su=Nu(a-b)  norm Nu=1/sqrt(2(1-Sab))
       
          WF = cg*Ng**2(a+b|a+b) + cu*Nu**2(a-b|a-b)
-                                                                                           = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
-                                                                                           + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
+            = (cg*Ng**2+cu*Nu**2)[(a|a) + (b|b)]
+            + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -403,6 +403,126 @@ class VBTestH2B(VBTest):
             rtol=1e-5
         )
 
+    def test_eigenvectors(self):
+        _, v = self.WF.eigenvalues_vectors()
+        # fix phase
+        if v[0, 0] < 0: v[:, 0] *= -1
+        if v[1, 1] > 0: v[:, 1] *= -1
+        if v[2, 2] > 0: v[:, 2] *= -1
+        np.testing.assert_allclose(
+            v, [
+            [0.787469, 0.000000, 2.417515],
+            [0.133870, -0.941081, -1.494602],
+            [0.133870, 0.941081, -1.494602]
+            ],
+            rtol=1e-5, atol=1e-5
+        )
+
+class VBTestH2C(VBTest):
+    
+    def setUp(self):
+        """
+        """
+      
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2')
+        def tmp(fil):
+            return os.path.join(self.tmp, fil)
+      
+        self.one=tmp("AOONEINT")
+        self.two=tmp("AOTWOINT")
+#
+# Setup VB wave function
+#
+        Nod.C=full.init(
+            [
+[0.7633862173, 0.3075441467, 0.0000000000, 0.0000000000, 0.0328937818, 
+0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 
+0.7633862173, 0.3075441467, 0.0000000000, 0.0000000000, -0.0328937818]
+            ]
+        )
+
+        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
+        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
+        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+        ion_a = Structure( [Nod([0],[0])], [1.0])
+        ion_b = Structure( [Nod([1],[1])], [1.0])
+        cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
+        self.WF=WaveFunction(
+          [cov, ion_a, ion_b],[0.83675, 0.09850, 0.09850],
+          tmpdir=self.tmp
+          )
+        self.WF.normalize()
+        #
+
+    def test_Z(self):
+        self.assertAlmostEqual(self.WF.Z, 0.715104, places=6)
+
+    @unittest.skip('wait')
+    def test_final_energy(self):
+        self.assertAlmostEqual(self.WF.energy() + Nod.Z, -1.14660543)
+
+    def test_norm(self):
+        self.assertAlmostEqual(self.WF.norm(), 1.0)
+
+    def test_orbital_norm(self):
+        S_mo = full.matrix.diag(self.WF.C.T*Nod.S*self.WF.C)
+        np.testing.assert_allclose(S_mo, [1, 1])
+
+    def test_normalize_mo(self):
+        self.WF.C = Nod.C*2
+        self.WF.normalize_mo()
+        np.testing.assert_allclose(self.WF.C, Nod.C)
+
+    @unittest.skip('wait')
+    def test_vb_vector(self):
+        self.WF.normalize_structures()
+        np.testing.assert_allclose(
+            self.WF.coef,
+            [0.83675, 0.09850, 0.09850],
+            rtol=1e-5
+            )
+
+    @unittest.skip('wait')
+    def test_weights(self):
+        self.WF.normalize_structures()
+        np.testing.assert_allclose(
+            self.WF.structure_weights(),
+            (0.784329, 0.107836, 0.107836),
+            rtol=5e-6
+            )
+            
+
+    @unittest.skip('wait')
+    def test_structure_overlap(self):
+        self.WF.normalize()
+        np.testing.assert_allclose(
+            self.WF.structure_overlap(), 
+            [[1.00000000, 0.77890423, 0.77890423],
+             [0.77890423, 1.00000000, 0.43543258],
+             [0.77890423, 0.43543258, 1.00000000]]
+        )
+
+    @unittest.skip('wait')
+    def test_structure_hamiltonian(self):
+        self.WF.normalize()
+        np.testing.assert_allclose(
+            self.WF.structure_hamiltonian(),
+            [[-1.12438723, -0.92376625, -0.92376625],
+             [-0.92376625, -0.75220865, -0.65716238],
+             [-0.92376625, -0.65716238, -0.75220865]]
+        )
+
+    @unittest.skip('wait')
+    def test_eigenvalues(self):
+        self.WF.normalize()
+        e, _ = self.WF.eigenvalues_vectors()
+        np.testing.assert_allclose(
+            e, [-1.137284, -0.168352, 0.483143],
+            rtol=1e-5
+        )
+
+    @unittest.skip('wait')
     def test_eigenvectors(self):
         _, v = self.WF.eigenvalues_vectors()
         # fix phase
