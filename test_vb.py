@@ -251,7 +251,7 @@ B   0.0  0.0  0.7428
         """Energy orbital gradient"""
         _, numorbgr = self.WF.numenergygrad()
         _, anaorbgr = self.WF.energygrad()
-        np.testing.assert_allclose(numorbgr, anaorbgr, rtol=self.delta)
+        np.testing.assert_allclose(numorbgr, anaorbgr, rtol=self.delta, atol=self.delta)
 
     def test_energy_struct_gradient(self):
         """Energy structure gradient"""
