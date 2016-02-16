@@ -169,7 +169,7 @@ class VBTestH2A(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
       
@@ -318,7 +318,7 @@ class VBTestH2B(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_data')
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
       
@@ -424,7 +424,7 @@ class VBTestH2C(VBTest):
         """
         """
       
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2')
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_c')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
       

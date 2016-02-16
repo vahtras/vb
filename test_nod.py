@@ -92,7 +92,7 @@ class NodTest(unittest.TestCase):
 class BraKetTest(unittest.TestCase):
 
     def setUp(self):
-        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_data')
+        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         Nod.S = init([[1.0, 0.1], [0.1, 1.0]])
         Nod.h = init([[-0.5, 0.1], [0.1, -0.25]])
         Nod.C = init([[0.7, 0.6], [0.6, -0.7]])
@@ -569,7 +569,7 @@ class BraKetTest(unittest.TestCase):
 class BraKetTest2(unittest.TestCase):
 
     def setUp(self):
-        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_data')
+        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         Nod.S = init([[1.0, 0.2, 0.1], [0.2, 1.0, 0.2], [0.1, 0.2, 1.0]])
         Nod.h = init([[-0.5, 0.2, 0.1], [0.2, -0.25, 0.2], [0.1, -0.1, 1.0]])
         Nod.C = init([[0.7, 0.6, 0.5], [0.4, 0.3, 0.2]])
@@ -1973,7 +1973,7 @@ class BraKetTest2(unittest.TestCase):
 class BraKetTest3(unittest.TestCase):
 
     def setUp(self):
-        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_data')
+        BraKet.tmpdir = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         Nod.S = init([[1.0, 0.2, 0.1], [0.2, 1.0, 0.2], [0.1, 0.2, 1.0]])
         Nod.h = init([[-0.5, 0.2, 0.1], [0.2, -0.25, 0.2], [0.1, -0.1, 1.0]])
         Nod.C = init([[0.7, 0.6, 0.5], [0.4, 0.3, 0.2]])
