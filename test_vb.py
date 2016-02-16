@@ -482,6 +482,17 @@ class VBTestH2C(VBTest):
             rtol=1e-5
             )
 
+    def test_determinant_coef(self):
+        coef = []
+        for s, cs in zip(self.WF.structs, self.WF.coef):
+            for d, cd in zip(s.nods, s.coef):
+                coef.append(cs*cd)
+        np.testing.assert_allclose(
+            coef, [0.48184, 0.48184, 0.09850, 0.09850],
+            atol=1e-5)
+
+
+
     def test_weights(self):
         self.WF.normalize_structures()
         np.testing.assert_allclose(
