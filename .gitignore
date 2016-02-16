@@ -5,3 +5,5 @@ cover
 *.[0-9]
 *.gz
 *.out
+.noseids
+.pytest.restart
