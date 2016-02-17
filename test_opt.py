@@ -4,10 +4,6 @@ import scipy.optimize
 import vb
 import daltools
 
-
-
-
-
 class VBTestBase(unittest.TestCase):
 
     @staticmethod
@@ -22,14 +18,37 @@ class VBTestBase(unittest.TestCase):
         return wf.energygrad()[0]
 
     @staticmethod
+    def energy_gradient(coef, wf):
+        wf.coef = coef[:len(wf.coef)]
+        wf.C = wf[len(wf.coef):].reshape(wf.C.shape)
+        return wf.energygrad()
+
+    @staticmethod
     def constraint_norm(coef, wf):
         wf.coef = coef
         return wf.norm() - 1.0
 
     @staticmethod
-    def constraint_norm_grad(coef, wf):
+    def generate_structure_constraint(i):
+        def fun(coef, wf):
+            S = wf.structs[i]
+            return S*S - 1.0
+        return fun
+
+    @staticmethod
+    def constraint_norm_structure_grad(coef, wf):
         wf.coef = coef
         return wf.normgrad()[0]
+
+    @staticmethod
+    def constraint_norm_grad(coef, wf):
+        wf.coef = coef[:len(wf.coef)]
+        wf.C = coef[len(wf.coef):].reshape(wf.C.shape)
+        structgrad, orbgrad = wf.normgrad()
+        norm_grad = daltools.util.full.matrix(structgrad.size + orbgrad.size)
+        norm_grad[:structgrad.size] = structgrad
+        norm_grad[structgrad.size:] = orbgrad.ravel()
+        return norm_grad
 
 class VBTestH2(VBTestBase):
 
@@ -58,7 +77,7 @@ class VBTestH2(VBTestBase):
         self.constraints = (
             {'type': 'eq',
              'fun': self.constraint_norm,
-             'jac': self.constraint_norm_grad,
+             'jac': self.constraint_norm_structure_grad,
              'args': (self.wf,)
             },
         )
@@ -118,6 +137,16 @@ class VBTestH2C(VBTestBase):
              'jac': self.constraint_norm_grad,
              'args': (self.wf,)
             },
+            {'type': 'eq',
+             'fun': self.generate_structure_constraint(0),
+             'jac': None,
+             'args': (self.wf,)
+            },
+            {'type': 'eq',
+             'fun': self.generate_structure_constraint(1),
+             'jac': None,
+             'args': (self.wf,)
+            },
         )
         
 
@@ -128,6 +157,20 @@ class VBTestH2C(VBTestBase):
         self.wf.normalize()
         for c in self.constraints:
             self.assertAlmostEqual(c['fun'](self.wf.coef, self.wf), 0.0)
+
+    @unittest.skip('wait')
+    def test_solver_start_covalent(self):
+        start_covalent = daltools.util.full.init(
+            [1.0, 0.0] + [
+                1., 0., 0., 0., 0., 0., 0., 0., 0., 0,
+                0., 0., 0., 0., 0., 1., 0., 0., 0., 0
+                ]
+            )
+        result = scipy.optimize.minimize(
+            self.wf_energy, start_covalent, jac=self.structure_gradient, args=(self.wf,),
+            constraints=self.constraints, method='SLSQP'
+        )
+        self.assertAlmostEqual(result.fun, -1.13728383)
 
 if __name__ == "__main__":
     unittest.main()
