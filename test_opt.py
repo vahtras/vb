@@ -36,6 +36,13 @@ class VBTestBase(unittest.TestCase):
         return fun
 
     @staticmethod
+    def generate_orbital_constraint(i):
+        def fun(coef, wf):
+            cmo = wf.C[:, i]
+            return cmo.T*vb.Nod.S*cmo - 1.0
+        return fun
+
+    @staticmethod
     def constraint_norm_structure_grad(coef, wf):
         wf.coef = coef
         return wf.normgrad()[0]
@@ -144,6 +151,16 @@ class VBTestH2C(VBTestBase):
             },
             {'type': 'eq',
              'fun': self.generate_structure_constraint(1),
+             'jac': None,
+             'args': (self.wf,)
+            },
+            {'type': 'eq',
+             'fun': self.generate_orbital_constraint(0),
+             'jac': None,
+             'args': (self.wf,)
+            },
+            {'type': 'eq',
+             'fun': self.generate_orbital_constraint(1),
              'jac': None,
              'args': (self.wf,)
             },
