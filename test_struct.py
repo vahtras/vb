@@ -40,9 +40,7 @@ class StructTest(unittest.TestCase):
     def test_norm_gradient(self):
         ab = Structure([self.ab00], [1.0])
         #assert False
-        num_diff_fun = clgrad(ab, 'overlap', 'C')
-        ab.nods[0].C = ab.C
-        num_diff = num_diff_fun()
+        num_diff = clgrad(ab, 'overlap', 'C')()
         ana_diff = ab.overlap_gradient()
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
