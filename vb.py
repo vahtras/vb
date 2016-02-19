@@ -532,10 +532,21 @@ class Structure(object):
         # In BOVB these are unique to a structure
         # reference the first determinant MO
         #
-        self.C = nods[0].C
+        self._C = nods[0].C
 
         if normalize:
             self.normalize()
+
+    @property
+    def C(self):
+        return self._C
+
+    @C.setter
+    def C(self, cmo):
+        """Propagate changes in C to determinants"""
+        self._C = cmo
+        for nod in self.nods:
+            nod.C = cmo
 
     def assert_consistent_electron_number(self):
         """Verify that determinants in structure are consistent"""

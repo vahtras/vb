@@ -46,7 +46,6 @@ class StructTest(unittest.TestCase):
         ana_diff = ab.overlap_gradient()
         np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
 
-    @unittest.skip('tbi')
     def test_struct_mo_propagated(self):
         ab = Structure([self.ab00], [1.0])
         ab.C = init([1,2,3,4])
