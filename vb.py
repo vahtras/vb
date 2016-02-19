@@ -2,6 +2,7 @@
 """Valence Bond energies, gradients, Hessian"""
 import os
 import math
+import numpy as np
 from .daltools import one
 from .two_electron import two
 from .two_electron.two import fockab as Fao
@@ -556,6 +557,19 @@ class Structure(object):
     def __str__(self):
         output = ["%f    %s" % (c, d) for c, d in zip(self.coef, self.nods)]
         return "\n".join(output)
+
+    def overlap(self):
+        "Differentiate structure norm square wrt vb orbitals"
+        return self*self
+
+    def overlap_gradient(self):
+        "Differentiate structure norm square wrt vb orbitals"
+        ds = sum(
+            (ck*cl)*BraKet(k, l).overlap_gradient() 
+            for k, ck in zip(self.nods, self.coef)
+            for l, cl in zip(self.nods, self.coef)
+            )
+        return ds
 
 class StructError(Exception):
     """General structure exception"""

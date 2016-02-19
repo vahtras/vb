@@ -1,6 +1,7 @@
 import unittest
 from daltools.util.full import init
 from vb import *
+from num_diff.findif import clgrad, DELTA
 
 class StructTest(unittest.TestCase):
 
@@ -35,6 +36,21 @@ class StructTest(unittest.TestCase):
     def test_keep_unnormalized(self):
         ab = Structure([self.ab00], [1.0], normalize=False)
         self.assertAlmostEqual(ab*ab, 1.162084)
+
+    def test_norm_gradient(self):
+        ab = Structure([self.ab00], [1.0])
+        #assert False
+        num_diff_fun = clgrad(ab, 'overlap', 'C')
+        ab.nods[0].C = ab.C
+        num_diff = num_diff_fun()
+        ana_diff = ab.overlap_gradient()
+        np.testing.assert_allclose(ana_diff, num_diff, rtol=DELTA, atol=DELTA)
+
+    @unittest.skip('tbi')
+    def test_struct_mo_propagated(self):
+        ab = Structure([self.ab00], [1.0])
+        ab.C = init([1,2,3,4])
+        self.assertEqual(id(ab.C), id(ab.nods[0].C))
 
 
 if __name__ == "__main__":

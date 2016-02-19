@@ -36,6 +36,13 @@ class VBTestBase(unittest.TestCase):
         return fun
 
     @staticmethod
+    def generate_structure_constraint_gradient(i):
+        def fun(coef, wf):
+            S = wf.structs[i]
+            return S*S - 1.0
+        return fun
+
+    @staticmethod
     def generate_orbital_constraint(i):
         def fun(coef, wf):
             cmo = wf.C[:, i]
