@@ -3,8 +3,44 @@ import os
 import scipy.optimize
 import vb
 import daltools
+import abc
 
 class VBTestBase(unittest.TestCase):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def wf_energy(coef, wf):
+        pass
+
+    @abc.abstractmethod
+    def wf_gradient(coef, wf):
+        pass
+    
+    @abc.abstractmethod
+    def constraint_norm(coef, wf):
+        pass
+
+    @abc.abstractmethod
+    def constraint_norm_grad(coef, wf):
+        pass
+
+    @abc.abstractmethod
+    def generate_structure_constraint(i):
+        pass
+
+    @abc.abstractmethod
+    def generate_structure_constraint_gradient(i):
+        pass
+
+    @abc.abstractmethod
+    def generate_orbital_constraint(i):
+        pass
+
+    @abc.abstractmethod
+    def generate_orbital_constraint_grad(i):
+        pass
+
+class VBTestH2(VBTestBase):
 
     @staticmethod
     def wf_energy(coef, wf):
@@ -13,20 +49,19 @@ class VBTestBase(unittest.TestCase):
         return total_energy
 
     @staticmethod
-    def structure_gradient(coef, wf):
+    def wf_gradient(coef, wf):
         wf.coef = coef
         return wf.energygrad()[0]
-
-    @staticmethod
-    def energy_gradient(coef, wf):
-        wf.coef = coef[:len(wf.coef)]
-        wf.C = wf[len(wf.coef):].reshape(wf.C.shape)
-        return wf.energygrad()
 
     @staticmethod
     def constraint_norm(coef, wf):
         wf.coef = coef
         return wf.norm() - 1.0
+
+    @staticmethod
+    def constraint_norm_grad(coef, wf):
+        wf.coef = coef
+        return wf.normgrad()[0]
 
     @staticmethod
     def generate_structure_constraint(i):
@@ -50,21 +85,8 @@ class VBTestBase(unittest.TestCase):
         return fun
 
     @staticmethod
-    def constraint_norm_structure_grad(coef, wf):
-        wf.coef = coef
-        return wf.normgrad()[0]
-
-    @staticmethod
-    def constraint_norm_grad(coef, wf):
-        wf.coef = coef[:len(wf.coef)]
-        wf.C = coef[len(wf.coef):].reshape(wf.C.shape)
-        structgrad, orbgrad = wf.normgrad()
-        norm_grad = daltools.util.full.matrix(structgrad.size + orbgrad.size)
-        norm_grad[:structgrad.size] = structgrad
-        norm_grad[structgrad.size:] = orbgrad.ravel()
-        return norm_grad
-
-class VBTestH2(VBTestBase):
+    def generate_orbital_constraint_grad(i):
+        pass
 
     def setUp(self):
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
@@ -91,7 +113,7 @@ class VBTestH2(VBTestBase):
         self.constraints = (
             {'type': 'eq',
              'fun': self.constraint_norm,
-             'jac': self.constraint_norm_structure_grad,
+             'jac': self.constraint_norm_grad,
              'args': (self.wf,)
             },
         )
@@ -102,14 +124,14 @@ class VBTestH2(VBTestBase):
 
     def test_solver_start_ionic(self):
         result = scipy.optimize.minimize(
-            self.wf_energy, [1.0, 0.0], jac=self.structure_gradient, args=(self.wf,),
+            self.wf_energy, [1.0, 0.0], jac=self.wf_gradient, args=(self.wf,),
             constraints=self.constraints, method='SLSQP'
         )
         self.assertAlmostEqual(result.fun, -1.13728383)
 
     def test_solver_start_covalent(self):
         result = scipy.optimize.minimize(
-            self.wf_energy, [0.0, 1.0], jac=self.structure_gradient, args=(self.wf,),
+            self.wf_energy, [0.0, 1.0], jac=self.wf_gradient, args=(self.wf,),
             constraints=self.constraints, method='SLSQP'
         )
         self.assertAlmostEqual(result.fun, -1.13728383)
@@ -120,6 +142,52 @@ class VBTestH2(VBTestBase):
             self.assertAlmostEqual(c['fun'](self.wf.coef, self.wf), 0.0)
 
 class VBTestH2C(VBTestBase):
+
+    @staticmethod
+    def wf_energy(coef, wf):
+        wf.coef = coef
+        total_energy = wf.energy() + wf.Z
+        return total_energy
+
+    @staticmethod
+    def wf_gradient(coef, wf):
+        wf.coef = coef
+        return wf.energygrad()[0]
+
+    @staticmethod
+    def constraint_norm(coef, wf):
+        wf.coef = coef
+        return wf.norm() - 1.0
+
+    @staticmethod
+    def constraint_norm_grad(coef, wf):
+        wf.coef = coef
+        return wf.normgrad()[0]
+
+    @staticmethod
+    def generate_structure_constraint(i):
+        def fun(coef, wf):
+            S = wf.structs[i]
+            return S*S - 1.0
+        return fun
+
+    @staticmethod
+    def generate_structure_constraint_gradient(i):
+        def fun(coef, wf):
+            S = wf.structs[i]
+            return S*S - 1.0
+        return fun
+
+    @staticmethod
+    def generate_orbital_constraint(i):
+        def fun(coef, wf):
+            cmo = wf.C[:, i]
+            return cmo.T*vb.Nod.S*cmo - 1.0
+        return fun
+
+    @staticmethod
+    def generate_orbital_constraint_grad(i):
+        pass
 
     def setUp(self):
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_c')
