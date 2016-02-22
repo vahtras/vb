@@ -4,9 +4,22 @@ import scipy.optimize
 import vb
 import daltools
 import abc
+from daltools.util import full
+
+def update_wf(coef, wf):
+    ncoef = len(wf.coef)
+    wf.coef[:] = coef[:ncoef]
+    wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape)
+
+def extract_wf_coef(wf):
+    coef = full.matrix(wf.coef.size + wf.C.size)
+    coef[:wf.coef.size] = wf.coef
+    coef[wf.coef.size:] = wf.C.ravel()
+    return coef
 
 class VBTestBase(unittest.TestCase):
     __metaclass__ = abc.ABCMeta
+
 
     @abc.abstractmethod
     def wf_energy(coef, wf):
@@ -44,45 +57,36 @@ class VBTestH2(VBTestBase):
 
     @staticmethod
     def wf_energy(coef, wf):
-        wf.coef = coef
+        wf.coef[:] = coef
         total_energy = wf.energy() + wf.Z
         return total_energy
 
     @staticmethod
     def wf_gradient(coef, wf):
-        wf.coef = coef
+        wf.coef[:] = coef
         return wf.energygrad()[0]
 
     @staticmethod
     def constraint_norm(coef, wf):
-        wf.coef = coef
+        wf.coef[:] = coef
         return wf.norm() - 1.0
 
     @staticmethod
     def constraint_norm_grad(coef, wf):
-        wf.coef = coef
+        wf.coef[:] = coef
         return wf.normgrad()[0]
 
     @staticmethod
     def generate_structure_constraint(i):
-        def fun(coef, wf):
-            S = wf.structs[i]
-            return S*S - 1.0
-        return fun
+        pass
 
     @staticmethod
     def generate_structure_constraint_gradient(i):
-        def fun(coef, wf):
-            S = wf.structs[i]
-            return S*S - 1.0
-        return fun
+        pass
 
     @staticmethod
     def generate_orbital_constraint(i):
-        def fun(coef, wf):
-            cmo = wf.C[:, i]
-            return cmo.T*vb.Nod.S*cmo - 1.0
-        return fun
+        pass
 
     @staticmethod
     def generate_orbital_constraint_grad(i):
@@ -143,46 +147,48 @@ class VBTestH2(VBTestBase):
 
 class VBTestH2C(VBTestBase):
 
+
     @staticmethod
     def wf_energy(coef, wf):
-        wf.coef = coef
+        update_wf(coef, wf)
         total_energy = wf.energy() + wf.Z
         return total_energy
 
     @staticmethod
     def wf_gradient(coef, wf):
-        wf.coef = coef
+        update_wf(coef, wf)
         return wf.energygrad()[0]
 
     @staticmethod
     def constraint_norm(coef, wf):
-        wf.coef = coef
+        update_wf(coef, wf)
         return wf.norm() - 1.0
 
     @staticmethod
     def constraint_norm_grad(coef, wf):
-        wf.coef = coef
+        update_wf(coef, wf)
         return wf.normgrad()[0]
 
     @staticmethod
     def generate_structure_constraint(i):
         def fun(coef, wf):
-            S = wf.structs[i]
-            return S*S - 1.0
+            update_wf(coef, wf)
+            return wf.structs[i].overlap() - 1.0
         return fun
 
     @staticmethod
     def generate_structure_constraint_gradient(i):
         def fun(coef, wf):
-            S = wf.structs[i]
-            return S*S - 1.0
+            update_wf(coef, wf)
+            return wf.structs[i].overlap() - 1.0
         return fun
 
     @staticmethod
     def generate_orbital_constraint(i):
         def fun(coef, wf):
-            cmo = wf.C[:, i]
-            return cmo.T*vb.Nod.S*cmo - 1.0
+            update_wf(coef, wf)
+            mo = wf.C[:, i]
+            return (mo.T & (vb.Nod.S*mo)) - 1.0
         return fun
 
     @staticmethod
@@ -247,8 +253,9 @@ class VBTestH2C(VBTestBase):
 
     def test_constraint(self):
         self.wf.normalize()
+        coef = extract_wf_coef(self.wf)
         for c in self.constraints:
-            self.assertAlmostEqual(c['fun'](self.wf.coef, self.wf), 0.0)
+            self.assertAlmostEqual(c['fun'](coef, self.wf), 0.0)
 
     @unittest.skip('wait')
     def test_solver_start_covalent(self):
@@ -259,7 +266,7 @@ class VBTestH2C(VBTestBase):
                 ]
             )
         result = scipy.optimize.minimize(
-            self.wf_energy, start_covalent, jac=self.structure_gradient, args=(self.wf,),
+            self.wf_energy, start_covalent, jac=self.wf_gradient, args=(self.wf,),
             constraints=self.constraints, method='SLSQP'
         )
         self.assertAlmostEqual(result.fun, -1.13728383)
