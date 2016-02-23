@@ -9,12 +9,12 @@ from daltools.util import full
 def update_wf(coef, wf):
     ncoef = len(wf.coef)
     wf.coef[:] = coef[:ncoef]
-    wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape)
+    wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape, order='F')
 
 def extract_wf_coef(wf):
     coef = full.matrix(wf.coef.size + wf.C.size)
     coef[:wf.coef.size] = wf.coef
-    coef[wf.coef.size:] = wf.C.ravel()
+    coef[wf.coef.size:] = wf.C.ravel(order='F')
     return coef
 
 class VBTestBase(unittest.TestCase):
@@ -225,12 +225,10 @@ class VBTestH2C(VBTestBase):
                 [vb.Nod([0], [1]), vb.Nod([1], [0])],
                 [1.0, 1.0]
                 ),
-             vb.Structure(
-                [vb.Nod([0], [0]), vb.Nod([1], [1])],
-                [1.0, 1.0]
-                )
+             vb.Structure([vb.Nod([0], [0])], [1.0]),
+             vb.Structure([vb.Nod([1], [1])], [1.0]),
             ],
-            [1.0, 1.0],
+            [1.0, 0.0, 0.0],
             tmpdir = self.tmp
         )
 
@@ -251,6 +249,11 @@ class VBTestH2C(VBTestBase):
              'args': (self.wf,)
             },
             {'type': 'eq',
+             'fun': self.generate_structure_constraint(2),
+             'jac': self.generate_structure_constraint_gradient(2),
+             'args': (self.wf,)
+            },
+            {'type': 'eq',
              'fun': self.generate_orbital_constraint(0),
              'jac': self.generate_orbital_constraint_gradient(0),
              'args': (self.wf,)
@@ -266,6 +269,17 @@ class VBTestH2C(VBTestBase):
     def tearDown(self):
         pass
 
+    def test_Z(self):
+        self.assertAlmostEqual(self.wf.Z, 0.715104, 6)
+
+    def test_final_energy(self):
+        coef = full.matrix(23)
+        coef[:3] = [0.83675, 0.09850, 0.09850]
+        coef[3:8] = [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818]
+        coef[18:23] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
+        energy = self.wf_energy(coef, self.wf)
+        self.assertAlmostEqual(energy, -1.14660543, places=4)
+
     def test_constraint(self):
         self.wf.normalize()
         coef = extract_wf_coef(self.wf)
@@ -276,7 +290,7 @@ class VBTestH2C(VBTestBase):
     def test_solver_start_covalent(self):
         self.wf.normalize()
         start_covalent = daltools.util.full.init(
-            [1.0, 0.1] + [
+            [1.0, 0.1, 0.1] + [
                 1., .1, 0., 0., 0.1, 0., 0., 0., 0., 0,
                 0., 0., 0., 0., 0., 1., .1, 0., 0., -0.1
                 ]
