@@ -621,6 +621,8 @@ class WaveFunction(object):
         retstr = "\n"
         for i, coef in enumerate(self.coef):
             retstr += "%10.4f (%d)\n" % (coef, i+1)
+            for k, ck in zip(self.structs[i].nods, self.structs[i].coef):
+                retstr += "   %s %f\n" % (k, ck)
         return retstr
 
     def nel(self):
