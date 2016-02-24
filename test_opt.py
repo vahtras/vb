@@ -1,4 +1,5 @@
 import unittest
+import numpy
 import os
 import scipy.optimize
 import vb
@@ -8,8 +9,9 @@ from daltools.util import full
 
 def update_wf(coef, wf):
     ncoef = len(wf.coef)
-    wf.coef[:] = coef[:ncoef]
     wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape, order='F')
+    wf.normalize_structures()
+    wf.coef[:] = coef[:ncoef]
 
 def extract_wf_coef(wf):
     coef = full.matrix(wf.coef.size + wf.C.size)
@@ -264,6 +266,11 @@ class VBTestH2C(VBTestBase):
              'args': (self.wf,)
             },
         )
+
+        self.final = full.matrix(23)
+        self.final[:3] = [0.83675, 0.09850, 0.09850]
+        self.final[3:8] = [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818]
+        self.final[18:23] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
         
 
     def tearDown(self):
@@ -273,22 +280,47 @@ class VBTestH2C(VBTestBase):
         self.assertAlmostEqual(self.wf.Z, 0.715104, 6)
 
     def test_final_energy(self):
-        coef = full.matrix(23)
-        coef[:3] = [0.83675, 0.09850, 0.09850]
-        coef[3:8] = [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818]
-        coef[18:23] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
-        energy = self.wf_energy(coef, self.wf)
+        energy = self.wf_energy(self.final, self.wf)
         self.assertAlmostEqual(energy, -1.14660543, places=4)
 
-    def test_constraint(self):
-        self.wf.normalize()
-        coef = extract_wf_coef(self.wf)
-        for c in self.constraints:
-            self.assertAlmostEqual(c['fun'](coef, self.wf), 0.0)
+    def test_final_energy_gradient(self):
+        gradient = self.wf_gradient(self.final, self.wf)
+        numpy.testing.assert_allclose(gradient, 0*gradient, atol=5e-3)
+
+    def test_final_constraints_norm(self):
+        constraint = self.constraints[0]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=5e-5)
+
+    def test_final_constraints_orbital_1(self):
+        constraint = self.constraints[4]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_orbital_2(self):
+        constraint = self.constraints[5]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_structure_1(self):
+        constraint = self.constraints[1]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_structure_2(self):
+        constraint = self.constraints[2]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_structure_3(self):
+        constraint = self.constraints[3]['fun'](self.final, self.wf)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_solver_start_final(self):
+        result = scipy.optimize.minimize(
+            self.wf_energy, self.final, jac=self.wf_gradient, args=(self.wf,),
+            constraints=self.constraints, method='SLSQP'
+        )
+        print result
+        self.assertAlmostEqual(result.fun, -1.14660543, delta=1e-5)
 
     @unittest.skip('converges wrong')
     def test_solver_start_covalent(self):
-        self.wf.normalize()
         start_covalent = daltools.util.full.init(
             [1.0, 0.1, 0.1] + [
                 1., .1, 0., 0., 0.1, 0., 0., 0., 0., 0,
