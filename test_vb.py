@@ -9,7 +9,7 @@ from .nod import Nod
 from num_diff import findif as fd
 
 
-class WaveFunction(WaveFunction):
+class WaveFunctionND(WaveFunction):
     """Extended class with numerical derivatives"""
 
     def numnormgrad(self, delta=1e-3):
@@ -216,7 +216,7 @@ B   0.0  0.0  0.7428
         Nu2=1/(2*(1-Sab))
         cion=cg*Ng2+cu*Nu2
         ccov=cg*Ng2-cu*Nu2
-        self.WF=WaveFunction(
+        self.WF=WaveFunctionND(
           [ion,cov],[cion,ccov],
           tmpdir=self.tmp
           )
@@ -343,7 +343,7 @@ class VBTestH2B(VBTest):
         Nu2=1/(2*(1-Sab))
         cion = cg*Ng2 + cu*Nu2
         ccov = (cg*Ng2 - cu*Nu2)/N
-        self.WF=WaveFunction(
+        self.WF=WaveFunctionND(
           [cov, ion_a, ion_b],[ccov, cion, cion],
           tmpdir=self.tmp
           )
@@ -450,7 +450,7 @@ class VBTestH2C(VBTest):
         ion_a = Structure([Nod([0],[0])], [1.0])
         ion_b = Structure([Nod([1],[1])], [1.0])
         cov = Structure([Nod([0],[1]),Nod([1],[0])], [1.0, 1.0])
-        self.WF=WaveFunction(
+        self.WF=WaveFunctionND(
           [cov, ion_a, ion_b],[0.83675, 0.09850, 0.09850],
           tmpdir=self.tmp
           )
@@ -531,7 +531,7 @@ class VBTestFH(VBTest):
         ion_a = Structure([Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 4])], [1.0])
         ion_b = Structure([Nod([0, 1, 2, 3, 5],[0, 1, 2, 3, 5])], [1.0])
 
-        self.wf = WaveFunction([cov, ion_a, ion_b], [0.66526, -0.36678, 0.07321], tmpdir=self.tmp)
+        self.wf = WaveFunctionND([cov, ion_a, ion_b], [0.66526, -0.36678, 0.07321], tmpdir=self.tmp)
         #self.wf.normalize()
 
 
