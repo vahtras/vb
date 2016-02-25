@@ -168,7 +168,7 @@ class VBTestH2C(VBTestBase):
         grad = full.matrix(wf.coef.size + wf.C.size)
         sg, og = wf.energygrad()
         grad[:wf.coef.size] = sg
-        grad[wf.coef.size:] = og.ravel()
+        grad[wf.coef.size:] = og.ravel(order='F')
         return grad
 
     @staticmethod
@@ -217,7 +217,7 @@ class VBTestH2C(VBTestBase):
             mo = wf.C[:, i]
             dc2 = 2*mo.T*vb.Nod.S
             grad = full.matrix(coef.shape)
-            grad[wf.coef.size + mo.size*i: wf.coef.size + mo.size*(i+1)] = dc2.ravel()
+            grad[wf.coef.size + mo.size*i: wf.coef.size + mo.size*(i+1)] = dc2.ravel(order='F')
             return grad
         return fun
 
@@ -295,8 +295,9 @@ class VBTestH2C(VBTestBase):
         self.assertAlmostEqual(energy, -1.14660543, places=4)
 
     def test_final_energy_gradient(self):
-        gradient = self.wf_gradient(self.final, self.wf)
-        numpy.testing.assert_allclose(gradient, 0*gradient, atol=5e-3)
+        constraint_numgrad = findif.ndgrad(self.wf_energy)(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.wf_gradient(self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad, atol=1e-7)
 
     def test_final_constraints_norm(self):
         self.wf.normalize_structures()
