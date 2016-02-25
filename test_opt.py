@@ -198,7 +198,7 @@ class VBTestH2C(VBTestBase):
             update_wf(coef, wf)
             ds2 = wf.structs[i].overlap_gradient()
             grad = full.matrix(coef.shape)
-            grad[wf.coef.size:] = ds2.ravel()
+            grad[wf.coef.size:] = ds2.ravel(order='F')
             return grad
         return fun
 
@@ -312,21 +312,47 @@ class VBTestH2C(VBTestBase):
         constraint = self.constraints[4]['fun'](self.final, self.wf)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
+    def test_final_constraints_orbital_1_grad(self):
+        constraint_numgrad = findif.ndgrad(self.constraints[4]['fun'])(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.constraints[4]['jac'](self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
+
     def test_final_constraints_orbital_2(self):
         constraint = self.constraints[5]['fun'](self.final, self.wf)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_orbital_2_grad(self):
+        constraint_numgrad = findif.ndgrad(self.constraints[5]['fun'])(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.constraints[5]['jac'](self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     def test_final_constraints_structure_1(self):
         constraint = self.constraints[1]['fun'](self.final, self.wf)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
+    def test_final_constraints_structure_1_grad(self):
+        constraint_numgrad = findif.ndgrad(self.constraints[1]['fun'])(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.constraints[1]['jac'](self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
     def test_final_constraints_structure_2(self):
         constraint = self.constraints[2]['fun'](self.final, self.wf)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
+    def test_final_constraints_structure_2_grad(self):
+        constraint_numgrad = findif.ndgrad(self.constraints[2]['fun'])(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.constraints[2]['jac'](self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
     def test_final_constraints_structure_3(self):
         constraint = self.constraints[3]['fun'](self.final, self.wf)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
+    def test_final_constraints_structure_3_grad(self):
+        constraint_numgrad = findif.ndgrad(self.constraints[3]['fun'])(self.final, self.wf).view(full.matrix)
+        constraint_grad = self.constraints[3]['jac'](self.final, self.wf)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     @unittest.skip('goes away')
     def test_solver_start_final(self):
