@@ -597,7 +597,7 @@ class WaveFunction(object):
 
     tmpdir = '/tmp'
 
-    def __init__(self, structs, coef, VBSCF=True, tmpdir=None):
+    def __init__(self, structs, coef, VBSCF=True, tmpdir=None, blockdims=None):
         self.structs = structs
         self.coef = full.init(coef)
         if tmpdir is not None:
@@ -612,6 +612,7 @@ class WaveFunction(object):
             self.C = Nod.C
         else:
             raise Exception("not implemented")
+        self.blockdims = blockdims
 
     def tmp(self, filename):
         """Return full path of file in tmpdir"""
