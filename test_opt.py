@@ -252,36 +252,38 @@ class VBTestH2C(VBTestBase):
             tmpdir = self.tmp
         )
 
+        self.blockdims = ((5, 5), (1, 1))
+
         self.constraints = (
             {'type': 'eq',
              'fun': self.constraint_norm,
              'jac': self.constraint_norm_grad,
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
             {'type': 'eq',
              'fun': self.generate_structure_constraint(0),
              'jac': self.generate_structure_constraint_gradient(0),
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
             {'type': 'eq',
              'fun': self.generate_structure_constraint(1),
              'jac': self.generate_structure_constraint_gradient(1),
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
             {'type': 'eq',
              'fun': self.generate_structure_constraint(2),
              'jac': self.generate_structure_constraint_gradient(2),
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
             {'type': 'eq',
              'fun': self.generate_orbital_constraint(0),
              'jac': self.generate_orbital_constraint_gradient(0),
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
             {'type': 'eq',
              'fun': self.generate_orbital_constraint(1),
              'jac': self.generate_orbital_constraint_gradient(1),
-             'args': (self.wf,)
+             'args': (self.wf,) + self.blockdims
             },
         )
 
@@ -289,7 +291,6 @@ class VBTestH2C(VBTestBase):
         self.final[:3] = [0.83675, 0.09850, 0.09850]
         self.final[3:8] = [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818]
         self.final[8:13] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
-        self.blockdims = ((5, 5), (1, 1))
 
         VBTestH2C.update_wf(self.final, self.wf, *self.blockdims)
         self.wf.normalize_structures()
@@ -371,10 +372,12 @@ class VBTestH2C(VBTestBase):
     @unittest.skip('goes away')
     def test_solver_start_final(self):
         result = scipy.optimize.minimize(
-            self.wf_energy, self.final, jac=self.wf_gradient, args=(self.wf, self.blockdims),
-            constraints=self.constraints, method='SLSQP'
-        )
-        print result
+            self.wf_energy, self.final, 
+            jac=self.wf_gradient,
+            args=(self.wf,) + self.blockdims,
+            constraints=self.constraints,
+            method='SLSQP'
+            )
         self.assertAlmostEqual(result.fun, -1.14660543, delta=1e-5)
 
     @unittest.skip('converges wrong')
