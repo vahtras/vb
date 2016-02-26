@@ -5,20 +5,10 @@ import scipy.optimize
 import vb
 import daltools
 import abc
-from daltools.util import full
+from daltools.util import full, blocked
 from num_diff import findif
 
-def update_wf(coef, wf):
-    ncoef = len(wf.coef)
-    wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape, order='F')
-    #wf.normalize_structures()
-    wf.coef[:] = coef[:ncoef]
 
-def update_and_reset_wf(coef, wf):
-    ncoef = len(wf.coef)
-    wf.C[:, :] = coef[ncoef:].reshape(wf.C.shape, order='F')
-    wf.normalize_structures()
-    wf.coef[:] = coef[:ncoef]
 
 def extract_wf_coef(wf):
     coef = full.matrix(wf.coef.size + wf.C.size)
@@ -29,6 +19,9 @@ def extract_wf_coef(wf):
 class VBTestBase(unittest.TestCase):
     __metaclass__ = abc.ABCMeta
 
+    @abc.abstractmethod
+    def update_wf(coef, wf):
+        pass
 
     @abc.abstractmethod
     def wf_energy(coef, wf):
@@ -63,6 +56,10 @@ class VBTestBase(unittest.TestCase):
         pass
 
 class VBTestH2(VBTestBase):
+
+    @staticmethod
+    def update_wf(coef, wf):
+        pass
 
     @staticmethod
     def wf_energy(coef, wf):
@@ -157,67 +154,79 @@ class VBTestH2(VBTestBase):
 class VBTestH2C(VBTestBase):
 
     @staticmethod
-    def wf_energy(coef, wf):
-        update_wf(coef, wf)
+    def update_wf(coef, wf, *blockdims):
+        ncoef = len(wf.coef)
+        C = blocked.BlockDiagonalMatrix.init_from_array(
+            coef[ncoef:], 
+            *blockdims
+            )
+        wf.C[:, :] = C.unblock()
+        wf.coef[:] = coef[:ncoef]
+
+    @staticmethod
+    def wf_energy(coef, wf, *blockdims):
+        VBTestH2C.update_wf(coef, wf, *blockdims)
         total_energy = wf.energy() + wf.Z
         return total_energy
 
     @staticmethod
-    def wf_gradient(coef, wf):
-        update_wf(coef, wf)
-        grad = full.matrix(wf.coef.size + wf.C.size)
+    def wf_gradient(coef, wf, *blockdims):
+        grad = full.matrix(coef.size)
+        VBTestH2C.update_wf(coef, wf, *blockdims)
         sg, og = wf.energygrad()
         grad[:wf.coef.size] = sg
-        grad[wf.coef.size:] = og.ravel(order='F')
+        grad[wf.coef.size:] = og.block(*blockdims).ravel(order='F')
         return grad
 
     @staticmethod
-    def constraint_norm(coef, wf):
-        update_wf(coef, wf)
+    def constraint_norm(coef, wf, *blockdims):
+        VBTestH2C.update_wf(coef, wf, *blockdims)
         return wf.norm() - 1.0
 
     @staticmethod
-    def constraint_norm_grad(coef, wf):
-        update_wf(coef, wf)
-        grad = full.matrix(wf.coef.size + wf.C.size)
+    def constraint_norm_grad(coef, wf, *blockdims):
+        grad = full.matrix(coef.size)
+        VBTestH2C.update_wf(coef, wf, *blockdims)
         sg, og = wf.normgrad()
         grad[:wf.coef.size] = sg
-        grad[wf.coef.size:] = og.ravel(order='F')
+        grad[wf.coef.size:] = og.block(*blockdims).ravel(order='F')
         return grad
 
     @staticmethod
     def generate_structure_constraint(i):
-        def fun(coef, wf):
-            update_wf(coef, wf)
+        def fun(coef, wf, *blockdims):
+            VBTestH2C.update_wf(coef, wf, *blockdims)
             return wf.structs[i].overlap() - 1.0
         return fun
 
     @staticmethod
     def generate_structure_constraint_gradient(i):
-        def fun(coef, wf):
-            update_wf(coef, wf)
+        def fun(coef, wf, *blockdims):
+            VBTestH2C.update_wf(coef, wf, *blockdims)
             ds2 = wf.structs[i].overlap_gradient()
             grad = full.matrix(coef.shape)
-            grad[wf.coef.size:] = ds2.ravel(order='F')
+            grad[wf.coef.size:] = ds2.block(*blockdims).ravel(order='F')
             return grad
         return fun
 
     @staticmethod
     def generate_orbital_constraint(i):
-        def fun(coef, wf):
-            update_wf(coef, wf)
+        def fun(coef, wf, *blockdims):
+            VBTestH2C.update_wf(coef, wf, *blockdims)
             mo = wf.C[:, i]
             return (mo.T & (vb.Nod.S*mo)) - 1.0
         return fun
 
     @staticmethod
     def generate_orbital_constraint_gradient(i):
-        def fun(coef, wf):
-            update_wf(coef, wf)
+        def fun(coef, wf, *blockdims):
+            grad = full.matrix(coef.size)
+            VBTestH2C.update_wf(coef, wf, *blockdims)
             mo = wf.C[:, i]
-            dc2 = 2*mo.T*vb.Nod.S
-            grad = full.matrix(coef.shape)
-            grad[wf.coef.size + mo.size*i: wf.coef.size + mo.size*(i+1)] = dc2.ravel(order='F')
+            dc2 = 2*vb.Nod.S*mo
+            tmp = full.matrix(wf.C.shape)
+            tmp[:, i] = dc2
+            grad[wf.coef.size:] = tmp.block(*blockdims).ravel(order='F')
             return grad
         return fun
 
@@ -276,13 +285,15 @@ class VBTestH2C(VBTestBase):
             },
         )
 
-        self.final = full.matrix(23)
+        self.final = full.matrix(13)
         self.final[:3] = [0.83675, 0.09850, 0.09850]
         self.final[3:8] = [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818]
-        self.final[18:23] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
+        self.final[8:13] = [0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
+        self.blockdims = ((5, 5), (1, 1))
 
-        update_and_reset_wf(self.final, self.wf)
-        
+        VBTestH2C.update_wf(self.final, self.wf, *self.blockdims)
+        self.wf.normalize_structures()
+        VBTestH2C.update_wf(self.final, self.wf, *self.blockdims)
 
     def tearDown(self):
         pass
@@ -291,74 +302,76 @@ class VBTestH2C(VBTestBase):
         self.assertAlmostEqual(self.wf.Z, 0.715104, 6)
 
     def test_final_energy(self):
-        energy = self.wf_energy(self.final, self.wf)
+        energy = self.wf_energy(self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(energy, -1.14660543, places=4)
 
     def test_final_energy_gradient(self):
-        constraint_numgrad = findif.ndgrad(self.wf_energy)(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.wf_gradient(self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.wf_energy)(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.wf_gradient(self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad, atol=1e-7)
 
     def test_final_constraints_norm(self):
         self.wf.normalize_structures()
-        constraint = self.constraints[0]['fun'](self.final, self.wf)
+        constraint = self.constraints[0]['fun'](
+            self.final, self.wf, *self.blockdims
+            )
         self.assertAlmostEqual(constraint, 0.0, delta=5e-5)
 
     def test_final_constraints_norm_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[0]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[0]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[0]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[0]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     def test_final_constraints_orbital_1(self):
-        constraint = self.constraints[4]['fun'](self.final, self.wf)
+        constraint = self.constraints[4]['fun'](self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
     def test_final_constraints_orbital_1_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[4]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[4]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[4]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[4]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
 
     def test_final_constraints_orbital_2(self):
-        constraint = self.constraints[5]['fun'](self.final, self.wf)
+        constraint = self.constraints[5]['fun'](self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
     def test_final_constraints_orbital_2_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[5]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[5]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[5]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[5]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     def test_final_constraints_structure_1(self):
-        constraint = self.constraints[1]['fun'](self.final, self.wf)
+        constraint = self.constraints[1]['fun'](self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
     def test_final_constraints_structure_1_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[1]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[1]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[1]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[1]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     def test_final_constraints_structure_2(self):
-        constraint = self.constraints[2]['fun'](self.final, self.wf)
+        constraint = self.constraints[2]['fun'](self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
     def test_final_constraints_structure_2_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[2]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[2]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[2]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[2]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     def test_final_constraints_structure_3(self):
-        constraint = self.constraints[3]['fun'](self.final, self.wf)
+        constraint = self.constraints[3]['fun'](self.final, self.wf, *self.blockdims)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
     def test_final_constraints_structure_3_grad(self):
-        constraint_numgrad = findif.ndgrad(self.constraints[3]['fun'])(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.constraints[3]['jac'](self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.constraints[3]['fun'])(self.final, self.wf, *self.blockdims).view(full.matrix)
+        constraint_grad = self.constraints[3]['jac'](self.final, self.wf, *self.blockdims)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
     @unittest.skip('goes away')
     def test_solver_start_final(self):
         result = scipy.optimize.minimize(
-            self.wf_energy, self.final, jac=self.wf_gradient, args=(self.wf,),
+            self.wf_energy, self.final, jac=self.wf_gradient, args=(self.wf, self.blockdims),
             constraints=self.constraints, method='SLSQP'
         )
         print result
@@ -373,7 +386,7 @@ class VBTestH2C(VBTestBase):
                 ]
             )
         result = scipy.optimize.minimize(
-            self.wf_energy, start_covalent, jac=self.wf_gradient, args=(self.wf,),
+            self.wf_energy, start_covalent, jac=self.wf_gradient, args=(self.wf, self.blockdims),
             constraints=self.constraints, method='SLSQP'
         )
         self.assertAlmostEqual(result.fun, -1.14660543)
