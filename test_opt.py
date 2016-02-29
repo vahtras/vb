@@ -8,96 +8,8 @@ import abc
 from daltools.util import full, blocked
 from num_diff import findif
 
-class VBAdaptor(object):
-    pass
 
-def extract_wf_coef(wf):
-    coef = full.matrix(wf.coef.size + wf.C.size)
-    coef[:wf.coef.size] = wf.coef
-    coef[wf.coef.size:] = wf.C.ravel(order='F')
-    return coef
-
-class VBTestBase(unittest.TestCase):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def update_wf(coef, wf):
-        pass
-
-    @abc.abstractmethod
-    def wf_energy(coef, wf):
-        pass
-
-    @abc.abstractmethod
-    def wf_gradient(coef, wf):
-        pass
-    
-    @abc.abstractmethod
-    def constraint_norm(coef, wf):
-        pass
-
-    @abc.abstractmethod
-    def constraint_norm_grad(coef, wf):
-        pass
-
-    @abc.abstractmethod
-    def generate_structure_constraint(i):
-        pass
-
-    @abc.abstractmethod
-    def generate_structure_constraint_gradient(i):
-        pass
-
-    @abc.abstractmethod
-    def generate_orbital_constraint(i):
-        pass
-
-    @abc.abstractmethod
-    def generate_orbital_constraint_gradient(i):
-        pass
-
-class VBTestH2(VBTestBase):
-
-    @staticmethod
-    def update_wf(coef, wf):
-        pass
-
-    @staticmethod
-    def wf_energy(coef, wf):
-        wf.coef[:] = coef
-        total_energy = wf.energy() + wf.Z
-        return total_energy
-
-    @staticmethod
-    def wf_gradient(coef, wf):
-        wf.coef[:] = coef
-        return wf.energygrad()[0]
-
-    @staticmethod
-    def constraint_norm(coef, wf):
-        wf.coef[:] = coef
-        return wf.norm() - 1.0
-
-    @staticmethod
-    def constraint_norm_grad(coef, wf):
-        wf.coef[:] = coef
-        return wf.normgrad()[0]
-
-    @staticmethod
-    def generate_structure_constraint(i):
-        pass
-
-    @staticmethod
-    def generate_structure_constraint_gradient(i):
-        pass
-
-    @staticmethod
-    def generate_orbital_constraint(i):
-        pass
-
-    @staticmethod
-    def generate_orbital_constraint_gradient(i):
-        pass
+class VBTestH2(unittest.TestCase):
 
     def setUp(self):
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
@@ -121,26 +33,11 @@ class VBTestH2(VBTestBase):
             tmpdir = self.tmp
         )
 
-        self.constraints = (
-            {'type': 'eq',
-             'fun': self.constraint_norm,
-             'jac': self.constraint_norm_grad,
-             'args': (self.wf,)
-            },
-        )
-        
-
     def tearDown(self):
         pass
 
-    def test_solver_start_ionic(self):
-        result = scipy.optimize.minimize(
-            self.wf_energy, [1.0, 0.0], jac=self.wf_gradient, args=(self.wf,),
-            constraints=self.constraints, method='SLSQP'
-        )
-        self.assertAlmostEqual(result.fun, -1.13728383)
 
-    def test_solver_start_ionic2(self):
+    def test_solver_start_ionic(self):
         import scipyifc
         self.wf.coef = [1.0, 0.0]
         xfg = scipyifc.VBMinimizer(self.wf)
@@ -148,18 +45,14 @@ class VBTestH2(VBTestBase):
         self.assertAlmostEqual(xfg.value, -1.13728383)
 
     def test_solver_start_covalent(self):
-        result = scipy.optimize.minimize(
-            self.wf_energy, [0.0, 1.0], jac=self.wf_gradient, args=(self.wf,),
-            constraints=self.constraints, method='SLSQP'
-        )
-        self.assertAlmostEqual(result.fun, -1.13728383)
+        import scipyifc
+        self.wf.coef = [0.0, 1.0]
+        xfg = scipyifc.VBMinimizer(self.wf)
+        xfg.minimize()
+        self.assertAlmostEqual(xfg.value, -1.13728383)
 
-    def test_constraint(self):
-        self.wf.normalize()
-        for c in self.constraints:
-            self.assertAlmostEqual(c['fun'](self.wf.coef, self.wf), 0.0)
 
-class VBTestH2C(VBTestBase):
+class VBTestH2C(unittest.TestCase):
 
     @staticmethod
     def update_wf(coef, wf):
@@ -305,7 +198,6 @@ class VBTestH2C(VBTestBase):
         self.wf.normalize_structures()
         VBTestH2C.update_wf(self.final, self.wf)
 
-        self.adaptor = VBAdaptor()
 
     def tearDown(self):
         pass
