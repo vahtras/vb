@@ -7,6 +7,7 @@ import daltools
 import abc
 from daltools.util import full, blocked
 from num_diff import findif
+from scipyifc import VBStructureCoefficientMinimizer
 
 
 class VBTestH2(unittest.TestCase):
@@ -38,16 +39,15 @@ class VBTestH2(unittest.TestCase):
 
 
     def test_solver_start_ionic(self):
-        import scipyifc
         self.wf.coef = [1.0, 0.0]
-        xfg = scipyifc.VBMinimizer(self.wf)
+        xfg = VBStructureCoefficientMinimizer(self.wf)
         xfg.minimize()
         self.assertAlmostEqual(xfg.value, -1.13728383)
 
     def test_solver_start_covalent(self):
         import scipyifc
         self.wf.coef = [0.0, 1.0]
-        xfg = scipyifc.VBMinimizer(self.wf)
+        xfg = VBStructureCoefficientMinimizer(self.wf)
         xfg.minimize()
         self.assertAlmostEqual(xfg.value, -1.13728383)
 

@@ -22,7 +22,7 @@ class Minimizer(object):
         self.x = result.x
         self.value = result.fun
 
-class VBMinimizer(Minimizer):
+class VBStructureCoefficientMinimizer(Minimizer):
 
     def __init__(self, wf):
         Minimizer.__init__(self, wf.coef, self.f, self.g, 'SLSQP', args=(wf,))
