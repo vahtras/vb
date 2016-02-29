@@ -8,7 +8,8 @@ import abc
 from daltools.util import full, blocked
 from num_diff import findif
 
-
+class VBAdaptor(object):
+    pass
 
 def extract_wf_coef(wf):
     coef = full.matrix(wf.coef.size + wf.C.size)
@@ -138,6 +139,13 @@ class VBTestH2(VBTestBase):
             constraints=self.constraints, method='SLSQP'
         )
         self.assertAlmostEqual(result.fun, -1.13728383)
+
+    def test_solver_start_ionic2(self):
+        import scipyifc
+        self.wf.coef = [1.0, 0.0]
+        xfg = scipyifc.VBMinimizer(self.wf)
+        xfg.minimize()
+        self.assertAlmostEqual(xfg.value, -1.13728383)
 
     def test_solver_start_covalent(self):
         result = scipy.optimize.minimize(
@@ -296,6 +304,8 @@ class VBTestH2C(VBTestBase):
         VBTestH2C.update_wf(self.final, self.wf)
         self.wf.normalize_structures()
         VBTestH2C.update_wf(self.final, self.wf)
+
+        self.adaptor = VBAdaptor()
 
     def tearDown(self):
         pass
