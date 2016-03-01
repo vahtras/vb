@@ -1,6 +1,8 @@
 import numpy
 import scipy.optimize
 import vb
+from daltools.util import full, blocked
+
 
 class Minimizer(object):
 
@@ -44,6 +46,58 @@ class VBStructureCoefficientMinimizer(Minimizer):
     @x.setter
     def x(self, coef):
         self.coef = coef
+
+    @staticmethod
+    def f(x, wf):
+        wf.coef = x
+        return wf.energy() + wf.Z
+
+    @staticmethod
+    def g(x, wf):
+        return wf.energygrad()[0]
+
+    @staticmethod
+    def constraint_norm(x, wf):
+        return wf.norm() - 1.0
+
+    @staticmethod
+    def constraint_norm_grad(x, wf):
+        wf.coef = x
+        return wf.normgrad()[0]
+
+    def __getattr__(self, attr):
+        return getattr(self.wf, attr)
+
+class VBMinimizer(Minimizer):
+
+    def __init__(self, wf):
+        self.wf = wf
+        x0 = self.x
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(wf,))
+        self.c = (
+            {'type': 'eq',
+             'fun': self.constraint_norm,
+             'jac': self.constraint_norm_grad,
+             'args': (self.wf,)
+            },
+            )
+        self.b = None
+        
+
+    @property
+    def x(self):
+        Cblockedsize = sum(i*j for i, j in zip(*self.blockdims))
+        _x = full.matrix(self.coef.size + Cblockedsize)
+        _x[:self.coef.size] = self.coef
+        _x[self.coef.size:] = self.C.block(*self.blockdims).ravel(order='F')
+        return _x
+
+    @x.setter
+    def x(self, x_in):
+        nstructs = len(self.coef)
+        self.coef = x_in[:nstructs]
+        C = blocked.BlockDiagonalMatrix.init_from_array(x_in[nstructs:], *self.wf.blockdims)
+        self.C[:, :] = C.unblock()
 
     @staticmethod
     def f(x, wf):

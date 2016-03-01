@@ -7,7 +7,7 @@ import daltools
 import abc
 from daltools.util import full, blocked
 from num_diff import findif
-from scipyifc import VBStructureCoefficientMinimizer
+from scipyifc import VBStructureCoefficientMinimizer, VBMinimizer
 
 
 class VBTestH2(unittest.TestCase):
@@ -198,20 +198,22 @@ class VBTestH2C(unittest.TestCase):
         self.wf.normalize_structures()
         VBTestH2C.update_wf(self.final, self.wf)
 
+        self.xfg = VBMinimizer(self.wf)
+
 
     def tearDown(self):
         pass
 
     def test_Z(self):
-        self.assertAlmostEqual(self.wf.Z, 0.715104, 6)
+        self.assertAlmostEqual(self.xfg.Z, 0.715104, 6)
 
     def test_final_energy(self):
-        energy = self.wf_energy(self.final, self.wf)
+        energy = self.xfg.f(self.xfg.x, self.wf)
         self.assertAlmostEqual(energy, -1.14660543, places=4)
 
     def test_final_energy_gradient(self):
-        constraint_numgrad = findif.ndgrad(self.wf_energy)(self.final, self.wf).view(full.matrix)
-        constraint_grad = self.wf_gradient(self.final, self.wf)
+        constraint_numgrad = findif.ndgrad(self.xfg.f)(self.xfg.x, self.wf).view(full.matrix)
+        constraint_grad = self.xfg.g(self.xfg.x, self.wf)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad, atol=1e-7)
 
     def test_final_constraints_norm(self):

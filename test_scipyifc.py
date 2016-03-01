@@ -1,6 +1,10 @@
 import unittest
+import os
 import numpy
-from scipyifc import Minimizer
+import vb
+from .daltools.util import full
+from .daltools import one
+from scipyifc import Minimizer, VBMinimizer
 
 class MinTest(unittest.TestCase):
 
@@ -32,6 +36,57 @@ class MinTest(unittest.TestCase):
         xfg = Minimizer(x0, f, g, method='SLSQP', constraints=c, bounds=b)
         xfg.minimize()
         numpy.testing.assert_allclose(xfg.x, (1.4, 1.7))
+
+class TestVBMin(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_c')
+        def tmp(fil):
+            return os.path.join(self.tmp, fil)
+
+        vb.Nod.tmpdir = self.tmp
+        vb.Nod.C = full.matrix((10, 2))
+        vb.Nod.C[0, 0] = 1.0
+        vb.Nod.C[5, 1] = 1.0
+        vb.Nod.S = one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()
+        self.blockdims = ((5, 5), (1, 1))
+        self.wf = vb.WaveFunction(
+            [vb.Structure(
+                [vb.Nod([0], [1]), vb.Nod([1], [0])],
+                [1.0, 1.0]
+                ),
+             vb.Structure([vb.Nod([0], [0])], [1.0]),
+             vb.Structure([vb.Nod([1], [1])], [1.0]),
+            ],
+            [1.0, 0.0, 0.0],
+            tmpdir = self.tmp,
+            blockdims=self.blockdims
+        )
+
+        # In this setup we have local expansions of mos, leading to a block diagonal C
+        self.final = full.matrix(13)
+        self.final_coef =[0.83675, 0.09850, 0.09850]
+        self.final[:3] = self.final_coef
+        self.final_C = full.init([
+            [0.7633862173, 0.3075441467, 0.0, 0.0, 0.0328947818,0,0,0,0,0],
+            [0,0,0,0,0, 0.7633862173, 0.3075441467, 0.0, 0.0, -0.0328947818]
+            ])
+        self.final[3:8] = self.final_C[:5, 0]
+        self.final[8:13] = self.final_C[5:, 1]
+
+        #VBTestH2C.update_wf(self.final, self.wf)
+        #self.wf.normalize_structures()
+        #VBTestH2C.update_wf(self.final, self.wf)
+
+        self.xfg = VBMinimizer(self.wf)
+
+    def test_updater_structure_coefficiets(self):
+        self.xfg.x = self.final
+        numpy.testing.assert_allclose(self.xfg.coef, self.final_coef)
+
+    def test_updater_orbital_coefficients(self):
+        self.xfg.x = self.final
+        numpy.testing.assert_allclose(self.xfg.C, self.final_C)
 
 if __name__ == "__main__":
     unittest.main()
