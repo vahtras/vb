@@ -73,7 +73,7 @@ class VBMinimizer(Minimizer):
     def __init__(self, wf):
         self.wf = wf
         x0 = self.x
-        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(wf,))
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,))
         self.c = (
             {'type': 'eq',
              'fun': self.constraint_norm,
@@ -95,14 +95,14 @@ class VBMinimizer(Minimizer):
     @x.setter
     def x(self, x_in):
         nstructs = len(self.coef)
-        self.coef = x_in[:nstructs]
+        self.wf.coef = x_in[:nstructs]
         C = blocked.BlockDiagonalMatrix.init_from_array(x_in[nstructs:], *self.wf.blockdims)
-        self.C[:, :] = C.unblock()
+        self.wf.C[:, :] = C.unblock()
 
     @staticmethod
-    def f(x, wf):
-        wf.coef = x
-        return wf.energy() + wf.Z
+    def f(x, self):
+        self.x = x
+        return self.energy() + self.Z
 
     @staticmethod
     def g(x, wf):

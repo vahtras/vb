@@ -74,10 +74,7 @@ class TestVBMin(unittest.TestCase):
         self.final[3:8] = self.final_C[:5, 0]
         self.final[8:13] = self.final_C[5:, 1]
 
-        #VBTestH2C.update_wf(self.final, self.wf)
-        #self.wf.normalize_structures()
-        #VBTestH2C.update_wf(self.final, self.wf)
-
+        self.wf.normalize_structures()
         self.xfg = VBMinimizer(self.wf)
 
     def test_updater_structure_coefficiets(self):
@@ -87,6 +84,13 @@ class TestVBMin(unittest.TestCase):
     def test_updater_orbital_coefficients(self):
         self.xfg.x = self.final
         numpy.testing.assert_allclose(self.xfg.C, self.final_C)
+
+    def test_Z(self):
+        self.assertAlmostEqual(self.xfg.Z, 0.715104, 6)
+
+    def test_final_energy(self):
+        energy = self.xfg.f(self.final, self.xfg)
+        self.assertAlmostEqual(energy, -1.14660543, places=4)
 
 if __name__ == "__main__":
     unittest.main()
