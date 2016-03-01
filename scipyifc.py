@@ -105,8 +105,14 @@ class VBMinimizer(Minimizer):
         return self.energy() + self.Z
 
     @staticmethod
-    def g(x, wf):
-        return wf.energygrad()[0]
+    def g(x, self):
+        self.x = x
+        sg, og = self.wf.energygrad()
+        Cblockedsize = sum(i*j for i, j in zip(*self.blockdims))
+        _x = full.matrix(self.coef.size + Cblockedsize)
+        _x[:self.coef.size] = sg
+        _x[self.coef.size:] = og.block(*self.blockdims).ravel(order='F')
+        return _x
 
     @staticmethod
     def constraint_norm(x, wf):

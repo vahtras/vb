@@ -5,6 +5,7 @@ import vb
 from .daltools.util import full
 from .daltools import one
 from scipyifc import Minimizer, VBMinimizer
+from num_diff import findif
 
 class MinTest(unittest.TestCase):
 
@@ -91,6 +92,11 @@ class TestVBMin(unittest.TestCase):
     def test_final_energy(self):
         energy = self.xfg.f(self.final, self.xfg)
         self.assertAlmostEqual(energy, -1.14660543, places=4)
+
+    def test_final_energy_gradient(self):
+        constraint_numgrad = findif.ndgrad(self.xfg.f)(self.final, self.xfg).view(full.matrix)
+        constraint_grad = self.xfg.g(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad, atol=1e-7)
 
 if __name__ == "__main__":
     unittest.main()
