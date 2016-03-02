@@ -21,6 +21,7 @@ class Minimizer(object):
             self.f, self.x,  method=self.method, jac=self.g,
             args=self.args, constraints=self.c, bounds=self.b
             )
+        print result
         self.x = result.x
         self.value = result.fun
 
@@ -73,15 +74,27 @@ class VBMinimizer(Minimizer):
     def __init__(self, wf):
         self.wf = wf
         x0 = self.x
-        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,))
         self.c = (
             {'type': 'eq',
              'fun': self.constraint_norm,
              'jac': self.constraint_norm_grad,
              'args': (self,)
             },
+            ) + tuple(
+                {'type': 'eq',
+                 'fun': self.constraint_orbital_norm(i),
+                 'jac': self.constraint_orbital_norm_grad(i),
+                 'args': (self,)
+                } for i in range(self.C.shape[1])
+            ) + tuple(
+                {'type': 'eq',
+                 'fun': self.constraint_structure_norm(i),
+                 'jac': self.constraint_structure_norm_grad(i),
+                 'args': (self,)
+                } for i in range(len(self.coef))
             )
         self.b = None
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,), constraints=self.c)
 
 
     @property

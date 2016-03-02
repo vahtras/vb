@@ -171,5 +171,10 @@ class TestVBMin(unittest.TestCase):
         constraint_numgrad = gradf(self.final, self.xfg)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
+    def test_solver_start_final(self):
+        self.xfg.x = self.final
+        self.xfg.minimize()
+        self.assertAlmostEqual(self.xfg.value, -1.14660543, places=4)
+
 if __name__ == "__main__":
     unittest.main()
