@@ -105,6 +105,11 @@ class TestVBMin(unittest.TestCase):
         self.assertAlmostEqual(constraint, 0.0, delta=5e-5)
 
     def test_final_constraints_norm_grad(self):
+        constraint_numgrad = findif.ndgrad(VBMinimizer.constraint_norm)
+        constraint_grad = VBMinimizer.constraint_norm_grad(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad, atol=1e-7)
+
+    def test_final_constraints_norm_grad(self):
         constraint_grad = VBMinimizer.constraint_norm_grad(self.final, self.xfg)
         gradf = findif.ndgrad(VBMinimizer.constraint_norm)
         constraint_numgrad = gradf(self.final, self.xfg)
