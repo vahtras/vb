@@ -148,5 +148,14 @@ class VBMinimizer(Minimizer):
             return self.structs[i].overlap() - 1.0
         return constraint
 
+    @staticmethod
+    def constraint_structure_norm_grad(i):
+        def constraint(x, self):
+            self.x = x
+            sg = full.matrix(self.coef.shape)
+            og = self.structs[i].overlap_gradient()
+            return self.so2x(sg, og)
+        return constraint
+
     def __getattr__(self, attr):
         return getattr(self.wf, attr)

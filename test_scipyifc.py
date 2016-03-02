@@ -153,6 +153,23 @@ class TestVBMin(unittest.TestCase):
         constraint = VBMinimizer.constraint_structure_norm(2)(self.final, self.xfg)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
+    def test_final_constraints_structure_norm_grad_0(self):
+        constraint_grad = VBMinimizer.constraint_structure_norm_grad(0)(self.final, self.xfg)
+        gradf = findif.ndgrad(VBMinimizer.constraint_structure_norm(0))
+        constraint_numgrad = gradf(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
+    def test_final_constraints_structure_norm_grad_1(self):
+        constraint_grad = VBMinimizer.constraint_structure_norm_grad(1)(self.final, self.xfg)
+        gradf = findif.ndgrad(VBMinimizer.constraint_structure_norm(1))
+        constraint_numgrad = gradf(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
+    def test_final_constraints_structure_norm_grad_2(self):
+        constraint_grad = VBMinimizer.constraint_structure_norm_grad(2)(self.final, self.xfg)
+        gradf = findif.ndgrad(VBMinimizer.constraint_structure_norm(2))
+        constraint_numgrad = gradf(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
 if __name__ == "__main__":
     unittest.main()
