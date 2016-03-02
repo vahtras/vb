@@ -131,6 +131,17 @@ class VBMinimizer(Minimizer):
         return constraint
 
     @staticmethod
+    def constraint_orbital_norm_grad(i):
+        def constraint(x, self):
+            self.x = x
+            mo = self.C[:, i]
+            sg = full.matrix(self.coef.shape)
+            og = full.matrix(self.C.shape)
+            og[:, i] = 2*vb.Nod.S*mo
+            return self.so2x(sg, og)
+        return constraint
+
+    @staticmethod
     def constraint_structure_norm(i):
         def constraint(x, self):
             self.x = x

@@ -123,6 +123,18 @@ class TestVBMin(unittest.TestCase):
         constraint = VBMinimizer.constraint_orbital_norm(1)(self.final, self.xfg)
         self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
 
+    def test_final_constraints_orbital_norm_grad_0(self):
+        constraint_grad = VBMinimizer.constraint_orbital_norm_grad(0)(self.final, self.xfg)
+        gradf = findif.ndgrad(VBMinimizer.constraint_orbital_norm(0))
+        constraint_numgrad = gradf(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
+    def test_final_constraints_orbital_norm_grad_1(self):
+        constraint_grad = VBMinimizer.constraint_orbital_norm_grad(1)(self.final, self.xfg)
+        gradf = findif.ndgrad(VBMinimizer.constraint_orbital_norm(1))
+        constraint_numgrad = gradf(self.final, self.xfg)
+        numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
+
     def test_final_constraints_structure_0(self):
         self.xfg.wf.C[:, :] = self.final_C
         self.xfg.normalize_structures()
