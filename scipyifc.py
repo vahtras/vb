@@ -78,18 +78,21 @@ class VBMinimizer(Minimizer):
             {'type': 'eq',
              'fun': self.constraint_norm,
              'jac': self.constraint_norm_grad,
-             'args': (self.wf,)
+             'args': (self,)
             },
             )
         self.b = None
-        
+
 
     @property
     def x(self):
+        return self.so2x(self.coef, self.C)
+
+    def so2x(self, s, o):
         Cblockedsize = sum(i*j for i, j in zip(*self.blockdims))
-        _x = full.matrix(self.coef.size + Cblockedsize)
-        _x[:self.coef.size] = self.coef
-        _x[self.coef.size:] = self.C.block(*self.blockdims).ravel(order='F')
+        _x = full.matrix(s.size + Cblockedsize)
+        _x[:s.size] = s
+        _x[s.size:] = o.block(*self.blockdims).ravel(order='F')
         return _x
 
     @x.setter
@@ -107,12 +110,7 @@ class VBMinimizer(Minimizer):
     @staticmethod
     def g(x, self):
         self.x = x
-        sg, og = self.wf.energygrad()
-        Cblockedsize = sum(i*j for i, j in zip(*self.blockdims))
-        _x = full.matrix(self.coef.size + Cblockedsize)
-        _x[:self.coef.size] = sg
-        _x[self.coef.size:] = og.block(*self.blockdims).ravel(order='F')
-        return _x
+        return self.so2x(*self.wf.energygrad())
 
     @staticmethod
     def constraint_norm(x, self):
@@ -122,12 +120,7 @@ class VBMinimizer(Minimizer):
     @staticmethod
     def constraint_norm_grad(x, self):
         self.x = x
-        sg, og = self.wf.normgrad()
-        Cblockedsize = sum(i*j for i, j in zip(*self.blockdims))
-        _x = full.matrix(self.coef.size + Cblockedsize)
-        _x[:self.coef.size] = sg
-        _x[self.coef.size:] = og.block(*self.blockdims).ravel(order='F')
-        return _x
+        return self.so2x(*self.wf.normgrad())
 
     def __getattr__(self, attr):
         return getattr(self.wf, attr)
