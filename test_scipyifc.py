@@ -110,5 +110,9 @@ class TestVBMin(unittest.TestCase):
         constraint_numgrad = gradf(self.final, self.xfg)
         numpy.testing.assert_allclose(constraint_grad, constraint_numgrad)
 
+    def test_final_constraints_orbital_1(self):
+        constraint = VBMinimizer.constraint_orbital_norm(0)(self.final, self.xfg)
+        self.assertAlmostEqual(constraint, 0.0, delta=1e-5)
+
 if __name__ == "__main__":
     unittest.main()

@@ -122,5 +122,13 @@ class VBMinimizer(Minimizer):
         self.x = x
         return self.so2x(*self.wf.normgrad())
 
+    @staticmethod
+    def constraint_orbital_norm(i):
+        def constraint(x, self):
+            self.x = x
+            mo = self.C[:, i]
+            return (mo.T & (vb.Nod.S*mo)) - 1.0 
+        return constraint
+
     def __getattr__(self, attr):
         return getattr(self.wf, attr)
