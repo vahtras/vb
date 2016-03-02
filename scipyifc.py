@@ -130,5 +130,12 @@ class VBMinimizer(Minimizer):
             return (mo.T & (vb.Nod.S*mo)) - 1.0 
         return constraint
 
+    @staticmethod
+    def constraint_structure_norm(i):
+        def constraint(x, self):
+            self.x = x
+            return self.structs[i].overlap() - 1.0
+        return constraint
+
     def __getattr__(self, attr):
         return getattr(self.wf, attr)
