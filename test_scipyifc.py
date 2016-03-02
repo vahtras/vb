@@ -4,7 +4,7 @@ import numpy
 import vb
 from .daltools.util import full
 from .daltools import one
-from scipyifc import Minimizer, VBMinimizer
+from scipyifc import *
 from num_diff import findif
 
 class MinTest(unittest.TestCase):
@@ -37,6 +37,30 @@ class MinTest(unittest.TestCase):
         xfg = Minimizer(x0, f, g, method='SLSQP', constraints=c, bounds=b)
         xfg.minimize()
         numpy.testing.assert_allclose(xfg.x, (1.4, 1.7))
+
+class TestLagrangianMinTest(MinTest):
+
+    def setUp(self):
+        f = lambda x: x[0] + x[1]
+        g = lambda x: full.init((1, 1))
+        c = (
+            {'type': 'eq',
+             'fun': lambda x: x[0]**2 + x[1]**2  - 1.0,
+             'jac': lambda x: full.init((2*x[0], 2*x[1]))
+            },
+            )
+        self.xfg = LagrangianMinimizer((1, 0), f, g, 'BFGS', args=(self,), constraints=c)
+
+    def test_setup_l(self):
+        self.assertEqual(len(self.xfg.l), 1)
+
+    @unittest.skip('wait')
+    def test_constraint(self):
+
+        x0 = numpy.array((0.0, 0.0))
+        xfg = LagrangianMinimizer(x0, f, g, method='BFGS', constraints=c)
+        xfg.minimize()
+        numpy.testing.assert_allclose(xfg.x, (0.7071067811865476, 0.7071067811865476))
 
 class TestVBMin(unittest.TestCase):
 
