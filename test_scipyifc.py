@@ -43,8 +43,12 @@ class TestLagrangianMinTest(unittest.TestCase):
     def setUp(self):
         """Opimize x+y constrained to a circle"""
         # Initial values
+        import math
+        sqrth = math.sqrt(0.5)
         self.p0 = (1.0, 0.0)
+        self.p1 = (sqrth, sqrth)
         self.l0 = (1.0,)
+        self.l1 = (-sqrth,)
         self.x0 = self.p0 + self.l0 # (p, l)
         #
         self.f = lambda p: p[0] + p[1]
@@ -57,14 +61,23 @@ class TestLagrangianMinTest(unittest.TestCase):
             )
         self.pfg = LagrangianMinimizer(self.p0, self.f, self.g, method='BFGS', constraints=self.c)
 
-    def test_setup_start_point(self):
+    def test_setup_initial_point(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
         numpy.testing.assert_allclose(self.pfg.p, self.p0)
+
+    def test_setup_initial_multiplier(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
+        numpy.testing.assert_allclose(self.pfg.l, self.l0)
+
+    def test_setup_final_point(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        numpy.testing.assert_allclose(self.pfg.p, self.p1)
 
     def test_setup_lagrange_variable(self):
         self.assertEqual(self.pfg.l, (1.0))
 
     def test_setup_constraint(self):
-        self.assertIs(self.pfg.c, self.c)
+        self.assertIs(self.pfg.cp, self.c)
 
     def test_setup_composite_varibale(self):
         numpy.testing.assert_allclose(self.pfg.x, tuple(self.p0) + tuple(self.pfg.l))
@@ -74,16 +87,20 @@ class TestLagrangianMinTest(unittest.TestCase):
         x = self.pfg.x
         self.assertAlmostEqual(L(x, self.pfg), self.f(self.p0))
 
-    def test_setup_lagrangian_gradient(self):
+    def test_setup_lagrangian_initial_gradient(self):
         dL = self.pfg.lagrangian_derivative()
         x = self.pfg.x
         numpy.testing.assert_allclose(dL(x, self.pfg), (3, 1, 0))
 
+    def test_setup_lagrangian_final_gradient(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        dL = self.pfg.lagrangian_derivative()
+        numpy.testing.assert_allclose(dL(self.pfg.x, self.pfg), (0, 0, 0), atol=1e-7)
 
     @unittest.skip('hold')
     def test_minimize(self):
         self.pfg.minimize()
-        numpy.testing.assert_allclose(self.pfg.p, (0.7071067811865476, 0.7071067811865476))
+        numpy.testing.assert_allclose(self.pfg.p, self.p1)
 
 
 class TestVBMin(unittest.TestCase):
