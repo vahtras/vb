@@ -26,9 +26,12 @@ class Minimizer(object):
 
 class LagrangianMinimizer(Minimizer):
 
-    def __init__(self, *args, **kwargs):
-        Minimizer.__init__(self, *args, **kwargs)
+    def __init__(self, p, f, g, *args, **kwargs):
+        self.p = full.init(p)
+        self.f = f
+        self.c = kwargs['constraints']
         self.l = numpy.ones(len(self.c))
+        #Minimizer.__init__(self, self.x, self.lagrangian(), None, args=(self,), **kwargs)
 
     def minimize(self):
         result = scipy.optimize.minimize(
@@ -39,14 +42,24 @@ class LagrangianMinimizer(Minimizer):
         self.value = result.fun
 
     @property
-    def xl(self):
-        pass
-        
-    def f(self):
-        pass
+    def x(self):
+        _x = full.init(tuple(self.p) + tuple(self.l))
+        return _x
 
-    def g(self):
-        pass
+    @x.setter
+    def x(self, x_in):
+        self.p[:] = x_in[:len(self.p)]
+        self.l[:] = x_in[len(self.p):]
+
+    @staticmethod
+    def lagrangian():
+        def fun(x, self):
+            self.x = x
+            p = self.p
+            return self.f(p) + sum(l*c['fun'](p) for l, c in zip(self.l, self.c))
+        return fun
+        
+
 
 class VBStructureCoefficientMinimizer(Minimizer):
 

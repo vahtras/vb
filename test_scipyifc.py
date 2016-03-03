@@ -38,21 +38,43 @@ class MinTest(unittest.TestCase):
         xfg.minimize()
         numpy.testing.assert_allclose(xfg.x, (1.4, 1.7))
 
-class TestLagrangianMinTest(MinTest):
+class TestLagrangianMinTest(unittest.TestCase):
 
     def setUp(self):
-        f = lambda x: x[0] + x[1]
+        """Opimize x+y constrained to a circle"""
+        # Initial values
+        self.p0 = (1.0, 0.0)
+        self.l0 = (1.0,)
+        self.x0 = self.p0 + self.l0 # (p, l)
+        #
+        self.f = lambda x: x[0] + x[1]
         g = lambda x: full.init((1, 1))
-        c = (
+        self.c = (
             {'type': 'eq',
              'fun': lambda x: x[0]**2 + x[1]**2  - 1.0,
              'jac': lambda x: full.init((2*x[0], 2*x[1]))
             },
             )
-        self.xfg = LagrangianMinimizer((1, 0), f, g, 'BFGS', args=(self,), constraints=c)
+        self.xfg = LagrangianMinimizer(self.p0, self.f, g, method='BFGS', args=(self,), constraints=self.c)
 
-    def test_setup_l(self):
-        self.assertEqual(len(self.xfg.l), 1)
+    def test_setup_start_point(self):
+        numpy.testing.assert_allclose(self.xfg.p, self.p0)
+
+    def test_setup_lagrange_variable(self):
+        self.assertEqual(self.xfg.l, (1.0))
+
+    def test_setup_constraint(self):
+        self.assertIs(self.xfg.c, self.c)
+
+    def test_setup_composite_varibale(self):
+        numpy.testing.assert_allclose(self.xfg.x, tuple(self.p0) + tuple(self.xfg.l))
+
+    def test_setup_lagrangian_function(self):
+        L = self.xfg.lagrangian()
+        x = self.xfg.x
+        self.assertAlmostEqual(L(x, self.xfg), self.f(self.p0))
+
+
 
     @unittest.skip('wait')
     def test_constraint(self):
