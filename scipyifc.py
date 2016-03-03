@@ -6,12 +6,11 @@ from daltools.util import full, blocked
 
 class Minimizer(object):
 
-    def __init__(self, x, f, g, method, args=(), constraints=None, bounds=None):
+    def __init__(self, x, f, g, method, constraints=None, bounds=None):
         self.x = x
         self.f = f
         self.g = g
         self.method = method
-        self.args = args
         self.c = constraints
         self.b = bounds
         self.value = None
@@ -19,7 +18,7 @@ class Minimizer(object):
     def minimize(self):
         result = scipy.optimize.minimize(
             self.f, self.x,  method=self.method, jac=self.g,
-            args=self.args, constraints=self.c, bounds=self.b
+            args=(self,), constraints=self.c, bounds=self.b
             )
         self.x = result.x
         self.value = result.fun
@@ -74,7 +73,7 @@ class VBStructureCoefficientMinimizer(Minimizer):
             },
             )
         self.b = None
-        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,), constraints=c)
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', constraints=c)
         
 
     @property
@@ -131,7 +130,7 @@ class VBMinimizer(Minimizer):
                 } for i in range(len(self.coef))
             )
         self.b = None
-        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,), constraints=self.c)
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', constraints=self.c)
 
 
     @property

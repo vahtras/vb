@@ -17,14 +17,14 @@ class MinTest(unittest.TestCase):
 
     def test_parabola(self):
         x0 = numpy.array((2.0, 0.0))
-        f = lambda x: (x[0] - 1)**2 + (x[1] - 2)**2
-        g = lambda x: numpy.array([2*(x[0] - 1), 2*(x[1] - 2)])
+        f = lambda x, dummy : (x[0] - 1)**2 + (x[1] - 2)**2
+        g = lambda x, dummy: numpy.array([2*(x[0] - 1), 2*(x[1] - 2)])
         xfg = Minimizer(x0, f, g, method='L-BFGS-B')
         xfg.minimize()
         numpy.testing.assert_allclose(xfg.x, (1.0, 2.0))
 
     def test_constraint(self):
-        f = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2
+        f = lambda x, dummy : (x[0] - 1)**2 + (x[1] - 2.5)**2
         g = None
         c = (
             {'type': 'ineq', 'fun': lambda x: x[0] - 2*x[1] + 2},
