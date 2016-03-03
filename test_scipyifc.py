@@ -6,6 +6,9 @@ from .daltools.util import full
 from .daltools import one
 from scipyifc import *
 from num_diff import findif
+import math
+SQRTH = math.sqrt(0.5)
+SQRT2 = math.sqrt(2.0)
 
 class MinTest(unittest.TestCase):
 
@@ -43,12 +46,10 @@ class TestLagrangianMinTest(unittest.TestCase):
     def setUp(self):
         """Opimize x+y constrained to a circle"""
         # Initial values
-        import math
-        sqrth = math.sqrt(0.5)
         self.p0 = (1.0, 0.0)
-        self.p1 = (sqrth, sqrth)
+        self.p1 = (SQRTH, SQRTH)
         self.l0 = (1.0,)
-        self.l1 = (-sqrth,)
+        self.l1 = (-SQRTH,)
         self.x0 = self.p0 + self.l0 # (p, l)
         #
         self.f = lambda p: p[0] + p[1]
@@ -65,27 +66,46 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p0 + self.l0)
         numpy.testing.assert_allclose(self.pfg.p, self.p0)
 
-    def test_setup_initial_multiplier(self):
-        self.pfg.x = full.init(self.p0 + self.l0)
-        numpy.testing.assert_allclose(self.pfg.l, self.l0)
-
     def test_setup_final_point(self):
         self.pfg.x = full.init(self.p1 + self.l1)
         numpy.testing.assert_allclose(self.pfg.p, self.p1)
 
-    def test_setup_lagrange_variable(self):
-        self.assertEqual(self.pfg.l, (1.0))
+    def test_setup_initial_multiplier(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
+        numpy.testing.assert_allclose(self.pfg.l, self.l0)
+
+    def test_setup_final_multiplier(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        numpy.testing.assert_allclose(self.pfg.l, self.l1)
+
+    def test_setup_initial_function(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
+        numpy.testing.assert_allclose(self.pfg.fp(self.pfg.p), 1.0)
+
+    def test_setup_final_function(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        numpy.testing.assert_allclose(self.pfg.fp(self.pfg.p), SQRT2)
 
     def test_setup_constraint(self):
         self.assertIs(self.pfg.cp, self.c)
 
-    def test_setup_composite_varibale(self):
-        numpy.testing.assert_allclose(self.pfg.x, tuple(self.p0) + tuple(self.pfg.l))
+    def test_setup_initial_composite_varibale(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
+        numpy.testing.assert_allclose(self.pfg.x, self.p0 + self.l0)
 
-    def test_setup_lagrangian_function(self):
+    def test_setup_final_composite_varibale(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        numpy.testing.assert_allclose(self.pfg.x, self.p1 + self.l1)
+
+    def test_setup_initial_lagrangian_function(self):
+        self.pfg.x = full.init(self.p0 + self.l0)
         L = self.pfg.lagrangian()
-        x = self.pfg.x
-        self.assertAlmostEqual(L(x, self.pfg), self.f(self.p0))
+        self.assertAlmostEqual(L(self.pfg.x, self.pfg), self.f(self.p0))
+
+    def test_setup_final_lagrangian_function(self):
+        self.pfg.x = full.init(self.p1 + self.l1)
+        L = self.pfg.lagrangian()
+        self.assertAlmostEqual(L(self.pfg.x, self.pfg), self.f(self.p1))
 
     def test_setup_lagrangian_initial_gradient(self):
         dL = self.pfg.lagrangian_derivative()
@@ -96,6 +116,17 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p1 + self.l1)
         dL = self.pfg.lagrangian_derivative()
         numpy.testing.assert_allclose(dL(self.pfg.x, self.pfg), (0, 0, 0), atol=1e-7)
+
+    def test_minimize_from_final(self):
+        self.pfg.x = full.init(self.p1 + self.l1) 
+        self.pfg.minimize()
+        numpy.testing.assert_allclose(self.pfg.p, self.p1)
+
+    @unittest.skip('hold')
+    def test_minimize_from_final_plus_noise(self):
+        self.pfg.x = full.init(self.p1 + self.l1) + 0.01*numpy.random.random(3)
+        self.pfg.minimize()
+        numpy.testing.assert_allclose(self.pfg.p, self.p1)
 
     @unittest.skip('hold')
     def test_minimize(self):

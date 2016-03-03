@@ -15,7 +15,7 @@ class Minimizer(object):
         self.b = bounds
         self.value = None
         def callback(xk):
-            print xk
+            print "xk", xk, "f(xk)", self.f(xk, self)
         self.callback = callback
 
     def minimize(self):
