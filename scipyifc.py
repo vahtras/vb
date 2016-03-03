@@ -64,16 +64,17 @@ class LagrangianMinimizer(Minimizer):
 class VBStructureCoefficientMinimizer(Minimizer):
 
     def __init__(self, wf):
-        Minimizer.__init__(self, wf.coef, self.f, self.g, 'SLSQP', args=(wf,))
         self.wf = wf
-        self.c = (
+        x0 = self.x
+        c = (
             {'type': 'eq',
              'fun': self.constraint_norm,
              'jac': self.constraint_norm_grad,
-             'args': (self.wf,)
+             'args': (self,)
             },
             )
         self.b = None
+        Minimizer.__init__(self, x0, self.f, self.g, 'SLSQP', args=(self,), constraints=c)
         
 
     @property
@@ -81,26 +82,26 @@ class VBStructureCoefficientMinimizer(Minimizer):
         return self.coef
 
     @x.setter
-    def x(self, coef):
-        self.coef = coef
+    def x(self, x_in):
+        self.coef[:] = x_in
 
     @staticmethod
-    def f(x, wf):
-        wf.coef = x
-        return wf.energy() + wf.Z
+    def f(x, self):
+        self.coef[:] = x
+        return self.energy() + self.Z
 
     @staticmethod
-    def g(x, wf):
-        return wf.energygrad()[0]
+    def g(x, self):
+        return self.energygrad()[0]
 
     @staticmethod
-    def constraint_norm(x, wf):
-        return wf.norm() - 1.0
+    def constraint_norm(x, self):
+        return self.norm() - 1.0
 
     @staticmethod
-    def constraint_norm_grad(x, wf):
-        wf.coef = x
-        return wf.normgrad()[0]
+    def constraint_norm_grad(x, self):
+        self.coef[:] = x
+        return self.normgrad()[0]
 
     def __getattr__(self, attr):
         return getattr(self.wf, attr)
