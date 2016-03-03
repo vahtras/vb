@@ -6,7 +6,7 @@ from daltools.util import full, blocked
 
 class Minimizer(object):
 
-    def __init__(self, x, f, g, method, constraints=None, bounds=None):
+    def __init__(self, x, f, g=None, method=None, constraints=None, bounds=None):
         self.x = x
         self.f = f
         self.g = g
@@ -27,18 +27,11 @@ class LagrangianMinimizer(Minimizer):
 
     def __init__(self, p, f, g, *args, **kwargs):
         self.p = full.init(p)
-        self.f = f
+        self.l = numpy.ones(len(kwargs['constraints']))
+        Minimizer.__init__(self, self.x, self.lagrangian(), method=kwargs['method'])
+        self.fp = f
+        self.gp = g
         self.c = kwargs['constraints']
-        self.l = numpy.ones(len(self.c))
-        #Minimizer.__init__(self, self.x, self.lagrangian(), None, args=(self,), **kwargs)
-
-    def minimize(self):
-        result = scipy.optimize.minimize(
-            self.f, self.x,  method=self.method, jac=self.g,
-            args=self.args,
-            )
-        self.x = result.x
-        self.value = result.fun
 
     @property
     def x(self):
@@ -55,8 +48,19 @@ class LagrangianMinimizer(Minimizer):
         def fun(x, self):
             self.x = x
             p = self.p
-            return self.f(p) + sum(l*c['fun'](p) for l, c in zip(self.l, self.c))
+            return self.fp(p) + sum(l*c['fun'](p) for l, c in zip(self.l, self.c))
         return fun
+
+    @staticmethod
+    def lagrangian_derivative():
+        def grad(x, self):
+            self.x = x
+            p = self.p
+            dL = full.matrix(len(x))
+            dL[:len(p)] = self.gp(p) + sum(l*c['jac'](p) for l, c in zip(self.l, self.c))
+            dL[len(p):] = [c['fun'](p) for c in self.c]
+            return dL
+        return grad
         
 
 
