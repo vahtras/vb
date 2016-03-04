@@ -70,6 +70,11 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p1 + self.l1)
         numpy.testing.assert_allclose(self.pfg.p, self.p1)
 
+    def test_setup_random_point(self):
+        xrand = numpy.random.random(3)
+        self.pfg.x = xrand
+        numpy.testing.assert_allclose(self.pfg.p, xrand[:2])
+
     def test_setup_initial_multiplier(self):
         self.pfg.x = full.init(self.p0 + self.l0)
         numpy.testing.assert_allclose(self.pfg.l, self.l0)
@@ -78,6 +83,11 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p1 + self.l1)
         numpy.testing.assert_allclose(self.pfg.l, self.l1)
 
+    def test_setup_random_multiplier(self):
+        xrand = numpy.random.random(3)
+        self.pfg.x = xrand
+        numpy.testing.assert_allclose(self.pfg.l, xrand[2:])
+
     def test_setup_initial_function(self):
         self.pfg.x = full.init(self.p0 + self.l0)
         numpy.testing.assert_allclose(self.pfg.fp(self.pfg.p), -1.0)
@@ -85,6 +95,11 @@ class TestLagrangianMinTest(unittest.TestCase):
     def test_setup_final_function(self):
         self.pfg.x = full.init(self.p1 + self.l1)
         numpy.testing.assert_allclose(self.pfg.fp(self.pfg.p), -SQRT2)
+
+    def test_setup_random_function(self):
+        xrand = numpy.random.random(3)
+        self.pfg.x = xrand
+        numpy.testing.assert_allclose(self.f(self.pfg.p), -xrand[0] - xrand[1])
 
     def test_setup_constraint(self):
         self.assertIs(self.pfg.cp, self.c)
@@ -107,6 +122,14 @@ class TestLagrangianMinTest(unittest.TestCase):
         L = self.pfg.lagrangian()
         self.assertAlmostEqual(L(self.pfg.x, self.pfg), self.f(self.p1))
 
+    def test_setup_random_lagrangian_function(self):
+        xrand = numpy.random.random(3)
+        self.pfg.x =  xrand
+        p = xrand[:2]
+        l = xrand[2:]
+        L = self.pfg.lagrangian()
+        self.assertAlmostEqual(L(self.pfg.x, self.pfg), self.f(p) - l*self.c[0]['fun'](p))
+
     def test_setup_lagrangian_initial_gradient(self):
         dL = self.pfg.lagrangian_derivative()
         x = self.pfg.x
@@ -116,6 +139,17 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p1 + self.l1)
         dL = self.pfg.lagrangian_derivative()
         numpy.testing.assert_allclose(dL(self.pfg.x, self.pfg), (0, 0, 0), atol=1e-7)
+
+    def test_setup_random_lagrangian_gradient(self):
+        xrand = numpy.random.random(3)
+        self.pfg.x =  xrand
+        p = xrand[:2]
+        l = xrand[2:]
+        dL = self.pfg.lagrangian_derivative()
+        dLdp = tuple(self.g(p) - l*self.c[0]['jac'](p))
+        dLdl = (self.c[0]['fun'](p),)
+        dLdx = dLdp + dLdl
+        numpy.testing.assert_allclose(dL(self.pfg.x, self.pfg), dLdx)
 
     def test_minimize_from_final(self):
         self.pfg.x = full.init(self.p1 + self.l1) 
