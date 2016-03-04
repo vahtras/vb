@@ -65,7 +65,7 @@ class LagrangianMinimizer(Minimizer):
         def fun(x, self):
             self.x = x
             p = self.p
-            return self.fp(p) + sum(l*c['fun'](p) for l, c in zip(self.l, self.cp))
+            return self.fp(p) - sum(l*c['fun'](p) for l, c in zip(self.l, self.cp))
         return fun
 
     @staticmethod
@@ -74,7 +74,7 @@ class LagrangianMinimizer(Minimizer):
             self.x = x
             p = self.p
             dL = full.matrix(len(x))
-            dL[:len(p)] = self.gp(p) + sum(l*c['jac'](p) for l, c in zip(self.l, self.cp))
+            dL[:len(p)] = self.gp(p) - sum(l*c['jac'](p) for l, c in zip(self.l, self.cp))
             dL[len(p):] = [c['fun'](p) for c in self.cp]
             return dL
         return grad
