@@ -17,17 +17,17 @@ class Minimizer(object):
         def callback(xk):
             print "xk", xk, "f(xk)", self.f(xk, self), self.g(xk, self)
         self.callback = callback
-        self.options = {'disp': True, 'return_all': True}
+        self.options = {'disp': True, 'return_all': True, 'norm': 2}
 
     def minimize(self):
         result = scipy.optimize.minimize(
             self.f, self.x,  method=self.method, jac=self.g,
             args=(self,), constraints=self.c, bounds=self.b,
-            callback=None,
+            callback=None, options=self.options
             )
         self.x = result.x
         self.value = result.fun
-        if not result.success:
+        if not result.success or True:
             for key in result:
                 if key == 'allvecs':
                     print "%s:"%key, len(result[key]), full.init(result[key])
