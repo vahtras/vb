@@ -28,7 +28,7 @@ class MinTest(unittest.TestCase):
 
     def test_constraint(self):
         f = lambda x, dummy : (x[0] - 1)**2 + (x[1] - 2.5)**2
-        g = None
+        g = lambda x, dummy : numpy.array([2*(x[0]-1), 2*(x[1]-2.5)])
         c = (
             {'type': 'ineq', 'fun': lambda x: x[0] - 2*x[1] + 2},
             {'type': 'ineq', 'fun': lambda x: x[0] - 2*x[1] + 6},
@@ -124,9 +124,9 @@ class TestLagrangianMinTest(unittest.TestCase):
 
     @unittest.skip('hold')
     def test_minimize_from_final_plus_noise(self):
-        self.pfg.x = full.init(self.p1 + self.l1) + 0.01*numpy.random.random(3)
+        self.pfg.x = full.init(self.p1 + self.l1) + 1e-4*numpy.random.random(3)
         self.pfg.minimize()
-        numpy.testing.assert_allclose(self.pfg.p, self.p1)
+        numpy.testing.assert_allclose(self.pfg.p, self.p1, atol=1e-4)
 
     @unittest.skip('hold')
     def test_minimize(self):

@@ -15,17 +15,27 @@ class Minimizer(object):
         self.b = bounds
         self.value = None
         def callback(xk):
-            print "xk", xk, "f(xk)", self.f(xk, self)
+            print "xk", xk, "f(xk)", self.f(xk, self), self.g(xk, self)
         self.callback = callback
+        self.options = {'disp': True, 'return_all': True}
 
     def minimize(self):
         result = scipy.optimize.minimize(
             self.f, self.x,  method=self.method, jac=self.g,
             args=(self,), constraints=self.c, bounds=self.b,
-            callback=self.callback
+            callback=None,
             )
         self.x = result.x
         self.value = result.fun
+        if not result.success:
+            for key in result:
+                if key == 'allvecs':
+                    print "%s:"%key, len(result[key]), full.init(result[key])
+                else:
+                    print "%s:"%key, result[key]
+            print self.f(result.x, self)
+                
+        
 
 class LagrangianMinimizer(Minimizer):
 
