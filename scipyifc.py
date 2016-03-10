@@ -18,6 +18,11 @@ class Minimizer(object):
             print "xk", xk, "f(xk)", self.f(xk, self), self.g(xk, self)
         self.callback = callback
         self.options = {}
+        self.gtol = 1e-5
+        self.maxit = 10
+
+    def set_method(self, method):
+        self.method = method
 
     def minimize(self):
         result = scipy.optimize.minimize(
@@ -45,7 +50,7 @@ class LagrangianMinimizer(Minimizer):
         Minimizer.__init__(
             self, 
             self.x, self.lagrangian(), g=self.lagrangian_derivative(),
-            method=kwargs['method'], constraints=())
+            method=kwargs.get('method', 'BFGS'), constraints=())
         self.fp = f
         self.gp = g
         self.hp = kwargs.get('hessian', None)
@@ -100,6 +105,17 @@ class LagrangianMinimizer(Minimizer):
             self.x = _x
             return d2L
         return hess
+
+    def minimize(self):
+        if self.method == 'MyNewton':
+            dL = self.lagrangian_derivative()
+            d2L = self.lagrangian_hessian()
+            for i in range(self.maxit):
+                if dL(self.x, self).norm2() < self.gtol:
+                    break
+                self.x = self.x - dL(self.x, self)/d2L(self.x, self)
+        else:
+            super(self.__class__, self).minimize()
         
 
 

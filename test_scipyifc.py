@@ -64,7 +64,7 @@ class TestLagrangianMinTest(unittest.TestCase):
             },
             )
         self.pfg = LagrangianMinimizer(
-            self.p0, self.f, self.g, hessian=self.h, method='BFGS', constraints=self.c
+            self.p0, self.f, self.g, hessian=self.h, constraints=self.c
             )
 
     def test_setup_initial_point(self):
@@ -193,6 +193,12 @@ class TestLagrangianMinTest(unittest.TestCase):
         ref_x1 = full.init([0.70827179, 0.70834183, -0.70514972])
         numpy.testing.assert_allclose(self.pfg.x, ref_x1)
         
+
+    def test_minimize_my_newton(self):
+        self.pfg.x = full.init(self.p1 + self.l1) + 0.1*numpy.random.random(3)
+        self.pfg.set_method('MyNewton')
+        self.pfg.minimize()
+        numpy.testing.assert_allclose(self.pfg.p, self.p1, atol=1e-5)
 
     @unittest.skip('hold')
     def test_minimize_from_final_plus_noise(self):
