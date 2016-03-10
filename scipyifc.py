@@ -48,6 +48,7 @@ class LagrangianMinimizer(Minimizer):
             method=kwargs['method'], constraints=())
         self.fp = f
         self.gp = g
+        self.hp = kwargs.get('hessian', None)
         self.cp = kwargs['constraints']
 
     @property
@@ -64,21 +65,41 @@ class LagrangianMinimizer(Minimizer):
     @staticmethod
     def lagrangian():
         def fun(x, self):
+            _x = self.x
             self.x = x
-            p = self.p
-            return self.fp(p) - sum(l*c['fun'](p) for l, c in zip(self.l, self.cp))
+            L_x = self.fp(self.p) - sum(l*c['fun'](self.p) for l, c in zip(self.l, self.cp))
+            self.x = _x
+            return L_x
         return fun
 
     @staticmethod
     def lagrangian_derivative():
         def grad(x, self):
+            _x = self.x
             self.x = x
             p = self.p
             dL = full.matrix(len(x))
             dL[:len(p)] = self.gp(p) - sum(l*c['jac'](p) for l, c in zip(self.l, self.cp))
             dL[len(p):] = [-c['fun'](p) for c in self.cp]
+            self.x = _x
             return dL
         return grad
+
+    @staticmethod
+    def lagrangian_hessian():
+        def hess(x, self):
+            _x = self.x
+            self.x = x
+            p = self.p
+            d2L = full.matrix((len(x), len(x)))
+            d2L[:len(p), :len(p)] = self.hp(p) - sum(l*c['hes'](p) for l, c in zip(self.l, self.cp))
+            for i, c in enumerate(self.cp):
+                d2L[:len(p), len(p) + i] = -c['jac'](p)
+            d2L[len(p):, :len(p)] = d2L[:len(p), len(p):].T
+            d2L[len(p):, len(p):] = 0.0
+            self.x = _x
+            return d2L
+        return hess
         
 
 

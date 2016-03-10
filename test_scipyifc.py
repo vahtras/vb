@@ -51,16 +51,21 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.l0 = (1.0,)
         self.l1 = (-SQRTH,)
         self.x0 = self.p0 + self.l0 # (p, l)
+        self.x1 = self.p1 + self.l1 # (p, l)
         #
         self.f = lambda p: -(p[0] + p[1])
         self.g = lambda p: full.init((-1.0, -1.0))
+        self.h = lambda p: full.matrix((2, 2))
         self.c = (
             {'type': 'eq',
              'fun': lambda p: p[0]**2 + p[1]**2  - 1.0,
-             'jac': lambda p: full.init((2*p[0], 2*p[1]))
+             'jac': lambda p: full.init((2*p[0], 2*p[1])),
+             'hes': lambda p: full.init([[2, 0], [0, 2]])
             },
             )
-        self.pfg = LagrangianMinimizer(self.p0, self.f, self.g, method='BFGS', constraints=self.c)
+        self.pfg = LagrangianMinimizer(
+            self.p0, self.f, self.g, hessian=self.h, method='BFGS', constraints=self.c
+            )
 
     def test_setup_initial_point(self):
         self.pfg.x = full.init(self.p0 + self.l0)
@@ -147,7 +152,7 @@ class TestLagrangianMinTest(unittest.TestCase):
         l = xrand[2:]
         dL = self.pfg.lagrangian_derivative()
         dLdp = tuple(self.g(p) - l*self.c[0]['jac'](p))
-        dLdl = (self.c[0]['fun'](p),)
+        dLdl = (-self.c[0]['fun'](p),)
         dLdx = dLdp + dLdl
         numpy.testing.assert_allclose(dL(self.pfg.x, self.pfg), dLdx)
 
@@ -155,6 +160,39 @@ class TestLagrangianMinTest(unittest.TestCase):
         self.pfg.x = full.init(self.p1 + self.l1) 
         self.pfg.minimize()
         numpy.testing.assert_allclose(self.pfg.p, self.p1)
+
+    def test_no_side_effect(self):
+        self.pfg.x = self.x1
+        print self.pfg.p, self.pfg.l
+        x = full.init(numpy.random.random(3))
+        Lx = self.pfg.lagrangian()(x, self.pfg)
+        numpy.testing.assert_allclose(self.pfg.x, self.x1)
+
+    def test_no_side_effect(self):
+        self.pfg.x = self.x1
+        print self.pfg.p, self.pfg.l
+        x = full.init(numpy.random.random(3))
+        Lx = self.pfg.lagrangian_derivative()(x, self.pfg)
+        numpy.testing.assert_allclose(self.pfg.x, self.x1)
+
+    def test_newton_step(self):
+        x0 = [0.75133256,0.74762074, -0.69209032]
+        self.pfg.x = x0
+        dL = self.pfg.lagrangian_derivative()
+        d2L = self.pfg.lagrangian_hessian()
+        x1 = self.pfg.x - dL(x0, self.pfg)/d2L(x0, self.pfg)
+        ref_x1 = full.init([0.70827179, 0.70834183, -0.70514972])
+        numpy.testing.assert_allclose(x1, ref_x1)
+
+    def test_newton_step_with_update(self):
+        x0 = [0.75133256,0.74762074, -0.69209032]
+        self.pfg.x = x0
+        dL = self.pfg.lagrangian_derivative()
+        d2L = self.pfg.lagrangian_hessian()
+        self.pfg.x = self.pfg.x - dL(x0, self.pfg)/d2L(x0, self.pfg)
+        ref_x1 = full.init([0.70827179, 0.70834183, -0.70514972])
+        numpy.testing.assert_allclose(self.pfg.x, ref_x1)
+        
 
     @unittest.skip('hold')
     def test_minimize_from_final_plus_noise(self):
