@@ -17,7 +17,7 @@ class Minimizer(object):
         def callback(xk):
             print "xk", xk, "f(xk)", self.f(xk, self), self.g(xk, self)
         self.callback = callback
-        self.options = {'disp': True, 'return_all': True, 'norm': 2}
+        self.options = {}
 
     def minimize(self):
         result = scipy.optimize.minimize(
@@ -27,7 +27,7 @@ class Minimizer(object):
             )
         self.x = result.x
         self.value = result.fun
-        if not result.success or True:
+        if not result.success:
             for key in result:
                 if key == 'allvecs':
                     print "%s:"%key, len(result[key]), full.init(result[key])
@@ -57,6 +57,7 @@ class LagrangianMinimizer(Minimizer):
 
     @x.setter
     def x(self, x_in):
+        assert len(x_in) == len(self.p) + len(self.l)
         self.p[:] = x_in[:len(self.p)]
         self.l[:] = x_in[len(self.p):]
 
@@ -75,7 +76,7 @@ class LagrangianMinimizer(Minimizer):
             p = self.p
             dL = full.matrix(len(x))
             dL[:len(p)] = self.gp(p) - sum(l*c['jac'](p) for l, c in zip(self.l, self.cp))
-            dL[len(p):] = [c['fun'](p) for c in self.cp]
+            dL[len(p):] = [-c['fun'](p) for c in self.cp]
             return dL
         return grad
         
