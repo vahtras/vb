@@ -2,11 +2,11 @@
 import os
 import numpy as np
 import random, unittest
-from .daltools import one
-from .daltools.util import full, timing
-from .vb import WaveFunction, Structure, is_two_electron
-from .nod import Nod
-from num_diff import findif as fd
+from ..daltools import one
+from ..daltools.util import full, timing
+from ..vb import WaveFunction, Structure, is_two_electron
+from ..nod import Nod
+from ..num_diff import findif as fd
 
 
 class WaveFunctionND(WaveFunction):

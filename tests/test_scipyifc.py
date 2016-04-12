@@ -1,11 +1,11 @@
 import unittest
 import os
 import numpy
-import vb
-from .daltools.util import full
-from .daltools import one
-from scipyifc import *
-from num_diff import findif
+from .. import vb
+from ..daltools.util import full
+from ..daltools import one
+from ..scipyifc import *
+from ..num_diff import findif
 import math
 SQRTH = math.sqrt(0.5)
 SQRT2 = math.sqrt(2.0)

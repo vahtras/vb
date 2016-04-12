@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 import os
-from nod import Nod, Dao, Dmo
-from vb import Structure, StructError, BraKet
-from daltools.util.full import init, matrix
-from num_diff.findif import clgrad, clhess, clmixhess, DELTA
+from ..nod import Nod, Dao, Dmo
+from ..vb import Structure, StructError, BraKet
+from ..daltools.util.full import init, matrix
+from ..num_diff.findif import clgrad, clhess, clmixhess, DELTA
 
 class NodTest(unittest.TestCase):
 

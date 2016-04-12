@@ -1,7 +1,7 @@
 import unittest
-from daltools.util.full import init
-from vb import *
-from num_diff.findif import clgrad, DELTA
+from ..daltools.util.full import init
+from ..vb import *
+from ..num_diff.findif import clgrad, DELTA
 
 class StructTest(unittest.TestCase):
 

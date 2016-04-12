@@ -2,12 +2,12 @@ import unittest
 import numpy
 import os
 import scipy.optimize
-import vb
-import daltools
+from .. import vb
+from .. import daltools
 import abc
-from daltools.util import full, blocked
-from num_diff import findif
-from scipyifc import VBStructureCoefficientMinimizer
+from ..daltools.util import full, blocked
+from ..num_diff import findif
+from ..scipyifc import VBStructureCoefficientMinimizer
 
 
 class VBTestH2(unittest.TestCase):
@@ -45,7 +45,6 @@ class VBTestH2(unittest.TestCase):
         self.assertAlmostEqual(xfg.value, -1.13728383)
 
     def test_solver_start_covalent(self):
-        import scipyifc
         self.wf.coef = [0.0, 1.0]
         xfg = VBStructureCoefficientMinimizer(self.wf)
         xfg.minimize()
