@@ -3,10 +3,10 @@
 import os
 import math
 import numpy as np
-from .daltools import one
+from daltools import one
+from util import full
 from .two_electron import two
 from .two_electron.two import fockab as Fao
-from .daltools.util import full
 from .nod import Nod, Dao, Dmo
 
 

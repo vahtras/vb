@@ -2,8 +2,8 @@ import unittest
 import os
 import numpy
 from .. import vb
-from ..daltools.util import full
-from ..daltools import one
+from util import full
+from daltools import one
 from ..scipyifc import *
 from ..num_diff import findif
 import math

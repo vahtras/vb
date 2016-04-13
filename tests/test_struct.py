@@ -1,5 +1,5 @@
 import unittest
-from ..daltools.util.full import init
+from util.full import init
 from ..vb import *
 from ..num_diff.findif import clgrad, DELTA
 

@@ -1,11 +1,11 @@
 import unittest
 import numpy
 import os
-import scipy.optimize
-from .. import vb
-from .. import daltools
 import abc
-from ..daltools.util import full, blocked
+import scipy.optimize
+import daltools
+from util import full, blocked
+from .. import vb
 from ..num_diff import findif
 from ..scipyifc import VBStructureCoefficientMinimizer
 
@@ -18,7 +18,7 @@ class VBTestH2(unittest.TestCase):
             return os.path.join(self.tmp, fil)
 
         vb.Nod.tmpdir = self.tmp
-        vb.Nod.C = daltools.util.full.unit(2)
+        vb.Nod.C = full.unit(2)
         vb.Nod.S = daltools.one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()
         self.wf = vb.WaveFunction(
             [vb.Structure(
@@ -136,7 +136,7 @@ class VBTestH2C(unittest.TestCase):
             return os.path.join(self.tmp, fil)
 
         vb.Nod.tmpdir = self.tmp
-        vb.Nod.C = daltools.util.full.matrix((10, 2))
+        vb.Nod.C = full.matrix((10, 2))
         vb.Nod.C[0, 0] = 1.0
         vb.Nod.C[5, 1] = 1.0
         vb.Nod.S = daltools.one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()

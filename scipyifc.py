@@ -1,7 +1,7 @@
 import numpy
 import scipy.optimize
 import vb
-from daltools.util import full, blocked
+from util import full, blocked
 
 
 class Minimizer(object):
