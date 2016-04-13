@@ -1,6 +1,3 @@
 [submodule "two_electron"]
 	path = two_electron
 	url = https://github.com/vahtras/two_electron.git
-[submodule "num_diff"]
-	path = num_diff
-	url = https://github.com/vahtras/num_diff

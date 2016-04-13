@@ -6,7 +6,7 @@ import scipy.optimize
 import daltools
 from util import full, blocked
 from .. import vb
-from ..num_diff import findif
+from findifftool import core as findif
 from ..scipyifc import VBStructureCoefficientMinimizer
 
 

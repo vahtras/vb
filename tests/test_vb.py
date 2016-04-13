@@ -6,7 +6,7 @@ from daltools import one
 from util import full, timing
 from ..vb import WaveFunction, Structure, is_two_electron
 from ..nod import Nod
-from ..num_diff import findif as fd
+from findifftool import core as fd
 
 
 class WaveFunctionND(WaveFunction):

@@ -4,7 +4,7 @@ import os
 from util.full import init, matrix
 from ..nod import Nod, Dao, Dmo
 from ..vb import Structure, StructError, BraKet
-from ..num_diff.findif import clgrad, clhess, clmixhess, DELTA
+from findifftool.core import clgrad, clhess, clmixhess, DELTA
 
 class NodTest(unittest.TestCase):
 

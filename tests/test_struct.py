@@ -1,7 +1,7 @@
 import unittest
 from util.full import init
 from ..vb import *
-from ..num_diff.findif import clgrad, DELTA
+from findifftool.core import clgrad, DELTA
 
 class StructTest(unittest.TestCase):
 
