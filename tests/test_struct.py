@@ -1,7 +1,8 @@
 import unittest
 from util.full import init
-from ..vb import *
 from findifftool.core import clgrad, DELTA
+from . import vb
+from vb.core import *
 
 class StructTest(unittest.TestCase):
 

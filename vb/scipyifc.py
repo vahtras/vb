@@ -1,6 +1,6 @@
 import numpy
 import scipy.optimize
-import vb
+from . import core as vb
 from util import full, blocked
 
 

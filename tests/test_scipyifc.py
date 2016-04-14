@@ -1,11 +1,12 @@
 import unittest
 import os
 import numpy
-from .. import vb
 from util import full
 from daltools import one
-from ..scipyifc import *
 from findifftool import core as findif
+from . import vb
+from vb.scipyifc import *
+from vb import core as vb
 import math
 SQRTH = math.sqrt(0.5)
 SQRT2 = math.sqrt(2.0)

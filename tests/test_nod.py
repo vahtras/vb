@@ -2,9 +2,10 @@ import unittest
 import numpy as np
 import os
 from util.full import init, matrix
-from ..nod import Nod, Dao, Dmo
-from ..vb import Structure, StructError, BraKet
 from findifftool.core import clgrad, clhess, clmixhess, DELTA
+from . import vb
+from vb.core import Structure, StructError, BraKet
+from vb.nod import Nod, Dao, Dmo
 
 class NodTest(unittest.TestCase):
 

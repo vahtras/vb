@@ -4,9 +4,10 @@ import numpy as np
 import random, unittest
 from daltools import one
 from util import full, timing
-from ..vb import WaveFunction, Structure, is_two_electron
-from ..nod import Nod
 from findifftool import core as fd
+from . import vb
+from vb.core import WaveFunction, Structure, is_two_electron
+from vb.nod import Nod
 
 
 class WaveFunctionND(WaveFunction):

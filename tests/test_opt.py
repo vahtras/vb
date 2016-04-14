@@ -4,11 +4,11 @@ import os
 import abc
 import scipy.optimize
 import daltools
-from util import full, blocked
-from .. import vb
 from findifftool import core as findif
-from ..scipyifc import VBStructureCoefficientMinimizer
-
+from util import full, blocked
+from . import vb
+from vb.scipyifc import VBStructureCoefficientMinimizer
+from vb import core as vb
 
 class VBTestH2(unittest.TestCase):
 
