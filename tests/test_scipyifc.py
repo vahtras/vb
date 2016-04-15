@@ -164,14 +164,12 @@ class TestLagrangianMinTest(unittest.TestCase):
 
     def test_no_side_effect(self):
         self.pfg.x = self.x1
-        print self.pfg.p, self.pfg.l
         x = full.init(numpy.random.random(3))
         Lx = self.pfg.lagrangian()(x, self.pfg)
         numpy.testing.assert_allclose(self.pfg.x, self.x1)
 
     def test_no_side_effect(self):
         self.pfg.x = self.x1
-        print self.pfg.p, self.pfg.l
         x = full.init(numpy.random.random(3))
         Lx = self.pfg.lagrangian_derivative()(x, self.pfg)
         numpy.testing.assert_allclose(self.pfg.x, self.x1)
