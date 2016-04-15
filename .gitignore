@@ -7,3 +7,6 @@ cover
 *.out
 .noseids
 .pytest.restart
+venv*
+htmlcov
+iterate.dat

@@ -5,8 +5,9 @@ import math
 import numpy as np
 from daltools import one
 from util import full
-from two_electron import two
-from two_electron.two import fockab as Fao
+import two
+from two import fockab as Fao
+import two.vb
 from .nod import Nod, Dao, Dmo
 
 
@@ -406,7 +407,7 @@ class BraKet(object):
 
         d_am = self.contravariant_transition_density_ao_mo
         delta = self.co_contravariant_transition_delta()
-        K_h_d2L += two.vb_transform(
+        K_h_d2L += two.vb.vb_transform(
             d_am, delta,
             filename=os.path.join(self.tmpdir, 'AOTWOINT')
             )*self.overlap()
@@ -453,7 +454,7 @@ class BraKet(object):
             )
 
 
-        dK_g_dL += two.vb_transform2(
+        dK_g_dL += two.vb.vb_transform2(
             self.contravariant_transition_density_mo_ao,
             self.contravariant_transition_density_ao_mo,
             self.contra_covariant_transition_delta(),
