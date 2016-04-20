@@ -8,7 +8,7 @@ from util import full
 import two
 from two import fockab as Fao
 import two.vb
-from .nod import Nod, Dao, Dmo
+from .nod import Nod, Dao, Dmo, SingularOverlapError
 
 
 class BraKet(object):
@@ -35,10 +35,8 @@ class BraKet(object):
     def __mul__(self, h):
         if is_one_electron(h):
             return self.oneel_energy(h)*self.overlap()
-        elif is_two_electron(h):
-            raise NotImplementedError
         else:
-            raise Exception("Unknown multiplicator")
+            raise TypeError, "Unknown multiplicator"
 
     def overlap(self):
         """Returns determinant overlap <K|L>"""
@@ -111,7 +109,9 @@ class BraKet(object):
         Return ao transition density matrix
         """
         if self.overlap() == 0:
-            raise Exception("Density not implemented for singular overlap")
+            raise SingularOverlapError(
+                "Density not implemented for singular overlap"
+                )
         return Dao(self.K, self.L)
 
     def covariant_density_ao(self):
@@ -612,7 +612,7 @@ class WaveFunction(object):
         if VBSCF:
             self.C = Nod.C
         else:
-            raise Exception("not implemented")
+            raise NotImplementedError
         self.blockdims = blockdims
 
     def tmp(self, filename):
@@ -909,56 +909,6 @@ class WaveFunction(object):
             e_orb_hess,
             )
 
-    def gradientvector(self):
-        """Full energy gradient as vector"""
-        sg, og = self.energygrad()
-        mo, ao = og.shape
-        lc = mo*ao
-        ls, = sg.shape
-        og1 = og.flatten('F')
-        gdim = ls+lc
-        g = full.matrix(gdim)
-        g[:ls] = sg
-        g[ls:] = og1
-        return g
-
-    def gradient_norm(self):
-        """Gradient norm"""
-        gv = self.gradientvector()
-        G = self.vb_metric_matrix()
-        return gv*G.I*gv
-
-    def hessianmatrix(self):
-        """Energy Hessian as matrix"""
-        sh, mh, oh = self.energyhess()
-        mo, ao, ls = mh.shape
-        lc = mo*ao
-        mh1 = mh.reshape((lc, ls), order='Fortran')
-        oh1 = oh.reshape((lc, lc), order='Fortran')
-        hdim = lc+ls
-        h = full.matrix((hdim, hdim))
-        h[:ls, :ls] = sh
-        h[ls:, :ls] = mh1
-        h[:ls, ls:] = mh1.T
-        h[ls:, ls:] = oh1
-        return h
-
-    def vb_metric_matrix(self):
-        """VB metric?"""
-        sh, mh, mhT, oh = self.vb_metric()
-        mo, ao, ls = mh.shape
-        lc = mo*ao
-        mh1 = mh.reshape((lc, ls), order='Fortran')
-        mh1T = mhT.reshape((ls, lc), order='Fortran')
-        oh1 = oh.reshape((lc, lc), order='Fortran')
-        hdim = lc+ls
-        h = full.matrix((hdim, hdim))
-        h[:ls, :ls] = sh
-        h[ls:, :ls] = mh1
-        h[:ls, ls:] = mh1T
-        h[ls:, ls:] = oh1
-        return h
-
 def is_one_electron(h):
     """True if arg one-electron operator type"""
     return is_one_tuple(h) or is_one_array(h)
@@ -976,10 +926,3 @@ def is_one_array(h):
     return isinstance(h, numpy.ndarray) and \
            len(h.shape) == 2 and \
            h.shape[0] == h.shape[1]
-
-def is_two_electron(*args):
-    """To be implmeneted"""
-    raise NotImplementedError
-
-if __name__ == "__main__":
-    pass

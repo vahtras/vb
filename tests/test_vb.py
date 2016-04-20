@@ -6,7 +6,7 @@ from daltools import one
 from util import full, timing
 from findifftool import core as fd
 from . import vb
-from vb.core import WaveFunction, Structure, is_two_electron
+from vb.core import WaveFunction, Structure
 from vb.nod import Nod
 
 
@@ -152,7 +152,8 @@ class WaveFunctionND(WaveFunction):
 
 
 class VBTest(unittest.TestCase):
-    pass
+    def setUp(self):
+        np.random.seed(0)
 
 
 class VBTestH2A(VBTest):
@@ -170,6 +171,7 @@ class VBTestH2A(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
+        VBTest.setUp(self)
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
@@ -295,13 +297,6 @@ B   0.0  0.0  0.7428
         nel=self.WF.nel()
         self.assertAlmostEqual(nel, 2.0)
 
-    def test_verify_not_implemented_exception(self):
-        with self.assertRaises(NotImplementedError):
-            is_two_electron()
-
-    def test_struct_overlap(self):
-        pass
-
 
 class VBTestH2B(VBTest):
     
@@ -319,6 +314,7 @@ class VBTestH2B(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
+        VBTest.setUp(self)
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
@@ -425,6 +421,7 @@ class VBTestH2C(VBTest):
         """
         """
       
+        VBTest.setUp(self)
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_c')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
@@ -515,6 +512,7 @@ class VBTestH2C(VBTest):
 class VBTestFH(VBTest):
 
     def setUp(self):
+        VBTest.setUp(self)
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_fh')
         def tmp(fil):
             return os.path.join(self.tmp, fil)
@@ -575,6 +573,10 @@ class VBTestFH(VBTest):
             ]
         )
 
+
+    def test_non_VBSCF(self):
+        with self.assertRaises(NotImplementedError):
+            wf = WaveFunction([], [], VBSCF=False, tmpdir=self.tmp)
 
 if __name__ == "__main__":
    unittest.main()

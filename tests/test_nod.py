@@ -1,11 +1,12 @@
 import unittest
+import mock
 import numpy as np
 import os
-from util.full import init, matrix
+from util.full import init, matrix, unit
 from findifftool.core import clgrad, clhess, clmixhess, DELTA
 from . import vb
 from vb.core import Structure, StructError, BraKet
-from vb.nod import Nod, Dao, Dmo
+from vb.nod import Nod, Dao, Dmo, SingularOverlapError
 
 class NodTest(unittest.TestCase):
 
@@ -16,6 +17,21 @@ class NodTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_set_C(self):
+        C = np.random.random((2, 2))
+        nod = Nod([0], [1], C=C)
+        np.testing.assert_allclose(nod.C, C)
+
+    def test_set_tmp(self):
+        nod = Nod([0], [1], tmpdir='/tmp')
+        self.assertEqual(nod.tmpdir, '/tmp')
+
+    @mock.patch('vb.nod.one.read')
+    def test_set_S(self, mock_one):
+        Nod.S = None
+        nod = Nod([0], [1])
+        mock_one.assert_called_once_with('OVERLAP', '/tmp/AOONEINT')
+    
     def test_vac_empty(self):
         vac = Nod([], [])
         self.assertEqual(vac.electrons(), 0)
@@ -128,6 +144,11 @@ class BraKetTest(unittest.TestCase):
 
     def test_str(self):
         self.assertEqual(str(self.K00_L00), "<(0|0)|...|(0|0)>")
+
+    def test_dao_singular_overlap(self):
+        Nod.S = unit(2)
+        with self.assertRaises(SingularOverlapError):
+            zero = self.a0a1.transition_ao_density()
 
     def test_nod_pair_setup_aa(self):
         self.assertAlmostEqual(self.a0a0.K*self.a0a0.L, self.a0a0.overlap())
@@ -2165,5 +2186,13 @@ class BraKetTest3(unittest.TestCase):
             rtol=DELTA, atol=DELTA
             )
             
+    def test_tmp(self):
+        KL = BraKet([], [], tmpdir='/dev/null')
+        self.assertEqual(KL.tmpdir, '/dev/null')
+
+    def test_mul_unknown_input(self):
+        with self.assertRaises(TypeError):
+            res = BraKet([], []) * None
+
 if __name__ == "__main__":
     unittest.main()

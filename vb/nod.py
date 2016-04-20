@@ -1,6 +1,7 @@
 import os
 from util import full
 from daltools import one
+from numpy.linalg import LinAlgError
 
 
 class Nod(object):
@@ -128,7 +129,10 @@ def Dao(K, L):
             D.append(full.matrix(Nod.S.shape))
         else:
             SLK = CL[s].T*Nod.S*CK[s]
-            D.append(CK[s]*(CL[s].T/SLK))
+            try:
+                D.append(CK[s]*(CL[s].T/SLK))
+            except LinAlgError:
+                raise SingularOverlapError
 
     return D
 
@@ -153,3 +157,5 @@ def Dmo(K, L):
 
     return D
 
+class SingularOverlapError(Exception):
+    pass
