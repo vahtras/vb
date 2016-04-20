@@ -36,7 +36,7 @@ class BraKet(object):
         if is_one_electron(h):
             return self.oneel_energy(h)*self.overlap()
         else:
-            raise TypeError, "Unknown multiplicator"
+            raise TypeError("Unknown multiplicator")
 
     def overlap(self):
         """Returns determinant overlap <K|L>"""
