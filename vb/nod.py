@@ -53,7 +53,7 @@ class Nod(object):
         elif s == 1:
             return self.b
         else:
-            return None
+            raise TypeError("Non-binary input to Nod object")
 
     def __repr__(self):
         stra = " ".join(["%g" % alpha for alpha in self.a])

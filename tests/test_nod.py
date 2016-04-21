@@ -48,6 +48,11 @@ class NodTest(unittest.TestCase):
         det = Nod([1, 2], [2, 3])
         self.assertListEqual(det(1), [2, 3])
 
+    def test_raise_on_nonbinary_input(self):
+        with self.assertRaises(TypeError):
+            dum = Nod([1], [1])(2)
+            
+
     def test_repr(self):
         det = Nod([1, 2], [2, 3])
         self.assertEqual(str(det), '(1 2|2 3)')
@@ -149,6 +154,11 @@ class BraKetTest(unittest.TestCase):
         Nod.S = unit(2)
         with self.assertRaises(SingularOverlapError):
             zero = self.a0a1.transition_ao_density()
+
+    def test_dao_singular_overlap2(self):
+        Nod.S = unit(2)
+        with self.assertRaises(SingularOverlapError):
+            zero = Dao(self.a0a1.K, self.a0a1.L)
 
     def test_nod_pair_setup_aa(self):
         self.assertAlmostEqual(self.a0a0.K*self.a0a0.L, self.a0a0.overlap())

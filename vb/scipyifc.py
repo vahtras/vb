@@ -14,9 +14,6 @@ class Minimizer(object):
         self.c = constraints
         self.b = bounds
         self.value = None
-        def callback(xk):
-            print("xk", xk, "f(xk)", self.f(xk, self), self.g(xk, self))
-        self.callback = callback
         self.options = {}
         self.gtol = 1e-5
         self.maxit = 10
@@ -34,10 +31,7 @@ class Minimizer(object):
         self.value = result.fun
         if not result.success:
             for key in result:
-                if key == 'allvecs':
-                    print("%s:"%key, len(result[key]), full.init(result[key]))
-                else:
-                    print("%s:"%key, result[key])
+                print("%s:"%key, result[key])
             print(self.f(result.x, self))
                 
         
