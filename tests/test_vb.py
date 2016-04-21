@@ -1,5 +1,6 @@
 """Test module of VB derivatives with numerical differentiation"""
 import os
+import math
 import numpy as np
 import random, unittest
 from daltools import one
@@ -155,6 +156,13 @@ class VBTest(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
 
+    def tmp(self, fil):
+        return os.path.join(self.tmpdir, fil)
+
+    def set_tmpdir(self, tail):
+        self.tmpdir = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
+        
+
 
 class VBTestH2A(VBTest):
     def setUp(self):
@@ -172,14 +180,12 @@ class VBTestH2A(VBTest):
         """
       
         VBTest.setUp(self)
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
-        def tmp(fil):
-            return os.path.join(self.tmp, fil)
+        self.set_tmpdir('test_h2_ab')
       
-        self.molinp=tmp("MOLECULE.INP")
-        self.dalinp=tmp("DALTON.INP")
-        self.one=tmp("AOONEINT")
-        self.two=tmp("AOTWOINT")
+        self.molinp=self.tmp("MOLECULE.INP")
+        self.dalinp=self.tmp("DALTON.INP")
+        self.one=self.tmp("AOONEINT")
+        self.two=self.tmp("AOTWOINT")
 #
 # A common dalton input to calculate integrals
 #
@@ -207,9 +213,9 @@ B   0.0  0.0  0.7428
 # Setup VB wave function
 #
         Nod.C=full.matrix((2,2)).random()
-        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+        Nod.S=one.read("OVERLAP", self.one).unpack().unblock()
+        Nod.h=one.read("ONEHAMI", self.one).unpack().unblock()
+        Nod.Z=one.readhead(self.one)['potnuc']
         ion=Structure( [Nod([0],[0]),Nod([1],[1])], [1.0, 1.0] )
         cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
         cg=random.random()
@@ -221,7 +227,7 @@ B   0.0  0.0  0.7428
         ccov=cg*Ng2-cu*Nu2
         self.WF=WaveFunctionND(
           [ion,cov],[cion,ccov],
-          tmpdir=self.tmp
+          tmpdir=self.tmpdir
           )
         #
         # Threshold for numerical differentiation
@@ -521,6 +527,10 @@ class VBTestFH(VBTest):
         Nod.h = one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
         Nod.Z = one.readhead(tmp('AOONEINT'))['potnuc']
         Nod.C = np.loadtxt(tmp('orb')).view(full.matrix)
+        # Fix d-functionn ormalization
+        Nod.C[14, :] *= math.sqrt(1.0/3.0)
+        Nod.C[17, :] *= math.sqrt(1.0/3.0)
+        Nod.C[19, :] *= math.sqrt(1.0/3.0)
 
         cov = Structure(
             [Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 5]),
@@ -530,8 +540,8 @@ class VBTestFH(VBTest):
         ion_a = Structure([Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 4])], [1.0])
         ion_b = Structure([Nod([0, 1, 2, 3, 5],[0, 1, 2, 3, 5])], [1.0])
 
-        self.wf = WaveFunctionND([cov, ion_a, ion_b], [0.66526, -0.36678, 0.07321], tmpdir=self.tmp)
-        #self.wf.normalize()
+        self.wf = WaveFunctionND([cov, ion_a, ion_b], [0.66526, -0.36678, -0.07321], tmpdir=self.tmp)
+        self.wf.normalize()
 
 
     def test_Z(self):
@@ -541,13 +551,13 @@ class VBTestFH(VBTest):
     def test_energy(self):
         self.assertAlmostEqual(self.wf.energy() + self.wf.Z, -100.03323961)
 
-    @unittest.skip('hold')
+    #@unittest.skip('hold')
     def test_orb_normalized(self):
         C = self.wf.C.copy()
         self.wf.normalize_mo()
         np.testing.assert_allclose(C, self.wf.C)
 
-    @unittest.skip('hold')
+    #@unittest.skip('hold')
     def test_orbital_overlap(self):
         ref_overlap = full.init([
         [ 1.000000,  0.000000,   0.000000,   0.000000,   0.074261,  0.064405],
@@ -560,7 +570,7 @@ class VBTestFH(VBTest):
         self.wf.normalize_mo()
         overlap = self.wf.C.T*Nod.S*self.wf.C
         print(overlap); print(ref_overlap)
-        np.testing.assert_allclose(overlap, ref_overlap)
+        np.testing.assert_allclose(overlap, ref_overlap, atol=1e-6)
 
 
     @unittest.skip('off-diagonal still wrong')
