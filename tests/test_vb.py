@@ -153,15 +153,29 @@ class WaveFunctionND(WaveFunction):
 
 
 class VBTest(unittest.TestCase):
-    def setUp(self):
+
+    def setUp(self, arg=None):
         np.random.seed(0)
+        self.set_tmpdir(arg)
+        self.set_tmpfiles()
+        self.init_nod()
 
     def tmp(self, fil):
         return os.path.join(self.tmpdir, fil)
 
     def set_tmpdir(self, tail):
-        self.tmpdir = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
+        self.tmpdir = os.path.join(os.path.dirname(__file__), tail)
         
+    def set_tmpfiles(self):
+        self.molinp=self.tmp("MOLECULE.INP")
+        self.dalinp=self.tmp("DALTON.INP")
+        self.one=self.tmp("AOONEINT")
+        self.two=self.tmp("AOTWOINT")
+
+    def init_nod(self):
+        Nod.S=one.read("OVERLAP", self.one).unpack().unblock()
+        Nod.h=one.read("ONEHAMI", self.one).unpack().unblock()
+        Nod.Z=one.readhead(self.one)['potnuc']
 
 
 class VBTestH2A(VBTest):
@@ -179,13 +193,8 @@ class VBTestH2A(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
-        VBTest.setUp(self)
-        self.set_tmpdir('test_h2_ab')
+        VBTest.setUp(self, 'test_h2_ab')
       
-        self.molinp=self.tmp("MOLECULE.INP")
-        self.dalinp=self.tmp("DALTON.INP")
-        self.one=self.tmp("AOONEINT")
-        self.two=self.tmp("AOTWOINT")
 #
 # A common dalton input to calculate integrals
 #
@@ -213,9 +222,7 @@ B   0.0  0.0  0.7428
 # Setup VB wave function
 #
         Nod.C=full.matrix((2,2)).random()
-        Nod.S=one.read("OVERLAP", self.one).unpack().unblock()
-        Nod.h=one.read("ONEHAMI", self.one).unpack().unblock()
-        Nod.Z=one.readhead(self.one)['potnuc']
+
         ion=Structure( [Nod([0],[0]),Nod([1],[1])], [1.0, 1.0] )
         cov=Structure( [Nod([0],[1]),Nod([1],[0])], [1.0, 1.0] )
         cg=random.random()
@@ -320,20 +327,12 @@ class VBTestH2B(VBTest):
             + (cg*Ng**2-cu*Nu**2)[(a|b) + (b|a)]
         """
       
-        VBTest.setUp(self)
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
-        def tmp(fil):
-            return os.path.join(self.tmp, fil)
-      
-        self.one=tmp("AOONEINT")
-        self.two=tmp("AOTWOINT")
+        VBTest.setUp(self, 'test_h2_ab')
 #
 # Setup VB wave function
 #
         Nod.C=full.unit(2)
-        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
+
         ion_a = Structure([Nod([0],[0])], [1.0], normalize=False)
         ion_b = Structure([Nod([1],[1])], [1.0], normalize=False)
         import math
@@ -348,7 +347,7 @@ class VBTestH2B(VBTest):
         ccov = (cg*Ng2 - cu*Nu2)/N
         self.WF=WaveFunctionND(
           [cov, ion_a, ion_b],[ccov, cion, cion],
-          tmpdir=self.tmp
+          tmpdir=self.tmpdir
           )
         #
 
@@ -427,13 +426,7 @@ class VBTestH2C(VBTest):
         """
         """
       
-        VBTest.setUp(self)
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_c')
-        def tmp(fil):
-            return os.path.join(self.tmp, fil)
-      
-        self.one=tmp("AOONEINT")
-        self.two=tmp("AOTWOINT")
+        VBTest.setUp(self, 'test_h2_c')
 #
 # Setup VB wave function
 #
@@ -448,15 +441,12 @@ class VBTestH2C(VBTest):
             ]
         )
 
-        Nod.S=one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-        Nod.h=one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-        Nod.Z=one.readhead(tmp('AOONEINT'))['potnuc']
         ion_a = Structure([Nod([0],[0])], [1.0])
         ion_b = Structure([Nod([1],[1])], [1.0])
         cov = Structure([Nod([0],[1]),Nod([1],[0])], [1.0, 1.0])
         self.WF=WaveFunctionND(
           [cov, ion_a, ion_b],[0.83675, 0.09850, 0.09850],
-          tmpdir=self.tmp
+          tmpdir=self.tmpdir
           )
         self.WF.normalize()
         #
@@ -518,16 +508,10 @@ class VBTestH2C(VBTest):
 class VBTestFH(VBTest):
 
     def setUp(self):
-        VBTest.setUp(self)
-        self.tmp = os.path.join(os.path.dirname(__file__), 'test_fh')
-        def tmp(fil):
-            return os.path.join(self.tmp, fil)
+        VBTest.setUp(self, 'test_fh')
 
-        Nod.S = one.read("OVERLAP",tmp('AOONEINT')).unpack().unblock()
-        Nod.h = one.read("ONEHAMI",tmp('AOONEINT')).unpack().unblock()
-        Nod.Z = one.readhead(tmp('AOONEINT'))['potnuc']
-        Nod.C = np.loadtxt(tmp('orb')).view(full.matrix)
-        # Fix d-functionn ormalization
+        Nod.C = np.loadtxt(self.tmp('orb')).view(full.matrix)
+        # Fix d-function normalization
         Nod.C[14, :] *= math.sqrt(1.0/3.0)
         Nod.C[17, :] *= math.sqrt(1.0/3.0)
         Nod.C[19, :] *= math.sqrt(1.0/3.0)
@@ -540,7 +524,7 @@ class VBTestFH(VBTest):
         ion_a = Structure([Nod([0, 1, 2, 3, 4],[0, 1, 2, 3, 4])], [1.0])
         ion_b = Structure([Nod([0, 1, 2, 3, 5],[0, 1, 2, 3, 5])], [1.0])
 
-        self.wf = WaveFunctionND([cov, ion_a, ion_b], [0.66526, -0.36678, -0.07321], tmpdir=self.tmp)
+        self.wf = WaveFunctionND([cov, ion_a, ion_b], [0.66526, -0.36678, -0.07321], tmpdir=self.tmpdir)
         self.wf.normalize()
 
 
@@ -586,7 +570,7 @@ class VBTestFH(VBTest):
 
     def test_non_VBSCF(self):
         with self.assertRaises(NotImplementedError):
-            wf = WaveFunction([], [], VBSCF=False, tmpdir=self.tmp)
+            wf = WaveFunction([], [], VBSCF=False, tmpdir=self.tmpdir)
 
 if __name__ == "__main__":
    unittest.main()
