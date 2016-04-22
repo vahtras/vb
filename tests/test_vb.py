@@ -531,17 +531,14 @@ class VBTestFH(VBTest):
     def test_Z(self):
         self.assertAlmostEqual(self.wf.Z, 5.193669438059)
 
-    @unittest.skip('hold')
     def test_energy(self):
         self.assertAlmostEqual(self.wf.energy() + self.wf.Z, -100.03323961)
 
-    #@unittest.skip('hold')
     def test_orb_normalized(self):
         C = self.wf.C.copy()
         self.wf.normalize_mo()
         np.testing.assert_allclose(C, self.wf.C)
 
-    #@unittest.skip('hold')
     def test_orbital_overlap(self):
         ref_overlap = full.init([
         [ 1.000000,  0.000000,   0.000000,   0.000000,   0.074261,  0.064405],
@@ -557,14 +554,14 @@ class VBTestFH(VBTest):
         np.testing.assert_allclose(overlap, ref_overlap, atol=1e-6)
 
 
-    @unittest.skip('off-diagonal still wrong')
     def test_structure_overlap(self):
         np.testing.assert_allclose(
             self.wf.structure_overlap(), [
             [1.000000, -0.685108, -0.685108],
             [-0.685108, 1.000000, 0.306654],
             [-0.685108, 0.306654, 1.000000]
-            ]
+            ],
+        atol=1e-6
         )
 
 
