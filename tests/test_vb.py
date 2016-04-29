@@ -3,7 +3,7 @@ import os
 import math
 import numpy as np
 import random, unittest
-from daltools import one
+from qcifc.core import QuantumChemistry
 from util import full, timing
 from findifftool import core as fd
 from . import vb
@@ -157,7 +157,7 @@ class VBTest(unittest.TestCase):
     def setUp(self, arg=None):
         np.random.seed(0)
         self.set_tmpdir(arg)
-        self.set_tmpfiles()
+        self.qcifc = QuantumChemistry.get_factory('Dalton', tmpdir=self.tmpdir)
         self.init_nod()
 
     def tmp(self, fil):
@@ -166,16 +166,11 @@ class VBTest(unittest.TestCase):
     def set_tmpdir(self, tail):
         self.tmpdir = os.path.join(os.path.dirname(__file__), tail)
         
-    def set_tmpfiles(self):
-        self.molinp=self.tmp("MOLECULE.INP")
-        self.dalinp=self.tmp("DALTON.INP")
-        self.one=self.tmp("AOONEINT")
-        self.two=self.tmp("AOTWOINT")
-
     def init_nod(self):
-        Nod.S=one.read("OVERLAP", self.one).unpack().unblock()
-        Nod.h=one.read("ONEHAMI", self.one).unpack().unblock()
-        Nod.Z=one.readhead(self.one)['potnuc']
+        Nod.S = self.qcifc.get_overlap()
+        Nod.h = self.qcifc.get_one_el_hamiltonian()
+        Nod.Z = self.qcifc.get_nuclear_repulsion()
+
 
 
 class VBTestH2A(VBTest):
@@ -195,29 +190,6 @@ class VBTestH2A(VBTest):
       
         VBTest.setUp(self, 'test_h2_ab')
       
-#
-# A common dalton input to calculate integrals
-#
-        dalinp=open(self.dalinp,'w')
-        dalinp.write("""**DALTON
-.INTEGRAL
-**END OF
-""")
-        dalinp.close()
-        #
-        # Molecule input
-        #
-        molinp=open(self.molinp,'w')
-        molinp.write("""BASIS
-STO-3G
-1
-2
-    1    0         A
-        1.    2    1    1
-A   0.0  0.0  0.0
-B   0.0  0.0  0.7428
-""")
-        molinp.close()
 #
 # Setup VB wave function
 #

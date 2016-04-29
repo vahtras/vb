@@ -3,7 +3,7 @@ import numpy
 import os
 import abc
 import scipy.optimize
-import daltools
+from qcifc.core import QuantumChemistry
 from findifftool import core as findif
 from util import full, blocked
 from . import vb
@@ -14,12 +14,13 @@ class VBTestH2(unittest.TestCase):
 
     def setUp(self):
         self.tmp = os.path.join(os.path.dirname(__file__), 'test_h2_ab')
+        self.qc = QuantumChemistry.get_factory('Dalton', tmpdir=self.tmp)
         def tmp(fil):
             return os.path.join(self.tmp, fil)
 
         vb.Nod.tmpdir = self.tmp
         vb.Nod.C = full.unit(2)
-        vb.Nod.S = daltools.one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()
+        vb.Nod.S = self.qc.get_overlap()
         self.wf = vb.WaveFunction(
             [vb.Structure(
                 [vb.Nod([0], [0]), vb.Nod([1], [1])],
@@ -139,7 +140,8 @@ class VBTestH2C(unittest.TestCase):
         vb.Nod.C = full.matrix((10, 2))
         vb.Nod.C[0, 0] = 1.0
         vb.Nod.C[5, 1] = 1.0
-        vb.Nod.S = daltools.one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()
+        self.qc = QuantumChemistry.get_factory('Dalton', tmpdir=self.tmp)
+        vb.Nod.S = self.qc.get_overlap()
         self.blockdims = ((5, 5), (1, 1))
         self.wf = vb.WaveFunction(
             [vb.Structure(
@@ -284,7 +286,7 @@ class VBTestH2C(unittest.TestCase):
 
     @unittest.skip('converges wrong')
     def test_solver_start_covalent(self):
-        start_covalent = daltools.util.full.init(
+        start_covalent = full.init(
             [1.0, 0.1, 0.1] + [
                 1., .1, 0., 0., 0.1, 0., 0., 0., 0., 0,
                 0., 0., 0., 0., 0., 1., .1, 0., 0., -0.1

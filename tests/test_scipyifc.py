@@ -2,7 +2,7 @@ import unittest
 import os
 import numpy
 from util import full
-from daltools import one
+from qcifc.core import QuantumChemistry
 from findifftool import core as findif
 from . import vb
 from vb.scipyifc import *
@@ -218,11 +218,12 @@ class TestVBMin(unittest.TestCase):
         def tmp(fil):
             return os.path.join(self.tmp, fil)
 
+        self.qcifc = QuantumChemistry.get_factory('Dalton', tmpdir=self.tmp)
         vb.Nod.tmpdir = self.tmp
         vb.Nod.C = full.matrix((10, 2))
         vb.Nod.C[0, 0] = 1.0
         vb.Nod.C[5, 1] = 1.0
-        vb.Nod.S = one.read("OVERLAP", tmp("AOONEINT")).unpack().unblock()
+        vb.Nod.S = self.qcifc.get_overlap()
         self.blockdims = ((5, 5), (1, 1))
         self.wf = vb.WaveFunction(
             [vb.Structure(
