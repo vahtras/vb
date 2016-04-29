@@ -3,7 +3,7 @@
 import os
 import math
 import numpy as np
-from daltools import one
+from qcifc.core import QuantumChemistry
 from util import full
 import two
 from two import fockab as Fao
@@ -15,6 +15,7 @@ class BraKet(object):
     """Non-orthogonal determinant pairs"""
 
     tmpdir = '/tmp'
+    qcifc = QuantumChemistry.get_factory('Dalton', tmpdir=tmpdir)
 
     def __init__(self, K, L, tmpdir=None):
         self.K = K
@@ -23,7 +24,8 @@ class BraKet(object):
         self._ftd = None
         self._aotd = None
         if tmpdir is not None:
-            self.tmpdir = tmpdir
+            BraKet.tmpdir = tmpdir
+            self.qcifc.set_workdir(tmpdir)
 
     def __str__(self):
         return "<%s|...|%s>" % (self.K, self.L)
@@ -597,14 +599,16 @@ class WaveFunction(object):
     """
 
     tmpdir = '/tmp'
+    qcifc = QuantumChemistry.get_factory('Dalton', tmpdir=tmpdir)
 
     def __init__(self, structs, coef, VBSCF=True, tmpdir=None, blockdims=None):
         self.structs = structs
         self.coef = full.init(coef)
         if tmpdir is not None:
             self.tmpdir = tmpdir
-        self.Z = one.readhead(self.tmp("AOONEINT"))["potnuc"]
-        self.h = one.read("ONEHAMIL", self.tmp("AOONEINT")).unpack().unblock()
+            self.qcifc.set_workdir(tmpdir)
+        self.Z = self.qcifc.get_nuclear_repulsion()
+        self.h = self.qcifc.get_one_el_hamiltonian()
         BraKet.tmpdir = self.tmpdir
         #
         # For VBSCF all structures share orbitals

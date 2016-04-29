@@ -1,6 +1,5 @@
 import os
 from util import full
-from daltools import one
 from numpy.linalg import LinAlgError
 
 
@@ -13,32 +12,20 @@ class Nod(object):
     #
     S = None   #Overlap ao basis
     C = None   #VB orbital coefficients
-    tmpdir = '/tmp'
 
-    def __init__(self, astring, bstring, C=None, tmpdir=None):
-        super(Nod, self).__init__()
+    def __init__(self, astring, bstring, C=None, S=None):
         #
         # Input: list of orbital indices for alpha and beta strings
         #
         self.a = astring
         self.b = bstring
 
-        if C is None:
-            self.C = Nod.C
-        else:
+        if C is not None:
             self.C = C
 
-        if tmpdir is not None:
-            self.tmpdir = tmpdir
-        #
-        # Read overlap at first invocation of constructor
-        #
-        aooneint = os.path.join(self.tmpdir, 'AOONEINT')
-        if Nod.S is None:
-            Nod.S = one.read('OVERLAP', aooneint).unpack().unblock()
-            #
-            # init unit for H2 test
-            #
+        if S is not None:
+            Nod.S = S
+
 
     def electrons(self):
         """Return number of electrons in determinant"""

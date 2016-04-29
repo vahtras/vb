@@ -245,7 +245,7 @@ class VBTestH2A(VBTest):
         """Energy structure gradient"""
         numstrgr, _ = self.WF.numenergygrad()
         anastrgr, _ = self.WF.energygrad()
-        np.testing.assert_allclose(numstrgr, anastrgr, rtol=self.delta)
+        np.testing.assert_allclose(numstrgr, anastrgr, rtol=self.delta, atol=self.delta)
 
     def test_norm_orb_hessian(self):
         """Norm orbital hessian"""

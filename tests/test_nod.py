@@ -4,6 +4,7 @@ import numpy as np
 import os
 from util.full import init, matrix, unit
 from findifftool.core import clgrad, clhess, clmixhess, DELTA
+from qcifc.core import QuantumChemistry as QC
 from . import vb
 from vb.core import Structure, StructError, BraKet
 from vb.nod import Nod, Dao, Dmo, SingularOverlapError
@@ -22,15 +23,10 @@ class NodTest(unittest.TestCase):
         nod = Nod([0], [1], C=C)
         np.testing.assert_allclose(nod.C, C)
 
-    def test_set_tmp(self):
-        nod = Nod([0], [1], tmpdir='/tmp')
-        self.assertEqual(nod.tmpdir, '/tmp')
-
-    @mock.patch('vb.nod.one.read')
-    def test_set_S(self, mock_one):
-        Nod.S = None
-        nod = Nod([0], [1])
-        mock_one.assert_called_once_with('OVERLAP', '/tmp/AOONEINT')
+    def test_set_S(self):
+        S = np.random.random((2, 2))
+        nod = Nod([0], [1], S=S)
+        np.testing.assert_allclose(Nod.S, S)
     
     def test_vac_empty(self):
         vac = Nod([], [])
