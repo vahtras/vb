@@ -5,9 +5,6 @@ import math
 import numpy as np
 from qcifc.core import QuantumChemistry
 from util import full
-import two
-from two import fockab as Fao
-import two.vb
 from .nod import Nod, Dao, Dmo, SingularOverlapError
 
 
@@ -155,10 +152,9 @@ class BraKet(object):
     @property
     def transition_ao_fock(self):
         """Return AO fock matrix F(DKL) for transition density"""
+        self.qcifc.set_densities(*self.transition_ao_density)
         FKL = tuple(
-            f.view(full.matrix) for f in Fao(
-                self.transition_ao_density, filename=self.tmp('AOTWOINT')
-            )
+            f.view(full.matrix) for f in self.qcifc.get_two_el_fock()
         )
         return FKL
 
@@ -409,9 +405,8 @@ class BraKet(object):
 
         d_am = self.contravariant_transition_density_ao_mo
         delta = self.co_contravariant_transition_delta()
-        K_h_d2L += two.vb.vb_transform(
-            d_am, delta,
-            filename=os.path.join(self.tmpdir, 'AOTWOINT')
+        K_h_d2L += self.qcifc.get_two_el_right_hessian(
+            d_am, delta
             )*self.overlap()
 
         return K_h_d2L
@@ -456,12 +451,11 @@ class BraKet(object):
             )
 
 
-        dK_g_dL += two.vb.vb_transform2(
+        dK_g_dL += self.qcifc.get_two_el_leftright_hessian(
             self.contravariant_transition_density_mo_ao,
             self.contravariant_transition_density_ao_mo,
             self.contra_covariant_transition_delta(),
             self.co_contravariant_transition_delta(),
-            filename=os.path.join(self.tmpdir, 'AOTWOINT')
             )*self.overlap()
         return dK_g_dL
 
@@ -610,6 +604,7 @@ class WaveFunction(object):
         self.Z = self.qcifc.get_nuclear_repulsion()
         self.h = self.qcifc.get_one_el_hamiltonian()
         BraKet.tmpdir = self.tmpdir
+        BraKet.qcifc = self.qcifc
         #
         # For VBSCF all structures share orbitals
         #
