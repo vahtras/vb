@@ -4,4 +4,5 @@ findifftool
 -e git+https://github.com/vahtras/daltools.git@master#egg=daltools
 -e git+https://github.com/vahtras/two_electron.git@master#egg=two
 -e git+https://github.com/vahtras/util.git@master#egg=util
+-e .
 
