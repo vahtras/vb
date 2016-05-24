@@ -149,5 +149,30 @@ def Dmo(K, L):
 
     return D
 
+def mo_transition_matrix(K, L):
+    """ Return unnormalized transition density"""
+
+    CK = K.orbitals()
+    CL = L.orbitals()
+
+    SKL0 = CK[0].T*Nod.S*CL[0]
+    SKL1 = CK[1].T*Nod.S*CL[1]
+
+    return (SKL0.cofactor()*SKL1.det(), SKL0.det()*SKL1.cofactor())
+
+def ao_transition_matrix(K, L):
+    """ Return unnormalized transition density"""
+
+    CK = K.orbitals()
+    CL = L.orbitals()
+
+    SKL0 = CK[0].T*Nod.S*CL[0]
+    SKL1 = CK[1].T*Nod.S*CL[1]
+
+    return (
+        CK[0]*SKL0.cofactor()*CL[0].T*SKL1.det(),
+        SKL0.det()*CK[1]*SKL1.cofactor()*CL[1].T
+        )
+
 class SingularOverlapError(Exception):
     pass

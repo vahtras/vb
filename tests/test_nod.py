@@ -7,7 +7,7 @@ from findifftool.core import clgrad, clhess, clmixhess, DELTA
 from qcifc.core import QuantumChemistry as QC
 from . import vb
 from vb.core import Structure, StructError, BraKet
-from vb.nod import Nod, Dao, Dmo, SingularOverlapError
+from vb.nod import Nod, Dao, Dmo, mo_transition_matrix, ao_transition_matrix, SingularOverlapError
 
 class NodTest(unittest.TestCase):
 
@@ -121,6 +121,25 @@ class OdTest(unittest.TestCase):
     def test_mo_density(self):
         with self.assertRaises(SingularOverlapError):
             d = Dao(self.a01b0, self.a01b1)
+
+    def test_mo_cofactor_a(self):
+        d = mo_transition_matrix(self.a01b0, self.a01b1)
+        np.testing.assert_allclose(d[0], [[0., 0.], [0., 0.]])
+
+    def test_mo_cofactor_b(self):
+        d = mo_transition_matrix(self.a01b0, self.a01b1)
+        np.testing.assert_allclose(d[1], [[0.9604]])
+
+    def test_ao_cofactor_a(self):
+        d = ao_transition_matrix(self.a01b0, self.a01b1)
+        np.testing.assert_allclose(d[0], [[0., 0.], [0., 0.]])
+
+    def test_ao_cofactor_b(self):
+        d = ao_transition_matrix(self.a01b0, self.a01b1)
+        np.testing.assert_allclose(
+            d[1],
+            [[0.470596, -0.470596],[0.470596, -0.470596]]
+            )
 
 class TDMTest(unittest.TestCase):
     """A case with near-singular overlap"""
