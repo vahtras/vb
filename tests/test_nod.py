@@ -107,6 +107,60 @@ class NodTest(unittest.TestCase):
         d_a = 0.49/1.078
         np.testing.assert_allclose(DKL_a, [[d_a, d_a], [d_a, d_a]])
 
+class OdTest(unittest.TestCase):
+    """Handle cases where mos are orthogonal and overlaps singular"""
+    def setUp(self):
+        Nod.S = init([[1.0, 0.0], [0.0, 1.0]])
+        Nod.C = init([[0.7, 0.7], [0.7, -0.7]])
+        self.a01b0 = Nod([0, 1], [0])
+        self.a01b1 = Nod([0, 1], [1])
+
+    def test_overlap(self):
+        self.assertEqual(self.a01b0*self.a01b1, 0)
+
+    def test_mo_density(self):
+        with self.assertRaises(SingularOverlapError):
+            d = Dao(self.a01b0, self.a01b1)
+
+class TDMTest(unittest.TestCase):
+    """A case with near-singular overlap"""
+
+    def setUp(self):
+        qc = QC.get_factory('Dalton', tmpdir='tests/S_nosym')
+        self.subdir = 'tests/S_nosym'
+        fpath = lambda f: os.path.join(self.subdir, f)
+        #Nod.S = daltools.one.read(
+        #    'OVERLAP',
+        #    fpath('hf_S.AOONEINT')
+        #    ).unpack().unblock()
+        Nod.S = qc.get_overlap()
+        #rst = daltools.sirrst.SiriusRestart(fpath("hf_S.SIRIUS.RST"))
+        #cmo = rst.cmo.unblock()
+        cmo = qc.get_mo()
+        self.p_x = Nod(
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [0, 1, 3, 4, 5, 6, 7, 8],
+            C=cmo
+            )
+        self.p_y = Nod(
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [0, 1, 2, 4, 5, 6, 7, 8],
+            C=cmo
+            )
+        self.p_z = Nod(
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [0, 1, 2, 3, 5, 6, 7, 8],
+            C=cmo
+            )
+
+    def tearDown(self):
+        pass
+
+    def test_handle_near_singular_tdm(self):
+        with self.assertRaises(SingularOverlapError):
+            d_xy = vb.nod.Dao(self.p_x, self.p_y)
+
+
 class BraKetTest(unittest.TestCase):
     """Test objects of type BraKet <K|...|L>"""
 

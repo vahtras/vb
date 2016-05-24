@@ -1,7 +1,9 @@
+"""Module for non-othogonal determinants"""
 import os
 from util import full
 from numpy.linalg import LinAlgError
 
+SINGULAR_OVERLAP_THRESHOLD = 1e-14
 
 class Nod(object):
     """
@@ -102,6 +104,9 @@ def Dao(K, L):
     # determinants K and L
     # as [Dalpha, Dbeta]
     """
+
+    if abs(K*L) < SINGULAR_OVERLAP_THRESHOLD:
+        raise SingularOverlapError
 
     CK = K.orbitals()
     CL = L.orbitals()
