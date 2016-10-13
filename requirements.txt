@@ -1,8 +1,7 @@
 --index-url https://pypi.python.org/simple
-findifftool
+findifftool==0.1.1
+daltools==1.0.0
 -e git+https://github.com/vahtras/qcaf.git@master#egg=qcifc
--e git+https://github.com/vahtras/daltools.git@master#egg=daltools
--e git+https://github.com/vahtras/two_electron.git@master#egg=two
--e git+https://github.com/vahtras/util.git@master#egg=util
+-e git+https://github.com/vahtras/two_electron.git@master#egg=two_electron
 -e .
 
